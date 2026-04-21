@@ -1,0 +1,21 @@
+CREATE TABLE students (
+    id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    reference_no   VARCHAR NOT NULL UNIQUE,
+    fiscal_year    VARCHAR NOT NULL,
+    serial_no      INTEGER NOT NULL,
+    full_name      VARCHAR NOT NULL,
+    dob            DATE NOT NULL,
+    gender         VARCHAR NOT NULL,
+    phone          VARCHAR NOT NULL UNIQUE,
+    email          VARCHAR UNIQUE,
+    address        TEXT NOT NULL,
+    guardian_name  VARCHAR NOT NULL,
+    guardian_phone VARCHAR NOT NULL,
+    photo_url      VARCHAR,
+    source         VARCHAR NOT NULL,
+    claimed_amount INTEGER NOT NULL,
+    status         VARCHAR NOT NULL DEFAULT 'pending',
+    notes          TEXT,
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT unique_serial_per_fiscal_year UNIQUE (fiscal_year, serial_no)
+);

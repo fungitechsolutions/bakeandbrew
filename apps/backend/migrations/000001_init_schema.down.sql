@@ -1,0 +1,9 @@
+DROP TABLE IF EXISTS certificates;
+DROP TABLE IF EXISTS inquiries;
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS student_courses;
+DROP TABLE IF EXISTS students;
+DROP TABLE IF EXISTS courses;
+DROP TABLE IF EXISTS refresh_tokens;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS settings;

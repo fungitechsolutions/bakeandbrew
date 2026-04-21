@@ -1,0 +1,25 @@
+package routes
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/suprimkhatri77/sms/backend/internal/config"
+	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
+	"github.com/suprimkhatri77/sms/backend/internal/handlers/auth"
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/cloudinary"
+)
+
+type Config struct {
+	Config    *config.Config
+	Queries   *db.Queries
+	CldClient *cloudinary.Client
+}
+
+func Setup(r *gin.Engine, cfg Config) {
+	router := r.Group("/api/v1")
+
+	authRouter := router.Group("/auth")
+	authRouter.POST("/login", auth.Login(cfg.Queries, cfg.Config))
+	authRouter.POST("/logout", auth.Logout(cfg.Queries, cfg.Config))
+	authRouter.POST("/refresh", auth.RotateTokens(cfg.Queries, cfg.Config))
+	authRouter.POST("/bootstrap", auth.Bootstrap(cfg.Queries, cfg.Config))
+}
