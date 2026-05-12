@@ -306,7 +306,7 @@ export default function CoursesPage() {
 
   return (
     <div className="min-h-screen bg-(--brand-cream) p-8 px-4 font-sans">
-      <div className="max-w-240 mx-auto">
+      <div className="max-w-8xl mx-auto">
         {/* Context */}
         <div className="mb-6 flex items-center gap-1 text-xs text-[rgba(47,78,64,0.45)]">
           <span className="text-[rgba(47,78,64,0.7)]">Admin</span>

@@ -4,12 +4,15 @@ import Image, { type ImageLoader } from "next/image";
 import styles from "./Certificate.module.css";
 import { siteInfo } from "@/utils/site-info";
 
-export interface CertificateProps {
+export interface WorkshopCertificateProps {
   studentName: string;
   referenceNo: string;
-  courses: string[];
+  /** Workshop title e.g. "Specialty Coffee Brewing" */
+  workshopTitle: string;
+  /** Date string e.g. "May 12, 2026" */
+  workshopDate: string;
+  /** Issue date string */
   issueDate: string;
-  schoolName?: string;
   logoUrl: string;
   directorSignatureUrl: string;
   headSignatureUrl: string;
@@ -21,19 +24,12 @@ export interface CertificateProps {
 
 const passthroughLoader: ImageLoader = ({ src }) => src;
 
-function joinCourses(courses: string[]) {
-  return courses
-    .map((c) => c.trim())
-    .filter(Boolean)
-    .join(" · ");
-}
-
-export function Certificate({
+export function WorkshopCertificate({
   studentName,
   referenceNo,
-  courses,
+  workshopTitle,
+  workshopDate,
   issueDate,
-  schoolName = siteInfo.company.name,
   logoUrl,
   directorSignatureUrl,
   headSignatureUrl,
@@ -41,15 +37,14 @@ export function Certificate({
   footerAddress = siteInfo.contact.address,
   footerContact = siteInfo.contact.email,
   footerPhone = siteInfo.contact.phone,
-}: CertificateProps) {
+}: WorkshopCertificateProps) {
   const centerMarkUrl = accreditationLogoUrl ?? logoUrl;
-  const cleanCourses = courses.map((c) => c.trim()).filter(Boolean);
 
   return (
     <div className={styles.printScope} data-certificate>
       <div className={styles.previewFrame}>
-        <section className={styles.paper} aria-label="Certificate">
-          {/* ── Top arc ── */}
+        <section className={styles.paper} aria-label="Workshop Certificate">
+          {/* ── Top arc — gold tones instead of green ── */}
           <svg
             className={styles.topArc}
             viewBox="0 0 794 210"
@@ -57,22 +52,22 @@ export function Certificate({
             aria-hidden="true"
           >
             <defs>
-              <linearGradient id="certArcGrad" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#2f4e40" stopOpacity="0.52" />
-                <stop offset="55%" stopColor="#3a5a49" stopOpacity="0.44" />
-                <stop offset="100%" stopColor="#2f4e40" stopOpacity="0.40" />
+              <linearGradient id="wsArcGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#7a4e24" stopOpacity="0.50" />
+                <stop offset="55%" stopColor="#c28a4f" stopOpacity="0.42" />
+                <stop offset="100%" stopColor="#7a4e24" stopOpacity="0.46" />
               </linearGradient>
             </defs>
             <path
               d="M0,168 C120,42 300,32 415,78 C556,134 664,134 794,72 L794,0 L0,0 Z"
-              fill="url(#certArcGrad)"
+              fill="url(#wsArcGrad)"
             />
             <path
               d="M0,182 C120,58 300,46 415,92 C556,148 664,148 794,86"
               fill="none"
-              stroke="#2f4e40"
+              stroke="#c28a4f"
               strokeWidth="3"
-              opacity="0.28"
+              opacity="0.3"
             />
           </svg>
 
@@ -100,38 +95,38 @@ export function Certificate({
 
           {/* ── Body ── */}
           <div className={styles.body}>
+            {/* Title — "Certificate of Participation" instead of "of Training" */}
             <div className={styles.titleStack}>
               <div className={styles.scriptBig}>Certificate</div>
-              <div className={styles.scriptMedium}>of Training</div>
+              <div className={styles.scriptMedium}>of Participation</div>
             </div>
 
             <div className={styles.titleRule} aria-hidden="true" />
 
-            <div className={styles.presentedTo}>Presented to</div>
+            <div className={styles.presentedTo}>Proudly presented to</div>
 
             <div className={styles.studentBlock}>
               <div className={styles.studentName}>{studentName}</div>
               <div className={styles.studentRule} aria-hidden="true" />
             </div>
 
+            {/* Workshop-specific prose */}
             <p className={styles.bodyProse}>
-              This is to certify that the above-named student has successfully
-              completed all courses and received passing grades for a Verified
-              Certificate in{" "}
-              <span className={styles.courseInline}>
-                {joinCourses(cleanCourses)}
-              </span>
-              , a program offered by{" "}
+              This is to certify that the above named individual has
+              successfully attended and participated in the one day workshop{" "}
+              <span className={styles.courseInline}>{workshopTitle}</span> held
+              on <span className={styles.courseInline}>{workshopDate}</span>,
+              organised by{" "}
               <span className={styles.schoolInline}>
                 {siteInfo.company.shortName}
               </span>
               .
             </p>
 
-            <div className={styles.issuedOn}>Issued on {issueDate}</div>
+            {/* <div className={styles.issuedOn}>Issued on {issueDate}</div> */}
           </div>
 
-          {/* ── Footer arc ── */}
+          {/* ── Footer arc — green tones to complement gold header ── */}
           <div className={styles.footerArcWrap} aria-hidden="true">
             <svg
               className={styles.footerArc}
@@ -139,22 +134,22 @@ export function Certificate({
               preserveAspectRatio="none"
             >
               <defs>
-                <linearGradient id="certFooterGrad" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#c28a4f" stopOpacity="0.46" />
-                  <stop offset="55%" stopColor="#c28a4f" stopOpacity="0.34" />
-                  <stop offset="100%" stopColor="#c28a4f" stopOpacity="0.40" />
+                <linearGradient id="wsFooterGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#2f4e40" stopOpacity="0.40" />
+                  <stop offset="55%" stopColor="#3a5a49" stopOpacity="0.30" />
+                  <stop offset="100%" stopColor="#2f4e40" stopOpacity="0.36" />
                 </linearGradient>
               </defs>
               <path
                 d="M0,20 C128,128 288,152 415,114 C558,68 668,68 794,132 L794,190 L0,190 Z"
-                fill="url(#certFooterGrad)"
+                fill="url(#wsFooterGrad)"
               />
               <path
                 d="M0,10 C128,114 288,138 415,100 C558,52 668,52 794,116"
                 fill="none"
-                stroke="#c28a4f"
+                stroke="#2f4e40"
                 strokeWidth="3"
-                opacity="0.34"
+                opacity="0.28"
               />
             </svg>
             <div className={styles.footerMeta}>
@@ -186,7 +181,7 @@ export function Certificate({
               <Image
                 className={styles.bottomMark}
                 src={centerMarkUrl}
-                alt={`${schoolName} mark`}
+                alt="academy mark"
                 loader={passthroughLoader}
                 unoptimized
                 width={180}

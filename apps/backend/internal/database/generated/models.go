@@ -36,12 +36,13 @@ type Inquiry struct {
 }
 
 type Payment struct {
-	ID        pgtype.UUID        `json:"id"`
-	StudentID pgtype.UUID        `json:"studentId"`
-	Amount    int32              `json:"amount"`
-	AddedBy   pgtype.UUID        `json:"addedBy"`
-	AddedAt   pgtype.Timestamptz `json:"addedAt"`
-	Remarks   pgtype.Text        `json:"remarks"`
+	ID          pgtype.UUID        `json:"id"`
+	StudentID   pgtype.UUID        `json:"studentId"`
+	Amount      int32              `json:"amount"`
+	AddedBy     pgtype.UUID        `json:"addedBy"`
+	AddedAt     pgtype.Timestamptz `json:"addedAt"`
+	Remarks     pgtype.Text        `json:"remarks"`
+	PaymentMode string             `json:"paymentMode"`
 }
 
 type Product struct {
@@ -105,6 +106,8 @@ type Student struct {
 	Source        string             `json:"source"`
 	Status        string             `json:"status"`
 	Notes         pgtype.Text        `json:"notes"`
+	Shift         string             `json:"shift"`
+	ShiftTime     string             `json:"shiftTime"`
 	CreatedAt     pgtype.Timestamptz `json:"createdAt"`
 }
 

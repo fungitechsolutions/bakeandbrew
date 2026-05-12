@@ -7,13 +7,16 @@ import z from "zod";
 const modalSchema = z.object({
   amount: z.number().gt(0),
   remarks: z.string().min(3).max(100).optional(),
+  paymentMode: z.string().min(2).max(60),
 });
 type AddPaymentModal = z.infer<typeof modalSchema>;
 
 type AddPaymentModalErrors = {
   amount?: string;
   remarks?: string;
+  paymentMode?: string;
 };
+
 export function AddPaymentModal({
   onClose,
   onAdd,
@@ -23,12 +26,14 @@ export function AddPaymentModal({
 }) {
   const [amount, setAmount] = useState("");
   const [remarks, setRemarks] = useState("");
+  const [paymentMode, setPaymentMode] = useState("");
   const [error, setError] = useState<AddPaymentModalErrors>({});
 
   const handleSubmit = () => {
     const result = modalSchema.safeParse({
       amount: Number(amount),
-      remarks,
+      remarks: remarks || undefined,
+      paymentMode: paymentMode || undefined,
     });
 
     if (!result.success) {
@@ -36,6 +41,7 @@ export function AddPaymentModal({
       setError({
         amount: tree?.amount?.errors[0],
         remarks: tree?.remarks?.errors[0],
+        paymentMode: tree?.paymentMode?.errors[0],
       });
       return;
     }
@@ -47,6 +53,7 @@ export function AddPaymentModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
       <div className="w-full max-w-md rounded-2xl border border-black/[0.06] bg-white p-6 shadow-2xl">
+        {/* ── Header ── */}
         <div className="mb-5 flex items-center justify-between">
           <h3
             className="text-[1.1rem] font-semibold text-[#2d4a3e]"
@@ -63,6 +70,7 @@ export function AddPaymentModal({
         </div>
 
         <div className="flex flex-col gap-4">
+          {/* ── Amount ── */}
           <div className="flex flex-col gap-1.5">
             <label
               className="text-[0.78rem] font-semibold uppercase tracking-[0.07em] text-[#2d4a3e]"
@@ -83,11 +91,15 @@ export function AddPaymentModal({
                   setAmount(e.target.value);
                   setError({});
                 }}
-                className={`w-full rounded-xl border bg-white py-3 pl-10 pr-4 text-[0.92rem] text-[#2d4a3e] outline-none transition-all placeholder:text-[#2d4a3e]/30 focus:border-[#e8552a] focus:ring-2 focus:ring-[#e8552a]/15 ${error ? "border-red-400 ring-2 ring-red-100" : "border-[#2d4a3e]/15"}`}
+                className={`w-full rounded-xl border bg-white py-3 pl-10 pr-4 text-[0.92rem] text-[#2d4a3e] outline-none transition-all placeholder:text-[#2d4a3e]/30 focus:border-[#e8552a] focus:ring-2 focus:ring-[#e8552a]/15 ${
+                  error.amount
+                    ? "border-red-400 ring-2 ring-red-100"
+                    : "border-[#2d4a3e]/15"
+                }`}
                 style={{ fontFamily: "var(--font-dm-sans)" }}
               />
             </div>
-            {error && error.amount && (
+            {error.amount && (
               <p
                 className="flex items-center gap-1.5 text-[0.78rem] text-red-500"
                 style={{ fontFamily: "var(--font-dm-sans)" }}
@@ -97,6 +109,40 @@ export function AddPaymentModal({
             )}
           </div>
 
+          {/* ── Payment Mode ── */}
+          <div className="flex flex-col gap-1.5">
+            <label
+              className="text-[0.78rem] font-semibold uppercase tracking-[0.07em] text-[#2d4a3e]"
+              style={{ fontFamily: "var(--font-dm-sans)" }}
+            >
+              Payment Mode{" "}
+              {/* <span className="font-normal normal-case text-[#2d4a3e]/40">
+                (optional)
+              </span> */}
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. Cash, eSewa, Bank Transfer"
+              value={paymentMode}
+              onChange={(e) => setPaymentMode(e.target.value)}
+              className={`w-full rounded-xl border bg-white py-3 px-4 text-[0.92rem] text-[#2d4a3e] outline-none transition-all placeholder:text-[#2d4a3e]/30 focus:border-[#e8552a] focus:ring-2 focus:ring-[#e8552a]/15 ${
+                error.paymentMode
+                  ? "border-red-400 ring-2 ring-red-100"
+                  : "border-[#2d4a3e]/15"
+              }`}
+              style={{ fontFamily: "var(--font-dm-sans)" }}
+            />
+            {error.paymentMode && (
+              <p
+                className="flex items-center gap-1.5 text-[0.78rem] text-red-500"
+                style={{ fontFamily: "var(--font-dm-sans)" }}
+              >
+                <AlertCircle className="h-3.5 w-3.5" /> {error.paymentMode}
+              </p>
+            )}
+          </div>
+
+          {/* ── Remarks ── */}
           <div className="flex flex-col gap-1.5">
             <label
               className="text-[0.78rem] font-semibold uppercase tracking-[0.07em] text-[#2d4a3e]"
@@ -112,10 +158,14 @@ export function AddPaymentModal({
               placeholder="e.g. Second installment"
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
-              className="w-full rounded-xl border border-[#2d4a3e]/15 bg-white py-3 px-4 text-[0.92rem] text-[#2d4a3e] outline-none transition-all placeholder:text-[#2d4a3e]/30 focus:border-[#e8552a] focus:ring-2 focus:ring-[#e8552a]/15"
+              className={`w-full rounded-xl border bg-white py-3 px-4 text-[0.92rem] text-[#2d4a3e] outline-none transition-all placeholder:text-[#2d4a3e]/30 focus:border-[#e8552a] focus:ring-2 focus:ring-[#e8552a]/15 ${
+                error.remarks
+                  ? "border-red-400 ring-2 ring-red-100"
+                  : "border-[#2d4a3e]/15"
+              }`}
               style={{ fontFamily: "var(--font-dm-sans)" }}
             />
-            {error && error.remarks && (
+            {error.remarks && (
               <p
                 className="flex items-center gap-1.5 text-[0.78rem] text-red-500"
                 style={{ fontFamily: "var(--font-dm-sans)" }}
@@ -126,6 +176,7 @@ export function AddPaymentModal({
           </div>
         </div>
 
+        {/* ── Actions ── */}
         <div className="mt-6 flex gap-3">
           <button
             onClick={onClose}

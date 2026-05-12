@@ -11,6 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useRouter } from "next/navigation";
 
 export function TeamSwitcher({
   teams,
@@ -21,6 +22,7 @@ export function TeamSwitcher({
     plan: string;
   }[];
 }) {
+  const router = useRouter();
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -30,6 +32,7 @@ export function TeamSwitcher({
               <SidebarMenuButton
                 size="lg"
                 className="data-open:bg-sidebar-accent data-open:text-sidebar-accent-foreground"
+                onClick={() => router.push("/")}
               />
             }
           >
