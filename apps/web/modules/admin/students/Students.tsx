@@ -134,7 +134,7 @@ export default function StudentsPage() {
 
   return (
     <div className="min-h-screen bg-(--brand-cream) px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-8xl">
         {/* ── Header ── */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>

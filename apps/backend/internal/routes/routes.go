@@ -67,6 +67,9 @@ func Setup(r *gin.Engine, cfg Config) {
 	// admin/students
 	adminRouter.GET("/students", adminStudents.ListStudents(cfg.Queries))
 
+	// admin/students/outstanding
+	adminRouter.GET("/students/outstanding", adminStudents.ListOutstandingStudentsDue(cfg.Queries))
+
 	// admin/students/:id
 	adminRouter.GET("/students/:studentID/detail", adminStudents.StudentDetail(cfg.Queries))
 	adminRouter.GET("/students/:studentID/courses", adminStudents.StudentEnrolledCourses(cfg.Queries))

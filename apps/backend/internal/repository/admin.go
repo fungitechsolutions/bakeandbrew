@@ -28,4 +28,9 @@ type AdminRepository interface {
 	DeleteInquiry(ctx context.Context, id pgtype.UUID) (pgconn.CommandTag, error)
 	CountUnreadInquiries(ctx context.Context) (int32, error)
 	CountReadInquiries(ctx context.Context) (int32, error)
+
+	// admin/student/outstanding
+	GetOutstandingFeesCount(ctx context.Context, params db.GetOutstandingFeesCountParams) (int64, error)
+	GetOutstandingFeesTotal(ctx context.Context, params db.GetOutstandingFeesTotalParams) (int64, error)
+	GetStudentsWithOutstandingFees(ctx context.Context, params db.GetStudentsWithOutstandingFeesParams) ([]db.GetStudentsWithOutstandingFeesRow, error)
 }

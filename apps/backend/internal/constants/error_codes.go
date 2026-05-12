@@ -7,6 +7,7 @@ const (
 	Unauthorized        = "UNAUTHORIZED"
 	InvalidPageParam    = "INVALID_PAGE_PARAMETER"
 	InvalidIDFormat     = "INVALID_ID_FORMAT"
+	InvalidQueryParam   = "INVALID_QUERY_PARAM"
 
 	// auth
 	InvalidCredentials  = "INVALID_CREDENTIALS"

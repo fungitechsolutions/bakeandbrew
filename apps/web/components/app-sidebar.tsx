@@ -54,18 +54,23 @@ const data = {
       icon: <Book />,
     },
     {
-      title: "Students",
-      url: "/students",
-      icon: <StudentIcon />,
-    },
-    {
       title: "Inquiries",
       url: "/inquiries",
       icon: <QuestionIcon />,
     },
     {
+      title: "Students",
+      url: "#",
+      icon: <StudentIcon />,
+      items: [
+        { title: "List", url: "/students" },
+        { title: "Outstanding", url: "/students/outstanding" },
+        { title: "Sales Revenue", url: "/students/sales" },
+      ],
+    },
+    {
       title: "Inventory",
-      url: "/inventory",
+      url: "#",
       icon: <Package />,
       items: [
         { title: "Products", url: "/inventory/products" },
