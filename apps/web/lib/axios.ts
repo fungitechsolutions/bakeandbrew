@@ -2,6 +2,7 @@ import axios from "axios";
 import type { AxiosInstance, InternalAxiosRequestConfig } from "axios";
 
 const AUTH_ENDPOINTS = ["/auth/refresh", "/auth/login", "/auth/logout"];
+const CookieDomain = process.env.NEXT_PUBLIC_COOKIE_DOMAIN || "";
 const api: AxiosInstance = axios.create({
   baseURL: `${process.env.NEXT_PUBLIC_API_URL}/api/v1`,
   withCredentials: true,
@@ -78,7 +79,7 @@ api.interceptors.response.use(
       //   );
       // }
 
-      document.cookie = `is_logged_in=; max-age=0; path=/; domain=${window.location.hostname.includes("sms.suprimkhatri.com.np") ? ".sms.suprimkhatri.com.np" : ""}`;
+      document.cookie = `is_logged_in=; max-age=0; path=/; domain=${CookieDomain}`;
 
       processQueue(refreshError); // reject all queued requests
 
