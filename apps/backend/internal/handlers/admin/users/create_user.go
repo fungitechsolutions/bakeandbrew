@@ -98,7 +98,7 @@ func CreateUser(
 			Name:         req.Name,
 			Email:        req.Email,
 			PasswordHash: string(hashedPassword),
-			Role:         "user",
+			Role:         req.Role,
 		})
 
 		if err != nil {
