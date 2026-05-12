@@ -150,6 +150,9 @@ func Signup(queries repository.AuthRepository, cfg *config.Config) gin.HandlerFu
 		c.JSON(http.StatusCreated, types.APIResponse{
 			Success: true,
 			Message: "Signup successful",
+			Data: types.UserResponse{
+				User: user,
+			},
 		})
 
 	}
