@@ -99,6 +99,202 @@ func (q *Queries) GetNextSerialNo(ctx context.Context, fiscalYear string) (int32
 	return next_serial, err
 }
 
+const getOutstandingFeesCount = `-- name: GetOutstandingFeesCount :one
+SELECT COUNT(*)::BIGINT AS total
+FROM (
+    SELECT s.id
+    FROM users u
+    JOIN students s ON s.student_id = u.id
+    JOIN (
+        SELECT sc.student_id, SUM(c.fee) AS total_fee
+        FROM student_courses sc
+        JOIN courses c ON c.id = sc.course_id
+        GROUP BY sc.student_id
+    ) fees ON fees.student_id = s.id
+    LEFT JOIN (
+        SELECT student_id, SUM(amount) AS total_paid
+        FROM payments
+        WHERE ($1::TEXT IS NULL OR added_at >= $1::TIMESTAMPTZ)
+          AND ($2::TEXT IS NULL OR added_at <= ($2::TIMESTAMPTZ + INTERVAL '1 day'))
+        GROUP BY student_id
+    ) pays ON pays.student_id = s.id
+    WHERE s.status IN ('active', 'completed')
+      AND (COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0)) > 0
+      AND ($3::TEXT IS NULL OR u.name ILIKE '%' || $3::TEXT || '%' OR u.email ILIKE '%' || $3::TEXT || '%')
+) sub
+`
+
+type GetOutstandingFeesCountParams struct {
+	FromDate pgtype.Text `json:"fromDate"`
+	ToDate   pgtype.Text `json:"toDate"`
+	Search   pgtype.Text `json:"search"`
+}
+
+func (q *Queries) GetOutstandingFeesCount(ctx context.Context, arg GetOutstandingFeesCountParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getOutstandingFeesCount, arg.FromDate, arg.ToDate, arg.Search)
+	var total int64
+	err := row.Scan(&total)
+	return total, err
+}
+
+const getOutstandingFeesTotal = `-- name: GetOutstandingFeesTotal :one
+SELECT COALESCE(SUM(outstanding), 0)::BIGINT AS grand_total_outstanding
+FROM (
+    SELECT
+        s.id,
+        COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0) AS outstanding
+    FROM users u
+    JOIN students s ON s.student_id = u.id
+    JOIN (
+        SELECT sc.student_id, SUM(c.fee) AS total_fee
+        FROM student_courses sc
+        JOIN courses c ON c.id = sc.course_id
+        GROUP BY sc.student_id
+    ) fees ON fees.student_id = s.id
+    LEFT JOIN (
+        SELECT student_id, SUM(amount) AS total_paid
+        FROM payments
+        WHERE ($1::TEXT IS NULL OR added_at >= $1::TIMESTAMPTZ)
+          AND ($2::TEXT IS NULL OR added_at <= ($2::TIMESTAMPTZ + INTERVAL '1 day'))
+        GROUP BY student_id
+    ) pays ON pays.student_id = s.id
+    WHERE s.status IN ('active', 'completed')
+      AND (COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0)) > 0
+      AND ($3::TEXT IS NULL OR u.name ILIKE '%' || $3::TEXT || '%' OR u.email ILIKE '%' || $3::TEXT || '%')
+) sub
+`
+
+type GetOutstandingFeesTotalParams struct {
+	FromDate pgtype.Text `json:"fromDate"`
+	ToDate   pgtype.Text `json:"toDate"`
+	Search   pgtype.Text `json:"search"`
+}
+
+func (q *Queries) GetOutstandingFeesTotal(ctx context.Context, arg GetOutstandingFeesTotalParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getOutstandingFeesTotal, arg.FromDate, arg.ToDate, arg.Search)
+	var grand_total_outstanding int64
+	err := row.Scan(&grand_total_outstanding)
+	return grand_total_outstanding, err
+}
+
+const getSalesRevenue = `-- name: GetSalesRevenue :many
+SELECT
+    u.id AS user_id,
+    u.name,
+    u.email,
+    COALESCE(fees.total_fee, 0)::BIGINT AS total_course_fee,
+    COALESCE(pays.total_paid, 0)::BIGINT AS total_paid,
+    (COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0))::BIGINT AS outstanding
+FROM users u
+JOIN students s ON s.student_id = u.id
+JOIN (
+    SELECT sc.student_id, SUM(c.fee) AS total_fee
+    FROM student_courses sc
+    JOIN courses c ON c.id = sc.course_id
+    GROUP BY sc.student_id
+) fees ON fees.student_id = s.id
+LEFT JOIN (
+    SELECT student_id, SUM(amount) AS total_paid
+    FROM payments
+    WHERE ($3::TEXT IS NULL OR added_at >= $3::TIMESTAMPTZ)
+      AND ($4::TEXT IS NULL OR added_at <= ($4::TIMESTAMPTZ + INTERVAL '1 day'))
+    GROUP BY student_id
+) pays ON pays.student_id = s.id
+WHERE s.status IN ('active', 'completed')
+  AND ($5::TEXT IS NULL OR u.name ILIKE '%' || $5::TEXT || '%' OR u.email ILIKE '%' || $5::TEXT || '%')
+ORDER BY total_paid DESC
+LIMIT $1 OFFSET $2
+`
+
+type GetSalesRevenueParams struct {
+	Limit    int32       `json:"limit"`
+	Offset   int32       `json:"offset"`
+	FromDate pgtype.Text `json:"fromDate"`
+	ToDate   pgtype.Text `json:"toDate"`
+	Search   pgtype.Text `json:"search"`
+}
+
+type GetSalesRevenueRow struct {
+	UserID         pgtype.UUID `json:"userId"`
+	Name           string      `json:"name"`
+	Email          string      `json:"email"`
+	TotalCourseFee int64       `json:"totalCourseFee"`
+	TotalPaid      int64       `json:"totalPaid"`
+	Outstanding    int64       `json:"outstanding"`
+}
+
+func (q *Queries) GetSalesRevenue(ctx context.Context, arg GetSalesRevenueParams) ([]GetSalesRevenueRow, error) {
+	rows, err := q.db.Query(ctx, getSalesRevenue,
+		arg.Limit,
+		arg.Offset,
+		arg.FromDate,
+		arg.ToDate,
+		arg.Search,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetSalesRevenueRow
+	for rows.Next() {
+		var i GetSalesRevenueRow
+		if err := rows.Scan(
+			&i.UserID,
+			&i.Name,
+			&i.Email,
+			&i.TotalCourseFee,
+			&i.TotalPaid,
+			&i.Outstanding,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSalesRevenueCount = `-- name: GetSalesRevenueCount :one
+SELECT COUNT(DISTINCT s.id)::BIGINT AS total
+FROM students s
+JOIN users u ON u.id = s.student_id
+WHERE s.status IN ('active', 'completed')
+  AND ($1::TEXT IS NULL OR u.name ILIKE '%' || $1::TEXT || '%' OR u.email ILIKE '%' || $1::TEXT || '%')
+`
+
+func (q *Queries) GetSalesRevenueCount(ctx context.Context, search pgtype.Text) (int64, error) {
+	row := q.db.QueryRow(ctx, getSalesRevenueCount, search)
+	var total int64
+	err := row.Scan(&total)
+	return total, err
+}
+
+const getSalesRevenueTotal = `-- name: GetSalesRevenueTotal :one
+SELECT COALESCE(SUM(p.amount), 0)::BIGINT AS total_collected
+FROM payments p
+JOIN students s ON s.id = p.student_id
+JOIN users u ON u.id = s.student_id
+WHERE s.status IN ('active', 'completed')
+  AND ($1::TEXT IS NULL OR p.added_at >= $1::TIMESTAMPTZ)
+  AND ($2::TEXT IS NULL OR p.added_at <= ($2::TIMESTAMPTZ + INTERVAL '1 day'))
+  AND ($3::TEXT IS NULL OR u.name ILIKE '%' || $3::TEXT || '%' OR u.email ILIKE '%' || $3::TEXT || '%')
+`
+
+type GetSalesRevenueTotalParams struct {
+	FromDate pgtype.Text `json:"fromDate"`
+	ToDate   pgtype.Text `json:"toDate"`
+	Search   pgtype.Text `json:"search"`
+}
+
+func (q *Queries) GetSalesRevenueTotal(ctx context.Context, arg GetSalesRevenueTotalParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getSalesRevenueTotal, arg.FromDate, arg.ToDate, arg.Search)
+	var total_collected int64
+	err := row.Scan(&total_collected)
+	return total_collected, err
+}
+
 const getStudentByID = `-- name: GetStudentByID :one
 SELECT 
     s.id, s.student_id, s.reference_no, s.fiscal_year, s.serial_no, s.full_name, s.dob, s.gender, s.phone, s.address, s.guardian_name, s.guardian_phone, s.photo_url, s.source, s.status, s.notes, s.shift, s.shift_time, s.created_at,
@@ -193,6 +389,86 @@ func (q *Queries) GetStudentsCount(ctx context.Context) (int64, error) {
 	var count int64
 	err := row.Scan(&count)
 	return count, err
+}
+
+const getStudentsWithOutstandingFees = `-- name: GetStudentsWithOutstandingFees :many
+SELECT
+    u.id AS user_id,
+    u.name,
+    u.email,
+    COALESCE(fees.total_fee, 0)::BIGINT AS total_course_fee,
+    COALESCE(pays.total_paid, 0)::BIGINT AS total_paid,
+    (COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0))::BIGINT AS outstanding
+FROM users u
+JOIN students s ON s.student_id = u.id
+JOIN (
+    SELECT sc.student_id, SUM(c.fee) AS total_fee
+    FROM student_courses sc
+    JOIN courses c ON c.id = sc.course_id
+    GROUP BY sc.student_id
+) fees ON fees.student_id = s.id
+LEFT JOIN (
+    SELECT student_id, SUM(amount) AS total_paid
+    FROM payments
+    WHERE ($3::TEXT IS NULL OR added_at >= $3::TIMESTAMPTZ)
+      AND ($4::TEXT IS NULL OR added_at <= ($4::TIMESTAMPTZ + INTERVAL '1 day'))
+    GROUP BY student_id
+) pays ON pays.student_id = s.id
+WHERE s.status IN ('active', 'completed')
+  AND (COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0)) > 0
+  AND ($5::TEXT IS NULL OR u.name ILIKE '%' || $5::TEXT || '%' OR u.email ILIKE '%' || $5::TEXT || '%')
+ORDER BY outstanding DESC
+LIMIT $1 OFFSET $2
+`
+
+type GetStudentsWithOutstandingFeesParams struct {
+	Limit    int32       `json:"limit"`
+	Offset   int32       `json:"offset"`
+	FromDate pgtype.Text `json:"fromDate"`
+	ToDate   pgtype.Text `json:"toDate"`
+	Search   pgtype.Text `json:"search"`
+}
+
+type GetStudentsWithOutstandingFeesRow struct {
+	UserID         pgtype.UUID `json:"userId"`
+	Name           string      `json:"name"`
+	Email          string      `json:"email"`
+	TotalCourseFee int64       `json:"totalCourseFee"`
+	TotalPaid      int64       `json:"totalPaid"`
+	Outstanding    int64       `json:"outstanding"`
+}
+
+func (q *Queries) GetStudentsWithOutstandingFees(ctx context.Context, arg GetStudentsWithOutstandingFeesParams) ([]GetStudentsWithOutstandingFeesRow, error) {
+	rows, err := q.db.Query(ctx, getStudentsWithOutstandingFees,
+		arg.Limit,
+		arg.Offset,
+		arg.FromDate,
+		arg.ToDate,
+		arg.Search,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetStudentsWithOutstandingFeesRow
+	for rows.Next() {
+		var i GetStudentsWithOutstandingFeesRow
+		if err := rows.Scan(
+			&i.UserID,
+			&i.Name,
+			&i.Email,
+			&i.TotalCourseFee,
+			&i.TotalPaid,
+			&i.Outstanding,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listStudents = `-- name: ListStudents :many
