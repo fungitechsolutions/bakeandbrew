@@ -15,8 +15,8 @@ import {
   Printer,
   CalendarDays,
   Hash,
-  CheckCircle2,
   AlertCircle,
+  Clock,
 } from "lucide-react";
 import {
   AddPayment,
@@ -41,6 +41,8 @@ import { useAuthStore } from "@/store/auth";
 import { Certificate } from "@/components/certificate/Certificate";
 import { siteInfo } from "@/utils/site-info";
 import { usePrintInvoice } from "./PrintInvoice";
+import { PaymentRow } from "./PaymentRow";
+import { WorkshopCertificate } from "@/components/certificate/WorkshopCertificate";
 
 type Props = {
   student: Extract<StudentDetail, { success: true }>["data"];
@@ -88,6 +90,7 @@ export default function StudentDetailPage({
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showInvoice, setShowInvoice] = useState(false);
   const [showCertificate, setShowCertificate] = useState(false);
+  const [showWorkshopCertificate, setShowWorkshopCertificate] = useState(false);
   const [currentStatus, setCurrentStatus] = useState<Status>(student.status);
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
@@ -152,7 +155,7 @@ export default function StudentDetailPage({
         />
       )}
 
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-8xl">
         {/* ── Top bar ── */}
         <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
           {/* LEFT: back + avatar + name */}
@@ -213,6 +216,16 @@ export default function StudentDetailPage({
             >
               <Printer className="h-3.5 w-3.5" strokeWidth={1.75} />
               {showCertificate ? "Hide Certificate" : "Issue Certificate"}
+            </button>
+            <button
+              onClick={() => setShowWorkshopCertificate((v) => !v)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[#c28a4f]/25 bg-white px-4 py-2 text-[0.85rem] font-medium text-[#7a4e24] transition-all hover:border-[#c28a4f]/40 hover:bg-[#c28a4f]/10"
+              style={{ fontFamily: "var(--font-dm-sans)" }}
+            >
+              <Printer className="h-3.5 w-3.5" strokeWidth={1.75} />
+              {showWorkshopCertificate
+                ? "Hide Workshop Certificate"
+                : "Issue Workshop Certificate"}
             </button>
           </div>
         </div>
@@ -352,6 +365,48 @@ export default function StudentDetailPage({
           </div>
         )}
 
+        {/* Workshop Certificate */}
+        {showWorkshopCertificate && (
+          <div className="mb-6">
+            <div className="mb-3 flex items-center justify-between">
+              <h2
+                className="text-[0.9rem] font-semibold text-[#2d4a3e]"
+                style={{ fontFamily: "var(--font-playfair)" }}
+              >
+                Workshop Certificate Preview
+              </h2>
+              <button
+                onClick={() => window.print()}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[#c28a4f] px-4 py-2 text-[0.82rem] font-semibold text-white shadow-[0_4px_12px_rgba(194,138,79,0.28)] transition-all hover:-translate-y-0.5"
+                style={{ fontFamily: "var(--font-dm-sans)" }}
+              >
+                <Printer className="h-3.5 w-3.5" strokeWidth={2} />
+                Print Certificate
+              </button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <div style={{ minWidth: 794 }}>
+                <WorkshopCertificate
+                  studentName={student.fullName}
+                  workshopTitle="Specialty Coffee Brewing"
+                  workshopDate="2082-02-01"
+                  referenceNo={student.referenceNo}
+                  // courses={courses.map((c) => c.name)}
+                  issueDate={issueDate}
+                  // schoolName={siteInfo.company.name}
+                  logoUrl="/assets/watermark-no-bg.png"
+                  directorSignatureUrl="/assets/logo.png"
+                  headSignatureUrl="/assets/logo.png"
+                  accreditationLogoUrl="/assets/watermark-no-bg.png"
+                  footerAddress={siteInfo.contact.address}
+                  footerContact={siteInfo.contact.email}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ── Main grid ── */}
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
           {/* Left col */}
@@ -381,6 +436,16 @@ export default function StudentDetailPage({
                   icon={Mail}
                 />
                 <InfoRow label="Source" value={student.source} icon={Hash} />
+                <InfoRow
+                  label="Shift"
+                  value={student.shift ?? "—"}
+                  icon={Clock}
+                />
+                <InfoRow
+                  label="Shift Time"
+                  value={student.shiftTime ?? "—"}
+                  icon={Clock}
+                />
                 <div className="sm:col-span-2">
                   <InfoRow
                     label="Address"
@@ -436,46 +501,25 @@ export default function StudentDetailPage({
               ) : (
                 <div className="flex flex-col gap-2 max-h-88 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-[#2d4a3e]/20 scrollbar-track-transparent">
                   {" "}
-                  {[...payments].reverse().map((p) => (
-                    <div
-                      key={p.id}
-                      className="flex items-center justify-between rounded-xl border border-[#2d4a3e]/08 bg-[#f4f1ec]/50 px-4 py-3"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50">
-                          <CheckCircle2
-                            className="h-4 w-4 text-green-500"
-                            strokeWidth={2}
-                          />
-                        </div>
-                        <div>
-                          <p
-                            className="text-[0.88rem] font-medium text-[#2d4a3e]"
-                            style={{ fontFamily: "var(--font-dm-sans)" }}
-                          >
-                            NPR {(p.amount / 100).toLocaleString()}
-                          </p>
-                          <p
-                            className="text-[0.75rem] text-[#2d4a3e]/45"
-                            style={{ fontFamily: "var(--font-dm-sans)" }}
-                          >
-                            {p.remarks ?? "Payment"} ·{" "}
-                            {new Date(p.addedAt).toLocaleDateString("en-NP", {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric",
-                            })}
-                          </p>
-                        </div>
-                      </div>
-                      <span
-                        className="text-[0.72rem] text-[#2d4a3e]/35"
-                        style={{ fontFamily: "var(--font-dm-sans)" }}
-                      >
-                        by {p.addedByName}
-                      </span>
-                    </div>
-                  ))}
+                  {[...payments].reverse().map((p, reversedIdx) => {
+                    const originalIdx = payments.length - 1 - reversedIdx;
+
+                    return (
+                      <PaymentRow
+                        key={p.id}
+                        payment={{
+                          id: p.id,
+                          amount: p.amount,
+                          addedAt: String(p.addedAt),
+                          remarks: p.remarks,
+                          addedByName: p.addedByName,
+                          paymentMode: p.paymentMode,
+                        }}
+                        student={student}
+                        receiptNo={originalIdx + 1}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </SectionCard>

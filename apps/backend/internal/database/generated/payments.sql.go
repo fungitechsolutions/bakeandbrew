@@ -12,16 +12,17 @@ import (
 )
 
 const addPayment = `-- name: AddPayment :one
-INSERT INTO payments (student_id, amount, added_by, remarks)
-VALUES ($1, $2, $3, $4)
-RETURNING id, student_id, amount, added_by, added_at, remarks
+INSERT INTO payments (student_id, amount, added_by, remarks, payment_mode)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, student_id, amount, added_by, added_at, remarks, payment_mode
 `
 
 type AddPaymentParams struct {
-	StudentID pgtype.UUID `json:"studentId"`
-	Amount    int32       `json:"amount"`
-	AddedBy   pgtype.UUID `json:"addedBy"`
-	Remarks   pgtype.Text `json:"remarks"`
+	StudentID   pgtype.UUID `json:"studentId"`
+	Amount      int32       `json:"amount"`
+	AddedBy     pgtype.UUID `json:"addedBy"`
+	Remarks     pgtype.Text `json:"remarks"`
+	PaymentMode string      `json:"paymentMode"`
 }
 
 func (q *Queries) AddPayment(ctx context.Context, arg AddPaymentParams) (Payment, error) {
@@ -30,6 +31,7 @@ func (q *Queries) AddPayment(ctx context.Context, arg AddPaymentParams) (Payment
 		arg.Amount,
 		arg.AddedBy,
 		arg.Remarks,
+		arg.PaymentMode,
 	)
 	var i Payment
 	err := row.Scan(
@@ -39,6 +41,7 @@ func (q *Queries) AddPayment(ctx context.Context, arg AddPaymentParams) (Payment
 		&i.AddedBy,
 		&i.AddedAt,
 		&i.Remarks,
+		&i.PaymentMode,
 	)
 	return i, err
 }
@@ -53,7 +56,7 @@ func (q *Queries) DeletePayment(ctx context.Context, id pgtype.UUID) error {
 }
 
 const getPaymentsByStudent = `-- name: GetPaymentsByStudent :many
-SELECT p.id, p.student_id, p.amount, p.added_by, p.added_at, p.remarks, a.name AS added_by_name
+SELECT p.id, p.student_id, p.amount, p.added_by, p.added_at, p.remarks, p.payment_mode, a.name AS added_by_name
 FROM payments p
 JOIN users a ON a.id = p.added_by
 WHERE p.student_id = $1
@@ -67,6 +70,7 @@ type GetPaymentsByStudentRow struct {
 	AddedBy     pgtype.UUID        `json:"addedBy"`
 	AddedAt     pgtype.Timestamptz `json:"addedAt"`
 	Remarks     pgtype.Text        `json:"remarks"`
+	PaymentMode string             `json:"paymentMode"`
 	AddedByName string             `json:"addedByName"`
 }
 
@@ -86,6 +90,7 @@ func (q *Queries) GetPaymentsByStudent(ctx context.Context, studentID pgtype.UUI
 			&i.AddedBy,
 			&i.AddedAt,
 			&i.Remarks,
+			&i.PaymentMode,
 			&i.AddedByName,
 		); err != nil {
 			return nil, err

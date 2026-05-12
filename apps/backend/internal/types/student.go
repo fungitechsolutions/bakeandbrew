@@ -13,6 +13,8 @@ type CreateStudentRequest struct {
 	GuardianName  string   `json:"guardianName" binding:"required,min=2,max=70"`
 	GuardianPhone string   `json:"guardianPhone" binding:"required,nepal_phone"`
 	Gender        string   `json:"gender" binding:"required,oneof=male female other"`
+	Shift         string   `json:"shift" binding:"required,oneof=morning day evening"`
+	ShiftTime     string   `json:"shiftTime" binding:"required"`
 	Courses       []string `json:"courses" binding:"required,min=1,dive,uuid"`
 }
 

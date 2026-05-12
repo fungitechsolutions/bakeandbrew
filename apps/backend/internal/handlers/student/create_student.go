@@ -153,6 +153,8 @@ func CreateStudent(queries repository.StudentRepository, pool *pgxpool.Pool) gin
 			SerialNo:      serialNo,
 			FiscalYear:    settings.FiscalYear,
 			StudentID:     userID,
+			Shift:         req.Shift,
+			ShiftTime:     req.ShiftTime,
 		})
 
 		if err != nil {

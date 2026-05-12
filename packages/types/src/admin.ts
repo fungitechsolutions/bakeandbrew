@@ -56,6 +56,8 @@ export const studentDetailResponseSchema = z.discriminatedUnion("success", [
       ]),
       status: z.enum(["pending", "active", "completed", "rejected"]),
       notes: z.string(),
+      shift: z.enum(["morning", "afternoon", "evening"]).optional(),
+      shiftTime: z.string(),
       createdAt: z.date(),
     }),
   }),
@@ -111,6 +113,7 @@ export const studentPaymentDetailsResponseSchema = z.discriminatedUnion(
           remarks: z.string(),
           amount: z.number(),
           addedByName: z.string(),
+          paymentMode: z.string(),
         }),
       ),
     }),
@@ -141,6 +144,7 @@ export type UpdateStudentStatusResponse = z.infer<
 export const addPaymentSchema = z.object({
   amount: z.number().gt(0),
   remarks: z.string().min(3).max(100).optional(),
+  paymentMode: z.string().min(2).max(60),
 });
 
 export type AddPayment = z.infer<typeof addPaymentSchema>;

@@ -13,6 +13,7 @@ type Payment struct {
 }
 
 type AddPaymentRequest struct {
-	Amount  float64 `json:"amount" binding:"required,gt=0"`
-	Remarks string  `json:"remarks,omitempty" binding:"omitempty,min=1,max=200"`
+	Amount      float64 `json:"amount" binding:"required,gt=0"`
+	PaymentMode string  `json:"paymentMode" binding:"required"`
+	Remarks     string  `json:"remarks,omitempty" binding:"omitempty,min=1,max=200"`
 }

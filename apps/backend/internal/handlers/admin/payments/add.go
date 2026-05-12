@@ -121,10 +121,11 @@ func AddPayment(queries repository.AdminRepository) gin.HandlerFunc {
 		)
 
 		_, err = queries.AddPayment(ctx, db.AddPaymentParams{
-			StudentID: studentID,
-			Amount:    amount,
-			Remarks:   pgtype.Text{String: req.Remarks, Valid: true},
-			AddedBy:   addedBy,
+			StudentID:   studentID,
+			Amount:      amount,
+			Remarks:     pgtype.Text{String: req.Remarks, Valid: true},
+			AddedBy:     addedBy,
+			PaymentMode: req.PaymentMode,
 		})
 
 		if err != nil {

@@ -83,6 +83,9 @@ export const createStudentAdmissionRequest = z.object({
     .min(1, "Address is required")
     .min(5, "Address is too short"),
 
+  shift: z.enum(["morning", "afternoon", "evening"]),
+  shiftTime: z.string().trim().min(1, "Shift time is required"),
+
   // claimedAmount: z
   //   .number({ error: "Amount must be a number" })
   //   .min(0, "Amount cannot be negative")

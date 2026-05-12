@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   Upload,
   Loader2,
+  Clock,
 } from "lucide-react";
 import { StepTitle } from "./StepTile";
 import { InputField } from "./InputField";
@@ -51,6 +52,8 @@ interface FieldError {
   source?: string;
   // claimedAmount?: string;
   photoUrl?: string;
+  shift?: string;
+  shiftTime?: string;
 }
 
 const FIELD_STEP_MAP: Record<keyof FieldError, number> = {
@@ -68,6 +71,8 @@ const FIELD_STEP_MAP: Record<keyof FieldError, number> = {
   courses: 2,
   source: 2,
   // claimedAmount: 2,
+  shift: 2,
+  shiftTime: 2,
 };
 
 const SOURCES = [
@@ -117,6 +122,8 @@ function validateStep(step: number, data: ValidateStepData): FieldError {
     if (!data.courses.length)
       errors.courses = "Please select at least one course";
     if (!data.source) errors.source = "Please select how you heard about us";
+    if (!data.shift) errors.shift = "Please select a shift";
+    if (!data.shiftTime) errors.shiftTime = "Please enter a shift time";
     // if (!String(data.claimedAmount).trim())
     //   errors.claimedAmount = "Please enter an amount";
     // else if (
@@ -198,6 +205,8 @@ export default function AdmissionPage({ courses }: Props) {
       address: "",
       // claimedAmount: null as number | null,
       photoUrl: "",
+      shift: "" as CreateStudentAdmission["shift"],
+      shiftTime: "",
     },
     validators: {
       onSubmit: createStudentAdmissionRequest,
@@ -288,6 +297,8 @@ export default function AdmissionPage({ courses }: Props) {
       source: getFieldValue("source"),
       // claimedAmount: getFieldValue("claimedAmount"),
       photoUrl: photo?.url ?? "",
+      shift: getFieldValue("shift"),
+      shiftTime: getFieldValue("shiftTime"),
     });
 
     if (Object.keys(stepErrors).length > 0) {
@@ -730,28 +741,57 @@ export default function AdmissionPage({ courses }: Props) {
               }}
             </FormField>
 
-            {/* <FormField name="claimedAmount">
+            {/* Shift */}
+            <FormField name="shift">
               {(field) => {
                 const fieldError = field.state.meta.errors[0]?.message;
-                const mergedError = fieldError ?? errors.claimedAmount;
+                const mergedError = fieldError ?? errors.shift;
                 return (
-                  <InputField
-                    label="Claimed Amount (NPR)"
-                    icon={DollarSign}
-                    required
-                    type="number"
-                    min="0"
-                    placeholder="e.g. 15000"
-                    value={field.state.value ?? ""}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      field.handleChange(v === "" ? null : Number(v));
+                  <TileGroup
+                    label="Shift"
+                    options={[
+                      { value: "morning", label: "Morning" },
+                      { value: "day", label: "Day" },
+                      { value: "evening", label: "Evening" },
+                    ]}
+                    value={field.state.value}
+                    onChange={(v) => {
+                      field.handleChange(v as CreateStudentAdmission["shift"]);
+                      // auto-fill shiftTime based on selection
+                      const timeMap: Record<string, string> = {
+                        morning: "8:00–10:00 AM",
+                        day: "11:00 AM–1:00 PM",
+                        evening: "6:00–8:00 PM",
+                      };
+                      setFieldValue("shiftTime", timeMap[v as string] ?? "");
                     }}
                     error={mergedError}
+                    required
                   />
                 );
               }}
-            </FormField> */}
+            </FormField>
+
+            {/* Shift Time */}
+            <FormField name="shiftTime">
+              {(field) => {
+                const fieldError = field.state.meta.errors[0]?.message;
+                const mergedError = fieldError ?? errors.shiftTime;
+                return (
+                  <InputField
+                    label="Shift Time"
+                    icon={Clock}
+                    type="text"
+                    placeholder="Auto-filled based on shift"
+                    value={field.state.value ?? ""}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    error={mergedError}
+                    disabled
+                    required
+                  />
+                );
+              }}
+            </FormField>
           </div>
 
           {/* Step 3 — Review */}

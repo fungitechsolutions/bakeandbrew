@@ -1,6 +1,6 @@
 -- name: AddPayment :one
-INSERT INTO payments (student_id, amount, added_by, remarks)
-VALUES ($1, $2, $3, $4)
+INSERT INTO payments (student_id, amount, added_by, remarks, payment_mode)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- name: GetPaymentsByStudent :many

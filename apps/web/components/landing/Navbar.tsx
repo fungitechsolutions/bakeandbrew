@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { X, Menu } from "lucide-react";
+import { X, Menu, LogIn, UserPlus, LayoutDashboard } from "lucide-react";
 import Image from "next/image";
 import { siteInfo } from "@/utils/site-info";
 import { useAuthStore } from "@/store/auth";
@@ -77,22 +77,25 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          <div className="flex gap-3 items-center">
-            <Link
-              href="/admission"
-              className="rounded-lg bg-[#c28a4f] px-[1.4rem] py-[0.55rem] text-[0.9rem] font-semibold tracking-[0.02em] text-white transition-all duration-200 hover:-translate-y-px hover:opacity-90"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            >
-              Apply Now
-            </Link>
+          <div className="flex items-center gap-3">
             {!user ? (
-              <Link
-                href="/auth/login"
-                className="inline-block rounded-[10px] border border-white/25 px-8 py-2 text-[0.95rem] font-medium text-white/85 transition-all duration-200 hover:border-[#d6cbb8] hover:text-[#d6cbb8]"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
-              >
-                Login
-              </Link>
+              <>
+                <Link
+                  href="/auth/login"
+                  className="px-4 py-2 text-sm font-medium text-white/80 hover:text-white transition"
+                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                >
+                  Login
+                </Link>
+
+                <Link
+                  href="/auth/signup"
+                  className="px-4 py-2 text-sm font-semibold rounded-lg bg-[#e8552a] text-white hover:opacity-90 transition"
+                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                >
+                  Signup
+                </Link>
+              </>
             ) : (
               <Link
                 href={
@@ -100,7 +103,7 @@ export default function Navbar() {
                     ? "/admin"
                     : "/dashboard"
                 }
-                className="inline-block rounded-[10px] border border-white/25 px-8 py-2 text-[0.95rem] font-medium text-white/85 transition-all duration-200 hover:border-[#d6cbb8] hover:text-[#d6cbb8]"
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-white/20 text-white/80 hover:border-[#d6cbb8] hover:text-[#d6cbb8] transition"
                 style={{ fontFamily: "var(--font-dm-sans)" }}
               >
                 Dashboard
@@ -146,23 +149,28 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          <div className="flex flex-col gap-3">
-            <Link
-              href="/admission"
-              onClick={() => setMenuOpen(false)}
-              className="mt-3 rounded-lg bg-[#e8552a] px-6 py-3  text-[1rem] font-semibold text-white transition-opacity duration-200 hover:opacity-90"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            >
-              Apply Now
-            </Link>
+          <div className="flex flex-col gap-2">
             {!user ? (
-              <Link
-                href="/auth/login"
-                className="inline-block rounded-[10px] border border-white/25 px-8 py-2 text-[0.95rem] font-medium text-white/85 transition-all duration-200 hover:border-[#d6cbb8] hover:text-[#d6cbb8]"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
-              >
-                Login
-              </Link>
+              <>
+                <Link
+                  href="/auth/login"
+                  className="flex items-center gap-3 rounded-lg  py-2 text-white/85 transition hover:text-[#d6cbb8]"
+                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                >
+                  <LogIn size={18} />
+                  <span>Login</span>
+                </Link>
+
+                <Link
+                  href="/auth/signup"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-3 rounded-lg py-2 text-white/85 transition hover:text-[#d6cbb8]"
+                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                >
+                  <UserPlus size={18} />
+                  <span>Signup</span>
+                </Link>
+              </>
             ) : (
               <Link
                 href={
@@ -170,10 +178,11 @@ export default function Navbar() {
                     ? "/admin"
                     : "/dashboard"
                 }
-                className="inline-block rounded-[10px] border border-white/25 px-8 py-2 text-[0.95rem] font-medium text-white/85 transition-all duration-200 hover:border-[#d6cbb8] hover:text-[#d6cbb8]"
+                className="flex items-center gap-3 rounded-lg py-2 text-white/85 transition hover:text-[#d6cbb8]"
                 style={{ fontFamily: "var(--font-dm-sans)" }}
               >
-                Dashboard
+                <LayoutDashboard size={18} />
+                <span>Dashboard</span>
               </Link>
             )}
           </div>
