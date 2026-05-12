@@ -45,7 +45,7 @@ export function SignupForm({
 
       useAuthStore.getState().setUser(user);
       toast.success(result.message);
-      router.replace(`/${user.role === "student" ? "/dashboard" : "admin"}`);
+      router.replace(`/${user.role === "student" ? "dashboard" : "admin"}`);
       formReset();
       reset();
     },
