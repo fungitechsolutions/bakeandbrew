@@ -3,7 +3,7 @@ export const siteInfo = {
     name: "Bake & Brew Barista Coffee School",
     shortName: "Brew & Bake Academy",
     tagline: "Industry-first training in coffee, bakery, and hospitality.",
-    panNo: "123456789",
+    panNo: "623612846",
   },
   contact: {
     phone: "+977 9851433332",

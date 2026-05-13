@@ -13,24 +13,31 @@ import (
 )
 
 const createCourse = `-- name: CreateCourse :one
-INSERT INTO courses (name, fee, is_active)
-VALUES ($1, $2, $3)
-RETURNING id, name, fee, is_active, created_at
+INSERT INTO courses (name, fee, is_active, slug)
+VALUES ($1, $2, $3, $4)
+RETURNING id, name, fee, slug, is_active, created_at
 `
 
 type CreateCourseParams struct {
 	Name     string `json:"name"`
 	Fee      int32  `json:"fee"`
 	IsActive bool   `json:"isActive"`
+	Slug     string `json:"slug"`
 }
 
 func (q *Queries) CreateCourse(ctx context.Context, arg CreateCourseParams) (Course, error) {
-	row := q.db.QueryRow(ctx, createCourse, arg.Name, arg.Fee, arg.IsActive)
+	row := q.db.QueryRow(ctx, createCourse,
+		arg.Name,
+		arg.Fee,
+		arg.IsActive,
+		arg.Slug,
+	)
 	var i Course
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.Fee,
+		&i.Slug,
 		&i.IsActive,
 		&i.CreatedAt,
 	)
@@ -46,22 +53,23 @@ func (q *Queries) DeleteCourse(ctx context.Context, id pgtype.UUID) (pgconn.Comm
 }
 
 const enrollStudentInCourse = `-- name: EnrollStudentInCourse :exec
-INSERT INTO student_courses (student_id, course_id)
-VALUES ($1, $2)
+INSERT INTO student_courses (student_id, course_id, fee_at_enrollment)
+VALUES ($1, $2, $3)
 `
 
 type EnrollStudentInCourseParams struct {
-	StudentID pgtype.UUID `json:"studentId"`
-	CourseID  pgtype.UUID `json:"courseId"`
+	StudentID       pgtype.UUID `json:"studentId"`
+	CourseID        pgtype.UUID `json:"courseId"`
+	FeeAtEnrollment int64       `json:"feeAtEnrollment"`
 }
 
 func (q *Queries) EnrollStudentInCourse(ctx context.Context, arg EnrollStudentInCourseParams) error {
-	_, err := q.db.Exec(ctx, enrollStudentInCourse, arg.StudentID, arg.CourseID)
+	_, err := q.db.Exec(ctx, enrollStudentInCourse, arg.StudentID, arg.CourseID, arg.FeeAtEnrollment)
 	return err
 }
 
 const getCourseByID = `-- name: GetCourseByID :one
-SELECT id, name, fee, is_active, created_at FROM courses WHERE id = $1
+SELECT id, name, fee, slug, is_active, created_at FROM courses WHERE id = $1
 `
 
 func (q *Queries) GetCourseByID(ctx context.Context, id pgtype.UUID) (Course, error) {
@@ -71,14 +79,64 @@ func (q *Queries) GetCourseByID(ctx context.Context, id pgtype.UUID) (Course, er
 		&i.ID,
 		&i.Name,
 		&i.Fee,
+		&i.Slug,
 		&i.IsActive,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
+const getCourseBySlug = `-- name: GetCourseBySlug :one
+SELECT id, name, fee, slug, is_active, created_at FROM courses WHERE name = $1
+`
+
+func (q *Queries) GetCourseBySlug(ctx context.Context, name string) (Course, error) {
+	row := q.db.QueryRow(ctx, getCourseBySlug, name)
+	var i Course
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Fee,
+		&i.Slug,
+		&i.IsActive,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getCoursesByIDs = `-- name: GetCoursesByIDs :many
+SELECT id, fee
+FROM courses
+WHERE id = ANY($1::UUID[])
+`
+
+type GetCoursesByIDsRow struct {
+	ID  pgtype.UUID `json:"id"`
+	Fee int32       `json:"fee"`
+}
+
+func (q *Queries) GetCoursesByIDs(ctx context.Context, dollar_1 []pgtype.UUID) ([]GetCoursesByIDsRow, error) {
+	rows, err := q.db.Query(ctx, getCoursesByIDs, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetCoursesByIDsRow
+	for rows.Next() {
+		var i GetCoursesByIDsRow
+		if err := rows.Scan(&i.ID, &i.Fee); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCoursesByStudentID = `-- name: GetCoursesByStudentID :many
-SELECT c.id, c.name, c.fee, c.is_active, c.created_at FROM courses c
+SELECT c.id, c.name, c.fee, c.slug, c.is_active, c.created_at FROM courses c
 JOIN student_courses sc ON sc.course_id = c.id
 WHERE sc.student_id = $1
 `
@@ -96,6 +154,7 @@ func (q *Queries) GetCoursesByStudentID(ctx context.Context, studentID pgtype.UU
 			&i.ID,
 			&i.Name,
 			&i.Fee,
+			&i.Slug,
 			&i.IsActive,
 			&i.CreatedAt,
 		); err != nil {
@@ -110,7 +169,7 @@ func (q *Queries) GetCoursesByStudentID(ctx context.Context, studentID pgtype.UU
 }
 
 const listActiveCourses = `-- name: ListActiveCourses :many
-SELECT id, name, fee, is_active, created_at FROM courses WHERE is_active = TRUE ORDER BY name ASC
+SELECT id, name, fee, slug, is_active, created_at FROM courses WHERE is_active = TRUE ORDER BY name ASC
 `
 
 func (q *Queries) ListActiveCourses(ctx context.Context) ([]Course, error) {
@@ -126,6 +185,7 @@ func (q *Queries) ListActiveCourses(ctx context.Context) ([]Course, error) {
 			&i.ID,
 			&i.Name,
 			&i.Fee,
+			&i.Slug,
 			&i.IsActive,
 			&i.CreatedAt,
 		); err != nil {
@@ -140,7 +200,7 @@ func (q *Queries) ListActiveCourses(ctx context.Context) ([]Course, error) {
 }
 
 const listCourses = `-- name: ListCourses :many
-SELECT id, name, fee, is_active, created_at FROM courses ORDER BY created_at DESC
+SELECT id, name, fee, slug, is_active, created_at FROM courses ORDER BY created_at DESC
 `
 
 func (q *Queries) ListCourses(ctx context.Context) ([]Course, error) {
@@ -156,6 +216,7 @@ func (q *Queries) ListCourses(ctx context.Context) ([]Course, error) {
 			&i.ID,
 			&i.Name,
 			&i.Fee,
+			&i.Slug,
 			&i.IsActive,
 			&i.CreatedAt,
 		); err != nil {
@@ -186,7 +247,7 @@ func (q *Queries) RemoveStudentFromCourse(ctx context.Context, arg RemoveStudent
 
 const toggleCourseActive = `-- name: ToggleCourseActive :one
 UPDATE courses SET is_active = $2
-WHERE id = $1 RETURNING id, name, fee, is_active, created_at
+WHERE id = $1 RETURNING id, name, fee, slug, is_active, created_at
 `
 
 type ToggleCourseActiveParams struct {
@@ -201,6 +262,7 @@ func (q *Queries) ToggleCourseActive(ctx context.Context, arg ToggleCourseActive
 		&i.ID,
 		&i.Name,
 		&i.Fee,
+		&i.Slug,
 		&i.IsActive,
 		&i.CreatedAt,
 	)
@@ -209,7 +271,7 @@ func (q *Queries) ToggleCourseActive(ctx context.Context, arg ToggleCourseActive
 
 const updateCourse = `-- name: UpdateCourse :one
 UPDATE courses SET name = $2, fee = $3, is_active = $4
-WHERE id = $1 RETURNING id, name, fee, is_active, created_at
+WHERE id = $1 RETURNING id, name, fee, slug, is_active, created_at
 `
 
 type UpdateCourseParams struct {
@@ -231,6 +293,7 @@ func (q *Queries) UpdateCourse(ctx context.Context, arg UpdateCourseParams) (Cou
 		&i.ID,
 		&i.Name,
 		&i.Fee,
+		&i.Slug,
 		&i.IsActive,
 		&i.CreatedAt,
 	)

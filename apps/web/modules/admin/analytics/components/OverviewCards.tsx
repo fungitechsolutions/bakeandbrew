@@ -45,7 +45,7 @@ export function OverviewCards({ overview, revenueStats }: OverviewCardsProps) {
       iconColor: "text-green-500",
     },
     {
-      label: "Students with Balance",
+      label: "Outstanding Fees",
       value: overview.studentsWithBalance,
       subtitle: `Outstanding: ${formatNPR(revenueStats.outstanding)}`,
       icon: AlertTriangle,

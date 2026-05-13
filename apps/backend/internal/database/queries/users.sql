@@ -17,6 +17,9 @@ ORDER BY created_at DESC;
 UPDATE users SET name = $2, email = $3, role = $4
 WHERE id = $1 RETURNING *;
 
+-- name: UpdateUserImage :exec
+UPDATE users SET image_url = $2 WHERE id = $1;
+
 -- name: DeleteUser :exec
 DELETE FROM users WHERE id = $1;
 

@@ -1,7 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Great+Vibes&family=Oswald:wght@400;500;600;700&display=swap");
 
-/* ── Print page setup ─────────────────────────────────────────────────────── */
-
 @page {
   size: A4 portrait;
   margin: 0;
@@ -146,10 +144,23 @@
   text-transform: uppercase;
 }
 
+.footerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .footerAddress {
   font-size: 10.5px;
   font-weight: 600;
   opacity: 0.9;
+}
+
+.footerPan {
+  font-size: 10px;
+  font-weight: 500;
+  opacity: 0.72;
+  letter-spacing: 0.04em;
 }
 
 .footerContact {
@@ -184,7 +195,7 @@
   background: #ffffff;
 }
 
-/* ── Top-right meta ───────────────────────────────────────────────────────── */
+/* ── Top-right meta — school name + cert no on same line ─────────────────── */
 
 .topRightMeta {
   position: absolute;
@@ -193,7 +204,6 @@
   z-index: 4;
   text-align: right;
   font-family: "Oswald", system-ui, sans-serif;
-  letter-spacing: 0.02em;
 }
 
 .schoolNameHeader {
@@ -202,20 +212,30 @@
   color: rgba(255, 255, 255, 0.95);
   text-transform: uppercase;
   letter-spacing: 0.09em;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
+}
+
+/* Cert no label + value sit side by side */
+.certNoRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 6px;
 }
 
 .metaLabel {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.58);
+  font-size: 9px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
 }
 
 .metaValue {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.9);
   font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.02em;
 }
 
 /* ── Body ─────────────────────────────────────────────────────────────────── */
@@ -231,8 +251,6 @@
   text-align: center;
   padding: 210px 72px 330px;
 }
-
-/* ── Title ────────────────────────────────────────────────────────────────── */
 
 .titleStack {
   margin-bottom: 6px;
@@ -265,16 +283,12 @@
   );
 }
 
-/* ── "Presented to" ───────────────────────────────────────────────────────── */
-
 .presentedTo {
   font-family: "Great Vibes", cursive;
   font-size: 34px;
   color: rgba(30, 30, 30, 0.48);
   margin-bottom: 4px;
 }
-
-/* ── Student name ─────────────────────────────────────────────────────────── */
 
 .studentBlock {
   margin: 0 auto 20px;
@@ -300,8 +314,6 @@
   );
 }
 
-/* ── Body prose — Great Vibes for flow, Oswald pops course/school ─────────── */
-
 .bodyProse {
   font-family: "Great Vibes", cursive;
   font-size: 30px;
@@ -311,7 +323,6 @@
   margin: 0 auto 12px;
 }
 
-/* Course + school name break out into Oswald for contrast & legibility */
 .courseInline {
   font-family: "Oswald", system-ui, sans-serif;
   font-style: normal;
@@ -333,8 +344,6 @@
   color: rgba(10, 10, 10, 0.72);
   vertical-align: middle;
 }
-
-/* ── Issued on ────────────────────────────────────────────────────────────── */
 
 .issuedOn {
   font-family: "Great Vibes", cursive;
@@ -365,11 +374,10 @@
   gap: 6px;
 }
 
-.signatureImg {
+/* Blank signature area — just the line, no image */
+.sigBlank {
   width: 160px;
   height: 54px;
-  object-fit: contain;
-  filter: grayscale(0.1) contrast(1.05);
 }
 
 .sigLine {

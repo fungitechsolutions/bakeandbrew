@@ -27,6 +27,7 @@ import { Spinner } from "../ui/spinner";
 
 export function StudentNavUser() {
   const user = useAuthStore((state) => state.user);
+  console.log("user: ", user);
   const clearUser = useAuthStore((state) => state.clearUser);
   const { isMobile } = useSidebar();
   const router = useRouter();

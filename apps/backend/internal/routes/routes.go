@@ -70,6 +70,9 @@ func Setup(r *gin.Engine, cfg Config) {
 	// admin/students/outstanding
 	adminRouter.GET("/students/outstanding", adminStudents.ListOutstandingStudentsDue(cfg.Queries))
 
+	// admin/students/sales
+	adminRouter.GET("/students/sales", adminStudents.ListSalesRevenueForStudents(cfg.Queries))
+
 	// admin/students/:id
 	adminRouter.GET("/students/:studentID/detail", adminStudents.StudentDetail(cfg.Queries))
 	adminRouter.GET("/students/:studentID/courses", adminStudents.StudentEnrolledCourses(cfg.Queries))
@@ -132,4 +135,5 @@ func Setup(r *gin.Engine, cfg Config) {
 	// public courses routes
 	coursesRouter := router.Group("/courses")
 	coursesRouter.GET("", courses.ListAllActiveCourses(cfg.Queries))
+	coursesRouter.GET("/:slug", courses.GetCourseDetail(cfg.Queries))
 }

@@ -45,6 +45,7 @@ import {
   UtensilsCrossed,
 } from "lucide-react";
 import { siteInfo } from "@/utils/site-info";
+import { CourseDetailResponse } from "@repo/types";
 
 const iconMap = {
   coffee: Coffee,
@@ -61,7 +62,17 @@ export default async function CoursePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/${slug}`,
+  );
+  if (!res.ok) throw new Error("Failed to fetch course data");
+  const data = (await res.json()) as CourseDetailResponse;
+  if (!data.success) throw new Error(data.message);
+
+  const courseFee = data.data.fee / 100;
+
   const course = getCourseBySlug(slug);
+
   if (!course) notFound();
 
   const { icon, ...safeCourse } = course;
@@ -79,7 +90,7 @@ export default async function CoursePage({
     >
       {/* ── Hero ───────────────────────────────────────────────────────────── */}
       <section
-        className="relative overflow-hidden px-6 pb-20 pt-16"
+        className="relative overflow-hidden px-6 pb-20 pt-30"
         style={{ backgroundColor: "var(--brand-green, #2f4e40)" }}
       >
         {/* Dot texture */}
@@ -216,7 +227,7 @@ export default async function CoursePage({
       <CourseClientShells course={safeCourse} />
 
       {/* ── Stats strip ────────────────────────────────────────────────────── */}
-      <section
+      {/* <section
         className="border-y px-6 py-12"
         style={{
           borderColor: "rgba(0,0,0,0.07)",
@@ -241,7 +252,7 @@ export default async function CoursePage({
             </div>
           ))}
         </div>
-      </section>
+      </section> */}
 
       {/* ── Overview: long description + outcomes ──────────────────────────── */}
       <section
@@ -277,25 +288,34 @@ export default async function CoursePage({
               </p>
 
               {/* Tuition callout */}
-              <div
-                className="mt-10 inline-flex items-baseline gap-3 rounded-2xl border px-6 py-4"
-                style={{
-                  borderColor: `${course.color}30`,
-                  backgroundColor: `${course.color}08`,
-                }}
-              >
-                <span
-                  className="text-[2rem] font-bold tracking-tight"
+              <div className="mt-10 inline-flex flex-col gap-1">
+                <div
+                  className="inline-flex items-baseline gap-3 rounded-2xl border px-6 py-4"
                   style={{
-                    color: "var(--brand-ink, #1a1a1a)",
-                    fontFamily: "var(--font-lora)",
+                    borderColor: `${course.color}30`,
+                    backgroundColor: `${course.color}08`,
                   }}
                 >
-                  NPR {formatter.format(course.tuitionNPR)}
-                </span>
-                <span className="text-[0.85rem] text-black/45">
-                  full program · materials included
-                </span>
+                  <span
+                    className="text-[2rem] font-bold tracking-tight"
+                    style={{
+                      color: "var(--brand-ink, #1a1a1a)",
+                      fontFamily: "var(--font-lora)",
+                    }}
+                  >
+                    NPR {formatter.format(courseFee)}
+                  </span>
+                  <span className="text-[0.85rem] text-black/45">
+                    full program · materials included
+                  </span>
+                </div>
+                {/* VAT notice */}
+                <p
+                  className="pl-1 text-[0.72rem] font-medium tracking-wide text-black/40"
+                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                >
+                  Pricing inclusive of VAT
+                </p>
               </div>
             </div>
 

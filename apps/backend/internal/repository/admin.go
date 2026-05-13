@@ -29,8 +29,13 @@ type AdminRepository interface {
 	CountUnreadInquiries(ctx context.Context) (int32, error)
 	CountReadInquiries(ctx context.Context) (int32, error)
 
-	// admin/student/outstanding
+	// admin/students/outstanding
 	GetOutstandingFeesCount(ctx context.Context, params db.GetOutstandingFeesCountParams) (int64, error)
 	GetOutstandingFeesTotal(ctx context.Context, params db.GetOutstandingFeesTotalParams) (int64, error)
 	GetStudentsWithOutstandingFees(ctx context.Context, params db.GetStudentsWithOutstandingFeesParams) ([]db.GetStudentsWithOutstandingFeesRow, error)
+
+	// admin/students/sales
+	GetSalesRevenue(ctx context.Context, params db.GetSalesRevenueParams) ([]db.GetSalesRevenueRow, error)
+	GetSalesRevenueTotal(ctx context.Context, params db.GetSalesRevenueTotalParams) (int64, error)
+	GetSalesRevenueCount(ctx context.Context, params db.GetSalesRevenueCountParams) (int64, error)
 }

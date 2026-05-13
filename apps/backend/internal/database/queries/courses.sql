@@ -1,10 +1,18 @@
 -- name: CreateCourse :one
-INSERT INTO courses (name, fee, is_active)
-VALUES ($1, $2, $3)
+INSERT INTO courses (name, fee, is_active, slug)
+VALUES ($1, $2, $3, $4)
 RETURNING *;
+
+-- name: GetCoursesByIDs :many
+SELECT id, fee
+FROM courses
+WHERE id = ANY($1::UUID[]);
 
 -- name: GetCourseByID :one
 SELECT * FROM courses WHERE id = $1;
+
+-- name: GetCourseBySlug :one
+SELECT * FROM courses WHERE name = $1;
 
 -- name: ListCourses :many
 SELECT * FROM courses ORDER BY created_at DESC;
@@ -29,8 +37,8 @@ JOIN student_courses sc ON sc.course_id = c.id
 WHERE sc.student_id = $1;
 
 -- name: EnrollStudentInCourse :exec
-INSERT INTO student_courses (student_id, course_id)
-VALUES ($1, $2);
+INSERT INTO student_courses (student_id, course_id, fee_at_enrollment)
+VALUES ($1, $2, $3);
 
 -- name: RemoveStudentFromCourse :exec
 DELETE FROM student_courses

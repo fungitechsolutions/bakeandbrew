@@ -8,6 +8,7 @@ import {
   ArrowRight,
   MoveRight,
 } from "lucide-react";
+import { CoursesList } from "@repo/types";
 
 const programs = [
   {
@@ -104,7 +105,19 @@ const programs = [
   },
 ] as const;
 
-export default function Programs() {
+export default async function Programs() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses`, {
+    method: "GET",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch courses data");
+  }
+  const data = (await res.json()) as CoursesList;
+  if (!data.success) throw new Error(data.message);
+
+  const courses = data.data;
+
   return (
     <section
       id="programs"
@@ -161,6 +174,10 @@ export default function Programs() {
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
           {programs.map((program) => {
             const Icon = program.icon;
+            const courseData = courses.find(
+              (c) => c.name === program.course.toLowerCase(),
+            );
+
             return (
               <div
                 key={program.course}
@@ -186,14 +203,14 @@ export default function Programs() {
 
                 {/* Title */}
                 <h3
-                  className="mb-1 text-[1.45rem] font-bold leading-[1.2] text-white"
+                  className="mb-2 text-[1.45rem] font-bold leading-[1.2] text-white"
                   style={{ fontFamily: "var(--font-playfair)" }}
                 >
                   {program.course}
                 </h3>
 
                 {/* Duration + seats meta */}
-                <div className="mb-3 flex items-center gap-3">
+                <div className="mb-4 flex items-center gap-3">
                   <span
                     className="text-[0.75rem] font-medium"
                     style={{ color: program.color }}
@@ -205,6 +222,46 @@ export default function Programs() {
                     Max {program.seats} students
                   </span>
                 </div>
+
+                {/* ── Price badge ── */}
+                {courseData && (
+                  <div
+                    className={`mb-4 flex items-baseline gap-1.5 rounded-xl border px-4 py-2.5 ${program.bgClass} ${program.borderClass}`}
+                  >
+                    <span
+                      className="text-[0.7rem] font-semibold uppercase tracking-widest text-white/40"
+                      style={{ fontFamily: "var(--font-dm-sans)" }}
+                    >
+                      NPR
+                    </span>
+                    <span
+                      className={`text-[1.35rem] font-bold leading-none tracking-tight ${program.textClass}`}
+                      style={{ fontFamily: "var(--font-lora)" }}
+                    >
+                      {(courseData.fee / 100).toLocaleString()}
+                    </span>
+                    <span
+                      className="ml-auto text-[0.7rem] text-white/30"
+                      style={{ fontFamily: "var(--font-dm-sans)" }}
+                    >
+                      full course
+                    </span>
+                  </div>
+                )}
+
+                {courseData && (
+                  <p
+                    className="
+      -mt-2 mb-4
+      text-[0.7rem] font-medium
+      text-white/35
+      tracking-wide
+    "
+                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                  >
+                    Pricing inclusive of VAT
+                  </p>
+                )}
 
                 {/* Description */}
                 <p

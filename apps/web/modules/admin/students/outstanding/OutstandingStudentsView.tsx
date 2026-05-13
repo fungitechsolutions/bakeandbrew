@@ -34,7 +34,7 @@ export function OutstandingStudentsView() {
   >({
     queryKey: ["outstanding-students", filters],
     queryFn: () => fetchOutstandingStudents(filters),
-    staleTime: 30_000,
+    staleTime: 30000,
   });
 
   const meta = data?.meta;
@@ -44,7 +44,7 @@ export function OutstandingStudentsView() {
     !isPending && !isError && meta !== undefined && meta.total === 0;
 
   return (
-    <div className="max-w-8xl mx-auto px-6 pt-8 pb-16 max-md:px-4 max-md:pt-5 max-md:pb-12">
+    <div className="max-w-400 mx-auto px-6 pt-8 pb-16 max-md:px-4 max-md:pt-5 max-md:pb-12">
       {/* Header */}
       <header className="flex items-start justify-between mb-7 gap-4 flex-wrap">
         <div>

@@ -33,10 +33,13 @@ func CreateCourse(queries repository.AdminRepository) gin.HandlerFunc {
 
 		utils.TrimStruct(&req)
 
+		slug := utils.Slugify(req.Name)
+
 		course, err := queries.CreateCourse(ctx, db.CreateCourseParams{
 			Name:     strings.ToLower(req.Name),
 			IsActive: *req.IsActive,
 			Fee:      int32(req.Fee * 100),
+			Slug:     slug,
 		})
 
 		if err != nil {
@@ -44,13 +47,26 @@ func CreateCourse(queries repository.AdminRepository) gin.HandlerFunc {
 			// unique constraint error check
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-				c.JSON(http.StatusConflict, types.APIResponse{
-					Success: false,
-					Message: "Course with this name already exists",
-					Code:    constants.CourseAlreadyExists,
-				})
+
+				switch pgErr.ConstraintName {
+				case "courses_slug_unique":
+					c.JSON(http.StatusConflict, types.APIResponse{
+						Success: false,
+						Message: "Course already exists",
+						Code:    constants.CourseAlreadyExists,
+					})
+
+				default:
+
+					c.JSON(http.StatusConflict, types.APIResponse{
+						Success: false,
+						Message: "Course with this name already exists",
+						Code:    constants.CourseAlreadyExists,
+					})
+				}
 				return
 			}
+
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to create course",

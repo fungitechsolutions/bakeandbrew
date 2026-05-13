@@ -1,3 +1,5 @@
+import WelcomeBanner from "@/components/student/dashboard/WelcomeBanner";
+
 export default function Page() {
-  return <h1>Student dashboard</h1>;
+  return <WelcomeBanner />;
 }

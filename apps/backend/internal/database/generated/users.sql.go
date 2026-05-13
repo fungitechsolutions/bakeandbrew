@@ -227,3 +227,17 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 	)
 	return i, err
 }
+
+const updateUserImage = `-- name: UpdateUserImage :exec
+UPDATE users SET image_url = $2 WHERE id = $1
+`
+
+type UpdateUserImageParams struct {
+	ID       pgtype.UUID `json:"id"`
+	ImageUrl pgtype.Text `json:"imageUrl"`
+}
+
+func (q *Queries) UpdateUserImage(ctx context.Context, arg UpdateUserImageParams) error {
+	_, err := q.db.Exec(ctx, updateUserImage, arg.ID, arg.ImageUrl)
+	return err
+}
