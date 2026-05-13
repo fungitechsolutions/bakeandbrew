@@ -16,13 +16,13 @@ INSERT INTO students (
     reference_no, fiscal_year, serial_no, full_name, dob, gender,
     phone, address, guardian_name, guardian_phone,
     photo_url, source, status, student_id,
-    shift, shift_time
+    shift, shift_time,batch
 ) VALUES (
     $1, $2, $3, $4, $5, $6,
     $7, $8, $9, $10,
     $11, $12, 'pending', $13,
-    $14, $15
-) RETURNING id, student_id, reference_no, fiscal_year, serial_no, full_name, dob, gender, phone, address, guardian_name, guardian_phone, photo_url, source, status, notes, shift, shift_time, created_at
+    $14, $15, $16
+) RETURNING id, student_id, reference_no, fiscal_year, serial_no, full_name, dob, gender, phone, address, guardian_name, guardian_phone, photo_url, source, status, notes, shift, shift_time, batch, created_at
 `
 
 type CreateStudentParams struct {
@@ -41,6 +41,7 @@ type CreateStudentParams struct {
 	StudentID     pgtype.UUID `json:"studentId"`
 	Shift         string      `json:"shift"`
 	ShiftTime     string      `json:"shiftTime"`
+	Batch         pgtype.Text `json:"batch"`
 }
 
 func (q *Queries) CreateStudent(ctx context.Context, arg CreateStudentParams) (Student, error) {
@@ -60,6 +61,7 @@ func (q *Queries) CreateStudent(ctx context.Context, arg CreateStudentParams) (S
 		arg.StudentID,
 		arg.Shift,
 		arg.ShiftTime,
+		arg.Batch,
 	)
 	var i Student
 	err := row.Scan(
@@ -81,6 +83,7 @@ func (q *Queries) CreateStudent(ctx context.Context, arg CreateStudentParams) (S
 		&i.Notes,
 		&i.Shift,
 		&i.ShiftTime,
+		&i.Batch,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -106,20 +109,19 @@ FROM (
     FROM users u
     JOIN students s ON s.student_id = u.id
     JOIN (
-        SELECT sc.student_id, SUM(c.fee) AS total_fee
-        FROM student_courses sc
-        JOIN courses c ON c.id = sc.course_id
-        GROUP BY sc.student_id
+        SELECT student_id, SUM(fee_at_enrollment) AS total_fee
+        FROM student_courses
+        GROUP BY student_id
     ) fees ON fees.student_id = s.id
     LEFT JOIN (
         SELECT student_id, SUM(amount) AS total_paid
         FROM payments
-        WHERE ($1::TEXT IS NULL OR added_at >= $1::TIMESTAMPTZ)
-          AND ($2::TEXT IS NULL OR added_at <= ($2::TIMESTAMPTZ + INTERVAL '1 day'))
         GROUP BY student_id
     ) pays ON pays.student_id = s.id
     WHERE s.status IN ('active', 'completed')
       AND (COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0)) > 0
+      AND ($1::TEXT IS NULL OR s.created_at >= $1::TIMESTAMPTZ)
+      AND ($2::TEXT IS NULL OR s.created_at <= ($2::TIMESTAMPTZ + INTERVAL '1 day'))
       AND ($3::TEXT IS NULL OR u.name ILIKE '%' || $3::TEXT || '%' OR u.email ILIKE '%' || $3::TEXT || '%')
 ) sub
 `
@@ -141,25 +143,23 @@ const getOutstandingFeesTotal = `-- name: GetOutstandingFeesTotal :one
 SELECT COALESCE(SUM(outstanding), 0)::BIGINT AS grand_total_outstanding
 FROM (
     SELECT
-        s.id,
         COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0) AS outstanding
     FROM users u
     JOIN students s ON s.student_id = u.id
     JOIN (
-        SELECT sc.student_id, SUM(c.fee) AS total_fee
-        FROM student_courses sc
-        JOIN courses c ON c.id = sc.course_id
-        GROUP BY sc.student_id
+        SELECT student_id, SUM(fee_at_enrollment) AS total_fee
+        FROM student_courses
+        GROUP BY student_id
     ) fees ON fees.student_id = s.id
     LEFT JOIN (
         SELECT student_id, SUM(amount) AS total_paid
         FROM payments
-        WHERE ($1::TEXT IS NULL OR added_at >= $1::TIMESTAMPTZ)
-          AND ($2::TEXT IS NULL OR added_at <= ($2::TIMESTAMPTZ + INTERVAL '1 day'))
         GROUP BY student_id
     ) pays ON pays.student_id = s.id
     WHERE s.status IN ('active', 'completed')
       AND (COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0)) > 0
+      AND ($1::TEXT IS NULL OR s.created_at >= $1::TIMESTAMPTZ)
+      AND ($2::TEXT IS NULL OR s.created_at <= ($2::TIMESTAMPTZ + INTERVAL '1 day'))
       AND ($3::TEXT IS NULL OR u.name ILIKE '%' || $3::TEXT || '%' OR u.email ILIKE '%' || $3::TEXT || '%')
 ) sub
 `
@@ -188,10 +188,9 @@ SELECT
 FROM users u
 JOIN students s ON s.student_id = u.id
 JOIN (
-    SELECT sc.student_id, SUM(c.fee) AS total_fee
-    FROM student_courses sc
-    JOIN courses c ON c.id = sc.course_id
-    GROUP BY sc.student_id
+    SELECT student_id, SUM(fee_at_enrollment) AS total_fee
+    FROM student_courses
+    GROUP BY student_id
 ) fees ON fees.student_id = s.id
 LEFT JOIN (
     SELECT student_id, SUM(amount) AS total_paid
@@ -201,6 +200,8 @@ LEFT JOIN (
     GROUP BY student_id
 ) pays ON pays.student_id = s.id
 WHERE s.status IN ('active', 'completed')
+  AND ($3::TEXT IS NULL OR s.created_at >= $3::TIMESTAMPTZ)
+  AND ($4::TEXT IS NULL OR s.created_at <= ($4::TIMESTAMPTZ + INTERVAL '1 day'))
   AND ($5::TEXT IS NULL OR u.name ILIKE '%' || $5::TEXT || '%' OR u.email ILIKE '%' || $5::TEXT || '%')
 ORDER BY total_paid DESC
 LIMIT $1 OFFSET $2
@@ -261,24 +262,36 @@ SELECT COUNT(DISTINCT s.id)::BIGINT AS total
 FROM students s
 JOIN users u ON u.id = s.student_id
 WHERE s.status IN ('active', 'completed')
-  AND ($1::TEXT IS NULL OR u.name ILIKE '%' || $1::TEXT || '%' OR u.email ILIKE '%' || $1::TEXT || '%')
+  AND ($1::TEXT IS NULL OR s.created_at >= $1::TIMESTAMPTZ)
+  AND ($2::TEXT IS NULL OR s.created_at <= ($2::TIMESTAMPTZ + INTERVAL '1 day'))
+  AND ($3::TEXT IS NULL OR u.name ILIKE '%' || $3::TEXT || '%' OR u.email ILIKE '%' || $3::TEXT || '%')
 `
 
-func (q *Queries) GetSalesRevenueCount(ctx context.Context, search pgtype.Text) (int64, error) {
-	row := q.db.QueryRow(ctx, getSalesRevenueCount, search)
+type GetSalesRevenueCountParams struct {
+	FromDate pgtype.Text `json:"fromDate"`
+	ToDate   pgtype.Text `json:"toDate"`
+	Search   pgtype.Text `json:"search"`
+}
+
+func (q *Queries) GetSalesRevenueCount(ctx context.Context, arg GetSalesRevenueCountParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getSalesRevenueCount, arg.FromDate, arg.ToDate, arg.Search)
 	var total int64
 	err := row.Scan(&total)
 	return total, err
 }
 
 const getSalesRevenueTotal = `-- name: GetSalesRevenueTotal :one
-SELECT COALESCE(SUM(p.amount), 0)::BIGINT AS total_collected
-FROM payments p
-JOIN students s ON s.id = p.student_id
+SELECT COALESCE(SUM(fees.total_fee), 0)::BIGINT AS total_collected
+FROM students s
 JOIN users u ON u.id = s.student_id
+JOIN (
+    SELECT student_id, SUM(fee_at_enrollment) AS total_fee
+    FROM student_courses
+    GROUP BY student_id
+) fees ON fees.student_id = s.id
 WHERE s.status IN ('active', 'completed')
-  AND ($1::TEXT IS NULL OR p.added_at >= $1::TIMESTAMPTZ)
-  AND ($2::TEXT IS NULL OR p.added_at <= ($2::TIMESTAMPTZ + INTERVAL '1 day'))
+  AND ($1::TEXT IS NULL OR s.created_at >= $1::TIMESTAMPTZ)
+  AND ($2::TEXT IS NULL OR s.created_at <= ($2::TIMESTAMPTZ + INTERVAL '1 day'))
   AND ($3::TEXT IS NULL OR u.name ILIKE '%' || $3::TEXT || '%' OR u.email ILIKE '%' || $3::TEXT || '%')
 `
 
@@ -297,7 +310,7 @@ func (q *Queries) GetSalesRevenueTotal(ctx context.Context, arg GetSalesRevenueT
 
 const getStudentByID = `-- name: GetStudentByID :one
 SELECT 
-    s.id, s.student_id, s.reference_no, s.fiscal_year, s.serial_no, s.full_name, s.dob, s.gender, s.phone, s.address, s.guardian_name, s.guardian_phone, s.photo_url, s.source, s.status, s.notes, s.shift, s.shift_time, s.created_at,
+    s.id, s.student_id, s.reference_no, s.fiscal_year, s.serial_no, s.full_name, s.dob, s.gender, s.phone, s.address, s.guardian_name, s.guardian_phone, s.photo_url, s.source, s.status, s.notes, s.shift, s.shift_time, s.batch, s.created_at,
     u.email
 FROM students s
 JOIN users u ON s.student_id = u.id
@@ -323,6 +336,7 @@ type GetStudentByIDRow struct {
 	Notes         pgtype.Text        `json:"notes"`
 	Shift         string             `json:"shift"`
 	ShiftTime     string             `json:"shiftTime"`
+	Batch         pgtype.Text        `json:"batch"`
 	CreatedAt     pgtype.Timestamptz `json:"createdAt"`
 	Email         string             `json:"email"`
 }
@@ -349,6 +363,7 @@ func (q *Queries) GetStudentByID(ctx context.Context, id pgtype.UUID) (GetStuden
 		&i.Notes,
 		&i.Shift,
 		&i.ShiftTime,
+		&i.Batch,
 		&i.CreatedAt,
 		&i.Email,
 	)
@@ -402,20 +417,19 @@ SELECT
 FROM users u
 JOIN students s ON s.student_id = u.id
 JOIN (
-    SELECT sc.student_id, SUM(c.fee) AS total_fee
-    FROM student_courses sc
-    JOIN courses c ON c.id = sc.course_id
-    GROUP BY sc.student_id
+    SELECT student_id, SUM(fee_at_enrollment) AS total_fee
+    FROM student_courses
+    GROUP BY student_id
 ) fees ON fees.student_id = s.id
 LEFT JOIN (
     SELECT student_id, SUM(amount) AS total_paid
     FROM payments
-    WHERE ($3::TEXT IS NULL OR added_at >= $3::TIMESTAMPTZ)
-      AND ($4::TEXT IS NULL OR added_at <= ($4::TIMESTAMPTZ + INTERVAL '1 day'))
     GROUP BY student_id
 ) pays ON pays.student_id = s.id
 WHERE s.status IN ('active', 'completed')
   AND (COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0)) > 0
+  AND ($3::TEXT IS NULL OR s.created_at >= $3::TIMESTAMPTZ)
+  AND ($4::TEXT IS NULL OR s.created_at <= ($4::TIMESTAMPTZ + INTERVAL '1 day'))
   AND ($5::TEXT IS NULL OR u.name ILIKE '%' || $5::TEXT || '%' OR u.email ILIKE '%' || $5::TEXT || '%')
 ORDER BY outstanding DESC
 LIMIT $1 OFFSET $2
@@ -536,7 +550,7 @@ func (q *Queries) ListStudents(ctx context.Context, arg ListStudentsParams) ([]L
 
 const updateStudentStatus = `-- name: UpdateStudentStatus :one
 UPDATE students SET status = $2
-WHERE id = $1 RETURNING id, student_id, reference_no, fiscal_year, serial_no, full_name, dob, gender, phone, address, guardian_name, guardian_phone, photo_url, source, status, notes, shift, shift_time, created_at
+WHERE id = $1 RETURNING id, student_id, reference_no, fiscal_year, serial_no, full_name, dob, gender, phone, address, guardian_name, guardian_phone, photo_url, source, status, notes, shift, shift_time, batch, created_at
 `
 
 type UpdateStudentStatusParams struct {
@@ -566,6 +580,7 @@ func (q *Queries) UpdateStudentStatus(ctx context.Context, arg UpdateStudentStat
 		&i.Notes,
 		&i.Shift,
 		&i.ShiftTime,
+		&i.Batch,
 		&i.CreatedAt,
 	)
 	return i, err

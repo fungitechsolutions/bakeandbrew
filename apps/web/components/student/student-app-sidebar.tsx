@@ -2,12 +2,9 @@
 
 import * as React from "react";
 import {
-  AudioWaveform,
   BookOpen,
   Bot,
-  Command,
   Frame,
-  GalleryVerticalEnd,
   Map,
   PieChart,
   Settings2,
@@ -22,31 +19,25 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { StudentTeamSwitcher } from "./student-team-switcher";
-import { StudentNavMain } from "./student-nav-main";
+// import { StudentNavMain } from "./student-nav-main";
 import { StudentNavUser } from "./student-nav-user";
+import Image from "next/image";
+import { siteInfo } from "@/utils/site-info";
 
 // This is sample data.
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   teams: [
     {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
+      name: "Brew & Bake Academy",
+      logo: (
+        <Image
+          src={siteInfo.assets.watermarkNoBG}
+          alt="Brew & Bake"
+          width={24}
+          height={24}
+        />
+      ),
+      plan: "Student Dashboard",
     },
   ],
   navMain: [
@@ -164,7 +155,7 @@ export function StudentAppSidebar({
         <StudentTeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <StudentNavMain items={data.navMain} />
+        {/* <StudentNavMain items={data.navMain} /> */}
       </SidebarContent>
       <SidebarFooter>
         <StudentNavUser />

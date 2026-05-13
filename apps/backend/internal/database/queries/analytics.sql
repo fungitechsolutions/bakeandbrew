@@ -2,22 +2,20 @@
 SELECT
     COUNT(DISTINCT s.id)::INTEGER AS total_students,
     COUNT(DISTINCT s.id) FILTER (WHERE s.status = 'pending')::INTEGER AS pending_approvals,
-    COALESCE(SUM(p.amount), 0)::INTEGER AS total_revenue,
+    (SELECT COALESCE(SUM(amount), 0)::INTEGER FROM payments) AS total_revenue,
     COUNT(DISTINCT s.id) FILTER (
-    WHERE s.status IN ('accepted', 'completed')
-    AND (
-        SELECT COALESCE(SUM(p2.amount), 0)
-        FROM payments p2
-        WHERE p2.student_id = s.id
-    ) < (
-        SELECT COALESCE(SUM(c.fee), 0)
-        FROM student_courses sc
-        JOIN courses c ON c.id = sc.course_id
-        WHERE sc.student_id = s.id
-    )
-)::INTEGER AS students_with_balance
-FROM students s
-LEFT JOIN payments p ON p.student_id = s.id;
+        WHERE s.status IN ('active', 'completed')
+        AND (
+            SELECT COALESCE(SUM(p2.amount), 0)
+            FROM payments p2
+            WHERE p2.student_id = s.id
+        ) < (
+            SELECT COALESCE(SUM(fee_at_enrollment), 0)
+            FROM student_courses sc
+            WHERE sc.student_id = s.id
+        )
+    )::INTEGER AS students_with_balance
+FROM students s;
 
 -- name: GetMonthlyRevenue :many
 SELECT
@@ -83,17 +81,23 @@ SELECT
         WHERE DATE_TRUNC('month', p.added_at) = DATE_TRUNC('month', NOW() - INTERVAL '1 month')
     ), 0)::INTEGER AS last_month,
     COALESCE((
-        SELECT SUM(total_fee - total_paid)
+        SELECT SUM(outstanding)
         FROM (
             SELECT
-                s.id,
-                COALESCE(SUM(c.fee), 0) AS total_fee,
-                COALESCE((SELECT SUM(p2.amount) FROM payments p2 WHERE p2.student_id = s.id), 0) AS total_paid
+                COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0) AS outstanding
             FROM students s
-            LEFT JOIN student_courses sc ON sc.student_id = s.id
-            LEFT JOIN courses c ON c.id = sc.course_id
-            GROUP BY s.id
+            JOIN (
+                SELECT student_id, SUM(fee_at_enrollment) AS total_fee
+                FROM student_courses
+                GROUP BY student_id
+            ) fees ON fees.student_id = s.id
+            LEFT JOIN (
+                SELECT student_id, SUM(amount) AS total_paid
+                FROM payments
+                GROUP BY student_id
+            ) pays ON pays.student_id = s.id
+            WHERE s.status IN ('active', 'completed')
+              AND (COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0)) > 0
         ) AS balances
-        WHERE total_fee > total_paid
     ), 0)::INTEGER AS outstanding
 FROM payments p;

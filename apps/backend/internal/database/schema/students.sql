@@ -17,6 +17,7 @@ CREATE TABLE students (
     notes          TEXT,
     shift          TEXT NOT NULL DEFAULT 'morning' CHECK (shift IN ('morning','day','evening')),
     shift_time     TEXT NOT NULL,
+    batch          TEXT,
     created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT unique_serial_per_fiscal_year UNIQUE (fiscal_year, serial_no)
 );

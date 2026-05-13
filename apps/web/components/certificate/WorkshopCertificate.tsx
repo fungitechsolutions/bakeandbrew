@@ -1,7 +1,7 @@
 "use client";
 
 import Image, { type ImageLoader } from "next/image";
-import styles from "./Certificate.module.css";
+import styles from "./WorkshopCertificate.module.css";
 import { siteInfo } from "@/utils/site-info";
 
 export interface WorkshopCertificateProps {
@@ -29,10 +29,10 @@ export function WorkshopCertificate({
   referenceNo,
   workshopTitle,
   workshopDate,
-  issueDate,
+  // issueDate,
   logoUrl,
-  directorSignatureUrl,
-  headSignatureUrl,
+  // directorSignatureUrl,
+  // headSignatureUrl,
   accreditationLogoUrl,
   footerAddress = siteInfo.contact.address,
   footerContact = siteInfo.contact.email,
@@ -89,8 +89,10 @@ export function WorkshopCertificate({
             <div className={styles.schoolNameHeader}>
               {siteInfo.company.shortName}
             </div>
-            <div className={styles.metaLabel}>Certificate No.</div>
-            <div className={styles.metaValue}>{referenceNo}</div>
+            <div className={styles.certNoRow}>
+              <span className={styles.metaLabel}>Certificate No.</span>
+              <span className={styles.metaValue}>{referenceNo}</span>
+            </div>
           </div>
 
           {/* ── Body ── */}
@@ -152,8 +154,15 @@ export function WorkshopCertificate({
                 opacity="0.28"
               />
             </svg>
+
+            {/* Address + PAN left · email + phone right */}
             <div className={styles.footerMeta}>
-              <div className={styles.footerAddress}>{footerAddress}</div>
+              <div className={styles.footerLeft}>
+                <div className={styles.footerAddress}>{footerAddress}</div>
+                <div className={styles.footerPan}>
+                  PAN: {siteInfo.company.panNo}
+                </div>
+              </div>
               <div className={styles.footerContact}>
                 {footerContact}
                 <br />
@@ -165,20 +174,12 @@ export function WorkshopCertificate({
           {/* ── Signatures ── */}
           <footer className={styles.bottom} aria-label="Signatures">
             <div className={styles.sigCol}>
-              <Image
-                className={styles.signatureImg}
-                src={directorSignatureUrl}
-                alt="Training Director signature"
-                loader={passthroughLoader}
-                unoptimized
-                width={240}
-                height={90}
-              />
+              <div className={styles.sigBlank} />
               <div className={styles.sigLine} aria-hidden="true" />
               <div className={styles.sigLabel}>Training Director</div>
             </div>
             <div className={styles.centerCol}>
-              <Image
+              {/* <Image
                 className={styles.bottomMark}
                 src={centerMarkUrl}
                 alt="academy mark"
@@ -186,18 +187,10 @@ export function WorkshopCertificate({
                 unoptimized
                 width={180}
                 height={180}
-              />
+              /> */}
             </div>
             <div className={styles.sigCol}>
-              <Image
-                className={styles.signatureImg}
-                src={headSignatureUrl}
-                alt="Head of School signature"
-                loader={passthroughLoader}
-                unoptimized
-                width={240}
-                height={90}
-              />
+              <div className={styles.sigBlank} />
               <div className={styles.sigLine} aria-hidden="true" />
               <div className={styles.sigLabel}>Head of School</div>
             </div>

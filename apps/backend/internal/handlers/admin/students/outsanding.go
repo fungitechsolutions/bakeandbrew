@@ -39,6 +39,7 @@ func ListOutstandingStudentsDue(queries repository.AdminRepository) gin.HandlerF
 			})
 			return
 		}
+		slog.Debug("params", "", params)
 
 		if params.Page < 1 {
 			params.Page = 1
@@ -48,7 +49,7 @@ func ListOutstandingStudentsDue(queries repository.AdminRepository) gin.HandlerF
 		count, err := queries.GetOutstandingFeesCount(ctx, db.GetOutstandingFeesCountParams{
 			FromDate: utils.ToNullableText(params.From),
 			ToDate:   utils.ToNullableText(params.To),
-			// Search:   utils.ToNullableText(params.Search),
+			Search:   utils.ToNullableText(params.Search),
 		})
 		if err != nil {
 			slog.Error("error getting count", "err", err)
@@ -111,7 +112,11 @@ func ListOutstandingStudentsDue(queries repository.AdminRepository) gin.HandlerF
 		})
 
 		if err := g.Wait(); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.JSON(http.StatusInternalServerError, types.APIResponse{
+				Success: false,
+				Message: "Failed to process request",
+				Code:    constants.InternalServerError,
+			})
 			return
 		}
 

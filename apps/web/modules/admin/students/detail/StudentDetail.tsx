@@ -93,8 +93,6 @@ export default function StudentDetailPage({
   const [showWorkshopCertificate, setShowWorkshopCertificate] = useState(false);
   const [currentStatus, setCurrentStatus] = useState<Status>(student.status);
   const router = useRouter();
-  const user = useAuthStore((state) => state.user);
-  console.log("user: ", user);
 
   const totalPaid = payments.reduce((s, p) => s + p.amount, 0) / 100;
   const totalFee = courses.reduce((s, c) => s + c.fee, 0) / 100;
@@ -395,7 +393,7 @@ export default function StudentDetailPage({
                   // courses={courses.map((c) => c.name)}
                   issueDate={issueDate}
                   // schoolName={siteInfo.company.name}
-                  logoUrl="/assets/watermark-no-bg.png"
+                  logoUrl="/assets/logo-white-no-bg.png"
                   directorSignatureUrl="/assets/logo.png"
                   headSignatureUrl="/assets/logo.png"
                   accreditationLogoUrl="/assets/watermark-no-bg.png"

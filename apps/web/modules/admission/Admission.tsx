@@ -220,7 +220,7 @@ export default function AdmissionPage({ courses }: Props) {
     },
     onSubmitInvalid: ({ formApi }) => {
       const errors = formApi.state.errors;
-      console.error("errors: ", errors);
+      // console.error("errors: ", errors);
 
       if (!errors?.length) return;
 

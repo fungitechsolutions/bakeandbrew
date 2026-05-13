@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
 )
@@ -15,6 +16,8 @@ type StudentRepository interface {
 	GetAdmissionSettings(ctx context.Context) ([]db.Setting, error)
 	GetNextSerialNo(ctx context.Context, fiscalYear string) (int32, error)
 	CreateInquiry(ctx context.Context, params db.CreateInquiryParams) (db.Inquiry, error)
+	GetCoursesByIDs(ctx context.Context, param []pgtype.UUID) ([]db.GetCoursesByIDsRow, error)
+	UpdateUserImage(ctx context.Context, params db.UpdateUserImageParams) error
 }
 
 type studentRepository struct {
@@ -50,4 +53,12 @@ func (s *studentRepository) GetNextSerialNo(ctx context.Context, fiscalYear stri
 
 func (s *studentRepository) CreateInquiry(ctx context.Context, params db.CreateInquiryParams) (db.Inquiry, error) {
 	return s.queries.CreateInquiry(ctx, params)
+}
+
+func (s *studentRepository) GetCoursesByIDs(ctx context.Context, param []pgtype.UUID) ([]db.GetCoursesByIDsRow, error) {
+	return s.queries.GetCoursesByIDs(ctx, param)
+}
+
+func (s *studentRepository) UpdateUserImage(ctx context.Context, params db.UpdateUserImageParams) error {
+	return s.queries.UpdateUserImage(ctx, params)
 }

@@ -29,8 +29,8 @@ func CreateStudent(queries repository.StudentRepository, pool *pgxpool.Pool) gin
 		ctx := c.Request.Context()
 
 		userIDFromContext := c.MustGet("userID").(string)
+		role := c.MustGet("role").(string)
 		userID, err := utils.ConvertToUUID(userIDFromContext)
-
 		if err != nil {
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
@@ -47,7 +47,6 @@ func CreateStudent(queries repository.StudentRepository, pool *pgxpool.Pool) gin
 				"ip", c.ClientIP(),
 				"error", err,
 			)
-
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid request data",
@@ -66,13 +65,31 @@ func CreateStudent(queries repository.StudentRepository, pool *pgxpool.Pool) gin
 				"path", c.FullPath(),
 				"ip", c.ClientIP(),
 			)
-
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid date format",
 				Code:    constants.ValidationFailed,
 			})
 			return
+		}
+
+		courseUUIDs := make([]pgtype.UUID, 0, len(req.Courses))
+		for _, v := range req.Courses {
+			courseID, err := utils.ConvertToUUID(v)
+			if err != nil {
+				slog.Warn("invalid course id",
+					"course_id", v,
+					"path", c.FullPath(),
+					"ip", c.ClientIP(),
+				)
+				c.JSON(http.StatusBadRequest, types.APIResponse{
+					Success: false,
+					Message: "Invalid course ID",
+					Code:    constants.InvalidIDFormat,
+				})
+				return
+			}
+			courseUUIDs = append(courseUUIDs, courseID)
 		}
 
 		tx, err := pool.Begin(ctx)
@@ -82,7 +99,6 @@ func CreateStudent(queries repository.StudentRepository, pool *pgxpool.Pool) gin
 				"ip", c.ClientIP(),
 				"error", err,
 			)
-
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -101,7 +117,6 @@ func CreateStudent(queries repository.StudentRepository, pool *pgxpool.Pool) gin
 				"path", c.FullPath(),
 				"ip", c.ClientIP(),
 			)
-
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -128,7 +143,6 @@ func CreateStudent(queries repository.StudentRepository, pool *pgxpool.Pool) gin
 				"path", c.FullPath(),
 				"ip", c.ClientIP(),
 			)
-
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -155,13 +169,12 @@ func CreateStudent(queries repository.StudentRepository, pool *pgxpool.Pool) gin
 			StudentID:     userID,
 			Shift:         req.Shift,
 			ShiftTime:     req.ShiftTime,
+			Batch:         pgtype.Text{Valid: false},
 		})
-
 		if err != nil {
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) && pgErr.Code == "23505" {
 				message := "Already used for registration"
-
 				switch pgErr.ConstraintName {
 				case "students_email_key":
 					message = "Email already used for registration"
@@ -173,13 +186,11 @@ func CreateStudent(queries repository.StudentRepository, pool *pgxpool.Pool) gin
 
 				slog.Warn("student creation conflict",
 					"constraint", pgErr.ConstraintName,
-					"email", req.Email,
 					"phone", req.Phone,
 					"reference_no", referenceNumber,
 					"path", c.FullPath(),
 					"ip", c.ClientIP(),
 				)
-
 				c.JSON(http.StatusConflict, types.APIResponse{
 					Success: false,
 					Message: message,
@@ -194,7 +205,6 @@ func CreateStudent(queries repository.StudentRepository, pool *pgxpool.Pool) gin
 				"path", c.FullPath(),
 				"ip", c.ClientIP(),
 			)
-
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -203,41 +213,78 @@ func CreateStudent(queries repository.StudentRepository, pool *pgxpool.Pool) gin
 			return
 		}
 
-		for _, v := range req.Courses {
-			courseID, err := utils.ConvertToUUID(v)
-			if err != nil {
-				slog.Warn("invalid course id",
-					"course_id", v,
-					"student_id", student.ID,
-					"path", c.FullPath(),
-					"ip", c.ClientIP(),
-				)
+		// update th user image
+		if role == "student" {
 
-				c.JSON(http.StatusBadRequest, types.APIResponse{
-					Success: false,
-					Message: "Invalid course ID",
-					Code:    constants.InvalidIDFormat,
-				})
-				return
-			}
-
-			err = qtx.EnrollStudentInCourse(ctx, db.EnrollStudentInCourseParams{
-				StudentID: student.ID,
-				CourseID:  courseID,
+			err = qtx.UpdateUserImage(ctx, db.UpdateUserImageParams{
+				ImageUrl: pgtype.Text{String: req.PhotoUrl, Valid: true},
+				ID:       userID,
 			})
 
 			if err != nil {
+				c.JSON(http.StatusInternalServerError, types.APIResponse{
+					Success: false,
+					Message: "Failed to process request",
+					Code:    constants.InternalServerError,
+				})
+				return
+			}
+		}
 
-				// fk violation check
+		// fetch all course fees in one query
+		courseFees, err := qtx.GetCoursesByIDs(ctx, courseUUIDs)
+		if err != nil {
+			slog.Error("failed to fetch course fees",
+				"error", err,
+				"student_id", student.ID,
+				"path", c.FullPath(),
+				"ip", c.ClientIP(),
+			)
+			c.JSON(http.StatusInternalServerError, types.APIResponse{
+				Success: false,
+				Message: "Failed to process request",
+				Code:    constants.InternalServerError,
+			})
+			return
+		}
+
+		// validate all requested courses exist
+		if len(courseFees) != len(courseUUIDs) {
+			slog.Warn("one or more courses not found",
+				"requested", len(courseUUIDs),
+				"found", len(courseFees),
+				"student_id", student.ID,
+				"path", c.FullPath(),
+				"ip", c.ClientIP(),
+			)
+			c.JSON(http.StatusBadRequest, types.APIResponse{
+				Success: false,
+				Message: "One or more courses not found",
+				Code:    constants.CourseNotFound,
+			})
+			return
+		}
+
+		feeMap := make(map[pgtype.UUID]int64, len(courseFees))
+		for _, course := range courseFees {
+			feeMap[course.ID] = int64(course.Fee)
+		}
+
+		for _, courseID := range courseUUIDs {
+			err = qtx.EnrollStudentInCourse(ctx, db.EnrollStudentInCourseParams{
+				StudentID:       student.ID,
+				CourseID:        courseID,
+				FeeAtEnrollment: feeMap[courseID],
+			})
+			if err != nil {
 				var pgErr *pgconn.PgError
 				if errors.As(err, &pgErr) && pgErr.Code == "23503" {
-					slog.Warn("course not found",
+					slog.Warn("course not found during enrollment",
 						"course_id", courseID,
 						"student_id", student.ID,
 						"path", c.FullPath(),
 						"ip", c.ClientIP(),
 					)
-
 					c.JSON(http.StatusBadRequest, types.APIResponse{
 						Success: false,
 						Message: "Course not found",
@@ -253,7 +300,6 @@ func CreateStudent(queries repository.StudentRepository, pool *pgxpool.Pool) gin
 					"path", c.FullPath(),
 					"ip", c.ClientIP(),
 				)
-
 				c.JSON(http.StatusInternalServerError, types.APIResponse{
 					Success: false,
 					Message: "Failed to process request",
@@ -270,7 +316,6 @@ func CreateStudent(queries repository.StudentRepository, pool *pgxpool.Pool) gin
 				"path", c.FullPath(),
 				"ip", c.ClientIP(),
 			)
-
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

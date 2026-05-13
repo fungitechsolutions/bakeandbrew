@@ -1,0 +1,8 @@
+ALTER TABLE courses
+ADD COLUMN slug VARCHAR(100);
+
+ALTER TABLE courses
+ALTER COLUMN slug SET NOT NULL;
+
+ALTER TABLE courses
+ADD CONSTRAINT courses_slug_unique UNIQUE (slug);

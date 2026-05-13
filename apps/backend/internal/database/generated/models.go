@@ -20,6 +20,7 @@ type Course struct {
 	ID        pgtype.UUID        `json:"id"`
 	Name      string             `json:"name"`
 	Fee       int32              `json:"fee"`
+	Slug      string             `json:"slug"`
 	IsActive  bool               `json:"isActive"`
 	CreatedAt pgtype.Timestamptz `json:"createdAt"`
 }
@@ -108,12 +109,14 @@ type Student struct {
 	Notes         pgtype.Text        `json:"notes"`
 	Shift         string             `json:"shift"`
 	ShiftTime     string             `json:"shiftTime"`
+	Batch         pgtype.Text        `json:"batch"`
 	CreatedAt     pgtype.Timestamptz `json:"createdAt"`
 }
 
 type StudentCourse struct {
-	StudentID pgtype.UUID `json:"studentId"`
-	CourseID  pgtype.UUID `json:"courseId"`
+	StudentID       pgtype.UUID `json:"studentId"`
+	CourseID        pgtype.UUID `json:"courseId"`
+	FeeAtEnrollment int64       `json:"feeAtEnrollment"`
 }
 
 type User struct {

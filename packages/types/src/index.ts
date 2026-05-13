@@ -60,7 +60,7 @@ export {
   type InventorySummaryResponse,
 } from "./inventory";
 
-export { type CoursesList } from "./courses";
+export { type CoursesList, type CourseDetailResponse } from "./courses";
 export {
   addPaymentSchema,
   createCourseSchema,

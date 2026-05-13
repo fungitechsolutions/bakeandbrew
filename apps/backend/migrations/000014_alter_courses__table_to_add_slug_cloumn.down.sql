@@ -1,0 +1,5 @@
+ALTER TABLE courses
+DROP CONSTRAINT IF EXISTS courses_slug_unique;
+
+ALTER TABLE courses
+DROP COLUMN IF EXISTS slug;
