@@ -15,12 +15,29 @@ export interface User {
 export const PAGE_SIZE = 10;
 
 export type Difficulty = "Beginner" | "Intermediate" | "Advanced";
-export type Format = "Full-Time" | "Part-Time" | "Weekend";
+export type Format =
+  | "Full-Time"
+  | "Part-Time"
+  | "Weekend"
+  | "Physical"
+  | "Online";
 
 export interface CurriculumModule {
   week: string;
   title: string;
   topics: string[];
+}
+
+export interface InstructorExperience {
+  role: string;
+  place: string;
+  period: string;
+}
+
+export interface InstructorProfile {
+  headline: string;
+  experience: InstructorExperience[];
+  expertise: string[];
 }
 
 export interface Instructor {
@@ -29,6 +46,10 @@ export interface Instructor {
   bio: string;
   yearsExp: number;
   imagePlaceholder: string;
+  image?: string;
+  profileCard?: string;
+  hasProfileCard?: boolean;
+  profile?: InstructorProfile;
 }
 
 export interface CourseDetail {
@@ -61,19 +82,19 @@ export interface CourseDetail {
 export const courses: CourseDetail[] = [
   {
     slug: "barista",
-    course: "Barista",
+    course: "Professional Barista Program",
     tagline: "The Art of Coffee",
     shortDescription:
-      "Master espresso extraction, milk texturing, latte art, and café workflow.",
+      "A journey from bean to cup, mastering espresso extraction, milk texturing, and café business management.",
     longDescription:
-      "Coffee is one of the world's most traded commodities — and the skill gap between an average barista and a great one is enormous. This program goes far beyond pulling shots. You will study the entire coffee supply chain, from origin and processing methods to roast profiles and extraction science. You will develop muscle memory on professional espresso machines, learn milk microfoam physics, and practise latte art patterns until they become second nature. By graduation, you will be able to design a seasonal menu, calibrate a grinder blind, and manage a busy café service with confidence.",
-    duration: "8 Weeks",
-    durationWeeks: 8,
-    format: "Full-Time",
-    difficulty: "Beginner",
+      "This is more than just a coffee course—it’s a journey into the world of coffee, where knowledge turns into skill, and skill transforms into opportunity. Whether you aim to start a new career, earn with confidence, or become a coffee entrepreneur, everything begins here. From strong fundamentals to real industry standards, you’ll gain hands-on mastery in espresso, the art of steaming and frothing, and creating perfect microfoam. You’ll understand the complete system—from bean to cup—covering coffee knowledge, brewing techniques, extracting the perfect shot, and even planning and managing a coffee business. By the end of this course, you’ll be ready to work as a professional barista, run your own café, or confidently step into opportunities both locally and abroad.",
+    duration: "4 Weeks",
+    durationWeeks: 4,
+    format: "Physical",
+    difficulty: "Intermediate",
     seats: 16,
-    startDates: ["February 3, 2025", "May 5, 2025", "August 4, 2025"],
-    tuitionNPR: 45000,
+    startDates: ["Upcoming dates to be announced"],
+    tuitionNPR: 25000,
     color: "#E8552A",
     textClass: "text-[#E8552A]",
     borderClass: "border-[#E8552A]/35",
@@ -81,71 +102,108 @@ export const courses: CourseDetail[] = [
     accentBar: "bg-[#E8552A]",
     icon: "coffee",
     outcomes: [
-      "Operate commercial espresso equipment professionally",
-      "Dial in grind and extraction by taste",
-      "Steam milk to barista-competition standard",
-      "Execute five signature latte art patterns",
-      "Design and cost a café beverage menu",
-      "Apply food-safety and hygiene protocols",
+      "Operate espresso machines and essential café equipment with hands-on mastery",
+      "Dial in espresso, taste with purpose, and refine quality via extraction science",
+      "Master milk texturing and latte art to create smooth microfoam and designs",
+      "Develop complete menu lineups including hot, iced, frappes, and alternatives",
+      "Apply third-wave manual brewing methods and precise coffee ratios",
+      "Manage professional café workflows, customer service, and cost calculations",
     ],
     curriculum: [
       {
-        week: "Week 1–2",
-        title: "Coffee Origins & Roasting Science",
+        week: "Week 1",
+        title: "Foundations & Extraction",
         topics: [
-          "Bean varieties: Arabica, Robusta, and specialty hybrids",
-          "Processing methods: washed, natural, honey",
-          "Roast profiles and their flavour implications",
-          "Sensory cupping sessions",
+          "Espresso Machine Operation & Café Equipment Handling",
+          "Understanding Temperature & Pressure of Espresso machines",
+          "Coffee Ratios & Extraction Basics",
+          "Hygiene & Safety Standards",
         ],
       },
       {
-        week: "Week 3–4",
-        title: "Espresso Theory & Machine Mastery",
+        week: "Week 2",
+        title: "The Art of Milk & Tasting",
         topics: [
-          "Espresso extraction variables: dose, yield, time, temperature",
-          "Grinder calibration and burr maintenance",
-          "Channelling, under- and over-extraction diagnosis",
-          "Machine anatomy and daily servicing",
+          "Espresso Dial-In & Tasting with purpose",
+          "Milk Texturing: The science of smooth microfoam",
+          "Latte Art: Pouring beautiful designs",
+          "Machine Cleaning & Maintenance",
         ],
       },
       {
-        week: "Week 5–6",
-        title: "Milk Science & Latte Art",
+        week: "Week 3",
+        title: "Advanced Brewing & Menu Development",
         topics: [
-          "Milk fat and protein behaviour under steam",
-          "Microfoam texture: silky vs. airy foam",
-          "Pouring mechanics: heart, rosetta, tulip, swan",
-          "Alternative milks: oat, almond, soy behaviour",
+          "Third Wave Coffee & Manual Brewing Methods",
+          "Core Beverage Fundamentals",
+          "Menu Development: Hot, Iced, Frappe & Coffee Alternatives",
+          "Signature drink experimentation",
         ],
       },
       {
-        week: "Week 7",
-        title: "Menu Design & Café Operations",
+        week: "Week 4",
+        title: "Café Operations & Business Management",
         topics: [
-          "Seasonal signature drink development",
-          "Food costing and GP margin calculation",
-          "POS systems and order workflow",
-          "Customer service and upselling techniques",
-        ],
-      },
-      {
-        week: "Week 8",
-        title: "Industry Simulation & Assessment",
-        topics: [
-          "Live café service simulation",
-          "Speed and consistency drills",
-          "Written theory examination",
-          "Portfolio and practical assessment",
+          "Station & Workflow Deployment in real café environments",
+          "Customer Service Sequence & Service Recovery Techniques",
+          "Costing & Menu Engineering for profitable operations",
+          "Final Practical Assessment & Performance",
         ],
       },
     ],
     instructor: {
-      name: "Aarav Shrestha",
-      title: "Head Barista Trainer · SCA Certified",
-      bio: "Aarav spent eight years as head barista at three-Michelin-adjacent restaurants in Singapore before returning to Kathmandu to teach. He has competed in the Nepal Barista Championship and holds an SCA Brewing and Sensory Skills certification.",
-      yearsExp: 8,
+      name: "Mr. Ashish Shrestha",
+      title: "Program Coordinator · Brew and Bake Academy",
+      bio: "Ashish is an experienced coffee professional and hospitality strategist specializing in barista training, café operations, and branding. He has led training for Himalayan Java and founded Coffee Class & Himalayan Roaster in Pokhara.",
+      yearsExp: 11,
+      image: "/assets/instructors/ashish.png",
       imagePlaceholder: "#3a5a49",
+      hasProfileCard: true,
+      profile: {
+        headline: "Program Coordinator",
+        experience: [
+          {
+            role: "Training Director",
+            place: "Himalayan Java Coffee, Pokhara",
+            period: "2015–2023",
+          },
+          {
+            role: "Operational Head",
+            place: "Himalayan Java, Pokhara",
+            period: "2018–2023",
+          },
+          {
+            role: "Operation, Consultant & Branding",
+            place: "Open House Academy of Culinary Arts",
+            period: "",
+          },
+          {
+            role: "Owner",
+            place: "Little Big Cafe, Pokhara",
+            period: "2025–Present",
+          },
+          {
+            role: "Program Coordinator",
+            place: "Brew and Bake Academy, Butwal",
+            period: "",
+          },
+          {
+            role: "Founder & Training Director",
+            place: "Coffee Class & Himalayan Roaster, Pokhara",
+            period: "2023–Present",
+          },
+        ],
+        expertise: [
+          "Barista Training & Coffee Education",
+          "Café Operations & Team Management",
+          "Specialty Coffee & Roasting",
+          "Latte Art & Espresso Training",
+          "Hospitality Branding & Consulting",
+          "Menu Engineering & Customer Experience",
+          "Staff Development & Operational Systems",
+          "Coffee Workshop & Curriculum Design",
+        ],
+      },
     },
     stats: [
       { label: "Graduates placed", value: "200+" },
@@ -159,17 +217,17 @@ export const courses: CourseDetail[] = [
       {
         question: "Do I need any prior experience?",
         answer:
-          "None at all. The program is designed for complete beginners, though experienced baristas looking to formalise their skills are equally welcome.",
+          "The course is designed to take you from strong fundamentals to real industry standards, making it suitable for both beginners and those looking to turn coffee skills into a professional career.",
       },
       {
-        question: "What equipment will I train on?",
+        question: "Will I learn about the business side of coffee?",
         answer:
-          "You will work on commercial La Marzocco Linea PB and Synesso machines paired with Mahlkönig EK43 grinders — the same equipment used in specialty cafés worldwide.",
+          "Yes. Unlike standard courses, we cover cost calculation, menu engineering, and café management to prepare you for entrepreneurship.",
       },
       {
-        question: "Is the certificate internationally recognised?",
+        question: "What is the certification value?",
         answer:
-          "Our in-house certificate is respected by hospitality employers across Nepal and South Asia. We also offer an optional SCA exam pathway at additional cost.",
+          "By the end, you will be prepared to work as a professional barista or run your own café, opening doors for opportunities both locally in Nepal and abroad.",
       },
     ],
   },
@@ -181,8 +239,8 @@ export const courses: CourseDetail[] = [
       "Classical and contemporary baking — breads, pastries, cakes — in a fully equipped bakery lab.",
     longDescription:
       "Great baking is equal parts science and artistry. This program teaches you to understand why a dough behaves the way it does — gluten development, fermentation chemistry, fat ratios — so you can troubleshoot intuitively rather than just follow recipes. You will work through classical French viennoiserie, sourdough fermentation, laminated doughs, choux, and advanced cake decoration. Every session ends with tasting and critique, building your palate alongside your technique. Graduates leave with a portfolio of showpiece creations and the production knowledge to work in a professional kitchen or launch a home-bakery brand.",
-    duration: "10 Weeks",
-    durationWeeks: 10,
+    duration: "4 Weeks",
+    durationWeeks: 4,
     format: "Full-Time",
     difficulty: "Beginner",
     seats: 14,
@@ -295,8 +353,8 @@ export const courses: CourseDetail[] = [
       "Classic cocktails to modern mixology — flair, bar management, and the science of flavour pairing.",
     longDescription:
       "The modern bar is as much a stage as a service counter. This program equips you with the technical precision of a competition bartender and the hospitality instincts of a seasoned host. You will study distillation, fermentation, and sensory analysis to truly understand the spirits you pour. Cocktail sessions move from Prohibition classics through tiki and sour theory into avant-garde techniques: fat-washing, clarification, carbonation, and infusion. You will also cover responsible service law, stock management, and how to design a cocktail list that tells a story and turns a profit.",
-    duration: "6 Weeks",
-    durationWeeks: 6,
+    duration: "4 Weeks",
+    durationWeeks: 4,
     format: "Full-Time",
     difficulty: "Beginner",
     seats: 18,
@@ -419,8 +477,8 @@ export const courses: CourseDetail[] = [
       "Precision and philosophy behind Japanese cuisine — from rice prep to omakase plating.",
     longDescription:
       "Sushi is not a dish — it is a discipline. This program introduces students to the philosophical foundations of Japanese culinary culture alongside the technical rigour required to work at a professional level. You will spend significant time on the seemingly simple: water quality, rice seasoning, salt ratios, knife sharpening. Only once the foundations are solid do we move to fish butchery, curing, marinating, and the various forms — nigiri, maki, uramaki, temaki, and chirashi. The program concludes with an omakase simulation where students compose and serve a multi-course experience, demonstrating both craft and the hospitality spirit of omotenashi.",
-    duration: "10 Weeks",
-    durationWeeks: 10,
+    duration: "4 Weeks",
+    durationWeeks: 4,
     format: "Full-Time",
     difficulty: "Intermediate",
     seats: 12,

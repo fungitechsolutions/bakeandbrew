@@ -8,7 +8,6 @@ import {
   Users,
   Calendar,
   BarChart2,
-  BookOpen,
   Award,
 } from "lucide-react";
 import { getCourseBySlug, courses } from "@/utils/mock";
@@ -46,6 +45,8 @@ import {
 } from "lucide-react";
 import { siteInfo } from "@/utils/site-info";
 import { CourseDetailResponse } from "@repo/types";
+import { InstructorSection } from "@/components/courses/InstructorSection";
+import { ReadMoreText } from "@/components/courses/ReadMoreText";
 
 const iconMap = {
   coffee: Coffee,
@@ -149,9 +150,7 @@ export default async function CoursePage({
                   {course.tagline}
                 </em>
               </h1>
-              <p className="mb-8 max-w-lg text-[1rem] leading-[1.75] text-white/60">
-                {course.longDescription.slice(0, 220)}…
-              </p>
+              <ReadMoreText text={course.longDescription} />
 
               {/* CTA row */}
               <div className="flex flex-wrap gap-3">
@@ -191,7 +190,7 @@ export default async function CoursePage({
                   },
                   {
                     icon: Users,
-                    label: "Cohort size",
+                    label: "Class Size",
                     value: `Max ${course.seats} students`,
                   },
                   {
@@ -451,59 +450,7 @@ export default async function CoursePage({
         className="scroll-mt-20 px-6 py-20"
         style={{ backgroundColor: "#f3f1eb" }}
       >
-        <div className="mx-auto max-w-5xl">
-          <SectionLabel>Your Instructor</SectionLabel>
-          <div className="mt-10 grid grid-cols-1 items-center gap-12 sm:grid-cols-[220px_1fr]">
-            {/* Avatar */}
-            <div className="flex flex-col items-center gap-4 text-center sm:items-start sm:text-left">
-              <div
-                className="h-36 w-36 rounded-2xl sm:h-44 sm:w-44"
-                style={{
-                  backgroundColor: course.instructor.imagePlaceholder,
-                  opacity: 0.25,
-                }}
-                aria-hidden
-              />
-              <div>
-                <p
-                  className="text-[1.15rem] font-bold"
-                  style={{
-                    fontFamily: "var(--font-playfair)",
-                    color: "var(--brand-ink, #1a1a1a)",
-                  }}
-                >
-                  {course.instructor.name}
-                </p>
-                <p className="mt-1 text-[0.82rem] text-black/45">
-                  {course.instructor.title}
-                </p>
-              </div>
-            </div>
-
-            {/* Bio */}
-            <div>
-              <p
-                className="mb-6 text-[1rem] leading-[1.85] text-black/60"
-                style={{ maxWidth: "60ch" }}
-              >
-                {course.instructor.bio}
-              </p>
-              <div className="flex items-center gap-3">
-                <BookOpen
-                  className="h-4 w-4"
-                  style={{ color: "var(--brand-green, #2f4e40)" }}
-                  strokeWidth={1.75}
-                />
-                <span className="text-[0.875rem] text-black/55">
-                  <strong style={{ color: "var(--brand-ink, #1a1a1a)" }}>
-                    {course.instructor.yearsExp} years
-                  </strong>{" "}
-                  of industry experience
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <InstructorSection course={course} />
       </section>
 
       {/* ── FAQs ───────────────────────────────────────────────────────────── */}
