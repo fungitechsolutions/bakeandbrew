@@ -8,11 +8,11 @@ import { siteInfo } from "@/utils/site-info";
 import { useAuthStore } from "@/store/auth";
 
 const navLinks = [
-  { label: "Home", href: "#home" },
-  { label: "Why Us", href: "#why-us" },
-  { label: "Programs", href: "#programs" },
-  { label: "How It Works", href: "#how-it-works" },
-  { label: "Inquire", href: "#inquiry" },
+  { label: "Home", href: "/" },
+  { label: "Why Us", href: "/#why-us" },
+  { label: "Programs", href: "/#programs" },
+  { label: "How It Works", href: "/#how-it-works" },
+  { label: "Inquire", href: "/#inquiry" },
 ];
 
 export default function Navbar() {
