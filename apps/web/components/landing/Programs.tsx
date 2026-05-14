@@ -23,7 +23,7 @@ const programs = [
       "Cafe equipment handling",
       "Customer service & menu design",
     ],
-    duration: "8 Weeks",
+    duration: "4 Weeks",
     seats: 16,
     icon: Coffee,
     color: "#E8552A",
@@ -46,7 +46,7 @@ const programs = [
       "Cake decoration techniques",
       "Food costing & production",
     ],
-    duration: "10 Weeks",
+    duration: "4 Weeks",
     seats: 14,
     icon: CroissantIcon,
     color: "#D4A55A",
@@ -69,7 +69,7 @@ const programs = [
       "Bar operations & hygiene",
       "Responsible alcohol service",
     ],
-    duration: "6 Weeks",
+    duration: "4 Weeks",
     seats: 18,
     icon: GlassWater,
     color: "#9B7FC7",
@@ -80,29 +80,29 @@ const programs = [
     accentBar: "bg-[#9B7FC7]",
     hoverGlow: "hover:shadow-[0_8px_32px_rgba(155,127,199,0.18)]",
   },
-  {
-    course: "Sushi",
-    slug: "sushi",
-    tagline: "Japanese Culinary Tradition",
-    description:
-      "Precision and philosophy behind Japanese cuisine — rice prep, fish butchery, nigiri, maki, and omakase plating standards.",
-    highlights: [
-      "Sushi rice & seasoning",
-      "Fish filleting & food safety",
-      "Nigiri, maki & temaki",
-      "Plating & omakase culture",
-    ],
-    duration: "10 Weeks",
-    seats: 12,
-    icon: UtensilsCrossed,
-    color: "#4EA87A",
-    bgClass: "bg-[#4EA87A]/15",
-    borderClass: "border-[#4EA87A]/35",
-    textClass: "text-[#4EA87A]",
-    iconBg: "bg-[#4EA87A]/10",
-    accentBar: "bg-[#4EA87A]",
-    hoverGlow: "hover:shadow-[0_8px_32px_rgba(78,168,122,0.18)]",
-  },
+  // {
+  //   course: "Sushi",
+  //   slug: "sushi",
+  //   tagline: "Japanese Culinary Tradition",
+  //   description:
+  //     "Precision and philosophy behind Japanese cuisine — rice prep, fish butchery, nigiri, maki, and omakase plating standards.",
+  //   highlights: [
+  //     "Sushi rice & seasoning",
+  //     "Fish filleting & food safety",
+  //     "Nigiri, maki & temaki",
+  //     "Plating & omakase culture",
+  //   ],
+  //   duration: "4 Weeks",
+  //   seats: 12,
+  //   icon: UtensilsCrossed,
+  //   color: "#4EA87A",
+  //   bgClass: "bg-[#4EA87A]/15",
+  //   borderClass: "border-[#4EA87A]/35",
+  //   textClass: "text-[#4EA87A]",
+  //   iconBg: "bg-[#4EA87A]/10",
+  //   accentBar: "bg-[#4EA87A]",
+  //   hoverGlow: "hover:shadow-[0_8px_32px_rgba(78,168,122,0.18)]",
+  // },
 ] as const;
 
 export default async function Programs() {
@@ -171,7 +171,11 @@ export default async function Programs() {
         </div>
 
         {/* ── Cards ── */}
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        {/* prev when we had four cards */}
+        {/* <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4"> */}
+
+        {/* new */}
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {programs.map((program) => {
             const Icon = program.icon;
             const courseData = courses.find(
