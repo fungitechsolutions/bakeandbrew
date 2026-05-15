@@ -372,26 +372,34 @@ func (q *Queries) GetStudentByID(ctx context.Context, id pgtype.UUID) (GetStuden
 
 const getStudentFeeSummary = `-- name: GetStudentFeeSummary :one
 SELECT
-    COALESCE(SUM(c.fee), 0)::INTEGER AS total_fee,
-    COALESCE((
-        SELECT SUM(p.amount)
-        FROM payments p
-        WHERE p.student_id = $1
-    ), 0)::INTEGER AS total_paid
-FROM student_courses sc
-JOIN courses c ON c.id = sc.course_id
-WHERE sc.student_id = $1
+    COALESCE(SUM(sc.fee_at_enrollment), 0)::BIGINT AS total_fee,
+    COALESCE(SUM(p.amount), 0)::BIGINT             AS total_paid,
+    COALESCE(SUM(d.percent), 0)::NUMERIC           AS total_discount_percent,
+    COALESCE((SELECT percent FROM student_scholarships ss WHERE ss.student_id = s.id), 0)::NUMERIC AS scholarship_percent
+FROM students s
+JOIN student_courses sc ON sc.student_id = s.id
+LEFT JOIN payments p ON p.student_id = s.id
+LEFT JOIN student_discounts d ON d.student_id = s.id
+WHERE s.id = $1
+GROUP BY s.id
 `
 
 type GetStudentFeeSummaryRow struct {
-	TotalFee  int32 `json:"totalFee"`
-	TotalPaid int32 `json:"totalPaid"`
+	TotalFee             int64          `json:"totalFee"`
+	TotalPaid            int64          `json:"totalPaid"`
+	TotalDiscountPercent pgtype.Numeric `json:"totalDiscountPercent"`
+	ScholarshipPercent   pgtype.Numeric `json:"scholarshipPercent"`
 }
 
-func (q *Queries) GetStudentFeeSummary(ctx context.Context, studentID pgtype.UUID) (GetStudentFeeSummaryRow, error) {
-	row := q.db.QueryRow(ctx, getStudentFeeSummary, studentID)
+func (q *Queries) GetStudentFeeSummary(ctx context.Context, id pgtype.UUID) (GetStudentFeeSummaryRow, error) {
+	row := q.db.QueryRow(ctx, getStudentFeeSummary, id)
 	var i GetStudentFeeSummaryRow
-	err := row.Scan(&i.TotalFee, &i.TotalPaid)
+	err := row.Scan(
+		&i.TotalFee,
+		&i.TotalPaid,
+		&i.TotalDiscountPercent,
+		&i.ScholarshipPercent,
+	)
 	return i, err
 }
 

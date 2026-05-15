@@ -16,6 +16,7 @@ import (
 
 	adminSettings "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/settings"
 	adminStudents "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/students"
+	adminStudentsDiscount "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/students/discount"
 	adminUsers "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/users"
 
 	adminInventoryStockIn "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/inventory/stock/in"
@@ -79,6 +80,11 @@ func Setup(r *gin.Engine, cfg Config) {
 	adminRouter.GET("/students/:studentID/payments", adminStudents.StudentPaymentDetails(cfg.Queries))
 	adminRouter.PUT("/students/:studentID/status", adminStudents.UpdateStatus(cfg.Queries))
 	adminRouter.POST("/students/:studentID/payments", adminPayments.AddPayment(cfg.Queries))
+
+	// admin/students/discount
+	adminRouter.POST("/discount/:studentID", adminStudentsDiscount.CreateDiscount(cfg.Queries))
+	adminRouter.PUT("/discount/:discountID", adminStudentsDiscount.UpdateDiscount(cfg.Queries))
+	adminRouter.DELETE("/discount/:discountID", adminStudentsDiscount.DeleteDiscount(cfg.Queries))
 
 	// admin/courses
 	adminRouter.GET("/courses", adminCourses.ListAllCourses(cfg.Queries))

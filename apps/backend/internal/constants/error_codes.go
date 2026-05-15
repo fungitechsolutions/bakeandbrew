@@ -53,4 +53,7 @@ const (
 	MissingStockID = "MISSING_STOCK_ID"
 
 	MissingWastageID = "MISSING_WASTAGE_ID"
+
+	// student discounts
+	MissingStudentDiscountID = "MISSING_STUDENT_DISCOUNT_ID"
 )
