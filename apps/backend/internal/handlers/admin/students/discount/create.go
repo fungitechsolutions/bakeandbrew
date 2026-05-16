@@ -25,6 +25,17 @@ func CreateDiscount(queries repository.StudentDiscounts) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 
+		adminIDFromContext := c.MustGet("userID").(string)
+		adminID, err := utils.ConvertToUUID(adminIDFromContext)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, types.APIResponse{
+				Success: false,
+				Message: "Invalid ID format",
+				Code:    constants.InvalidIDFormat,
+			})
+			return
+		}
+
 		studentIDFromParam := c.Param("studentID")
 		if studentIDFromParam == "" {
 			c.JSON(http.StatusBadRequest, types.APIResponse{
@@ -68,55 +79,33 @@ func CreateDiscount(queries repository.StudentDiscounts) gin.HandlerFunc {
 			return
 		}
 
-		// total fee to be paid
-		effectiveFee := summary.TotalFee
-
-		// total discount the student had (eg: if the std had 2 discounts of 5 and 10 % the res gives the total of it i.e 15%)
-		discountPercent, err := utils.NumericToFloat64(summary.TotalDiscountPercent)
-		if err != nil {
-			slog.Error("failed to convert discount percent",
-				"error", err,
-				"path", c.FullPath(),
-				"ip", c.ClientIP(),
-			)
-			c.JSON(http.StatusInternalServerError, types.APIResponse{
-				Success: false,
-				Message: "Failed to process request",
-				Code:    constants.InternalServerError,
-			})
-			return
-		}
-
-		// scholarship percent
-		scholarshipPercent, err := utils.NumericToFloat64(summary.ScholarshipPercent)
-		if err != nil {
-			slog.Error("failed to convert scholarship percent",
-				"error", err,
-				"path", c.FullPath(),
-				"ip", c.ClientIP(),
-			)
-			c.JSON(http.StatusInternalServerError, types.APIResponse{
-				Success: false,
-				Message: "Failed to process request",
-				Code:    constants.InternalServerError,
-			})
-			return
-		}
-
-		discountAmount := int64(float64(effectiveFee) * discountPercent / 100)
-		scholarshipAmount := int64(float64(effectiveFee) * scholarshipPercent / 100)
-		alreadyCovered := summary.TotalPaid + discountAmount + scholarshipAmount
-
-		if alreadyCovered >= effectiveFee {
+		if summary.Status != "active" && summary.Status != "completed" {
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
-				Message: "No outstanding balance remaining for this student",
+				Message: "Discount can only be applied to active or completed students",
 				Code:    constants.ValidationFailed,
 			})
 			return
 		}
 
-		newDiscountAmount := effectiveFee * int64(req.Percent) / 100
+		// total fee to be paid
+		effectiveFee := summary.TotalFee
+
+		discountAmount := summary.TotalDiscountAmount
+		scholarshipAmount := summary.ScholarshipAmount
+		alreadyCovered := summary.TotalPaid + discountAmount + scholarshipAmount
+
+		remainingBalance := effectiveFee - alreadyCovered
+		if remainingBalance <= 0 {
+			c.JSON(http.StatusBadRequest, types.APIResponse{
+				Success: false,
+				Message: "No outstanding balance remaining to apply discount",
+				Code:    constants.ValidationFailed,
+			})
+			return
+		}
+
+		newDiscountAmount := remainingBalance * int64(req.Percent) / 100
 		if alreadyCovered+newDiscountAmount > effectiveFee {
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
@@ -146,6 +135,8 @@ func CreateDiscount(queries repository.StudentDiscounts) gin.HandlerFunc {
 			Type:      req.Type,
 			Note:      utils.ToNullableText(req.Note),
 			Percent:   percent,
+			Amount:    newDiscountAmount,
+			AddedBy:   adminID,
 		})
 
 		if err != nil {

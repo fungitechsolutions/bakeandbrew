@@ -122,17 +122,21 @@ type StudentCourse struct {
 type StudentDiscount struct {
 	ID        pgtype.UUID        `json:"id"`
 	StudentID pgtype.UUID        `json:"studentId"`
+	AddedBy   pgtype.UUID        `json:"addedBy"`
 	Type      string             `json:"type"`
 	Percent   pgtype.Numeric     `json:"percent"`
 	Note      pgtype.Text        `json:"note"`
+	Amount    int64              `json:"amount"`
 	CreatedAt pgtype.Timestamptz `json:"createdAt"`
 }
 
 type StudentScholarship struct {
 	ID        pgtype.UUID        `json:"id"`
 	StudentID pgtype.UUID        `json:"studentId"`
+	AddedBy   pgtype.UUID        `json:"addedBy"`
 	Percent   pgtype.Numeric     `json:"percent"`
 	Note      pgtype.Text        `json:"note"`
+	Amount    int64              `json:"amount"`
 	CreatedAt pgtype.Timestamptz `json:"createdAt"`
 }
 

@@ -1,4 +1,4 @@
-package discount
+package scholarship
 
 import (
 	"errors"
@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
 	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
@@ -15,28 +16,27 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/validator"
 )
 
-type UpdateDiscountRequest struct {
+type UpdateScholarshipRequest struct {
 	StudentID string  `json:"studentID" binding:"required,uuid"`
-	Type      string  `json:"type" binding:"required,min=1,max=50"`
+	Percent   float64 `json:"percent" binding:"required,gt=0,lte=100"`
 	Note      string  `json:"note" binding:"omitempty,min=1,max=100"`
-	Percent   float64 `json:"percent" binding:"required,gt=0"`
 }
 
-func UpdateDiscount(queries repository.StudentDiscounts) gin.HandlerFunc {
+func UpdateScholarship(queries repository.StudentsScholarship) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 
-		discountIDFromParam := c.Param("discountID")
-		if discountIDFromParam == "" {
+		scholarshipIDFromParam := c.Param("scholarshipID")
+		if scholarshipIDFromParam == "" {
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
-				Message: "Missing student discount ID",
+				Message: "Missing student scholarship ID",
 				Code:    constants.MissingStudentDiscountID,
 			})
 			return
 		}
 
-		discountID, err := utils.ConvertToUUID(discountIDFromParam)
+		scholarshipID, err := utils.ConvertToUUID(scholarshipIDFromParam)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
@@ -46,13 +46,13 @@ func UpdateDiscount(queries repository.StudentDiscounts) gin.HandlerFunc {
 			return
 		}
 
-		var req UpdateDiscountRequest
+		var req UpdateScholarshipRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid request data",
-				Errors:  validator.Parse(err, req),
 				Code:    constants.ValidationFailed,
+				Errors:  validator.Parse(err, req),
 			})
 			return
 		}
@@ -69,8 +69,17 @@ func UpdateDiscount(queries repository.StudentDiscounts) gin.HandlerFunc {
 
 		utils.TrimStruct(&req)
 
-		existingDiscount, err := queries.GetDiscountByID(ctx, discountID)
+		existingScholarship, err := queries.GetScholarshipByID(ctx, scholarshipID)
 		if err != nil {
+
+			if errors.Is(err, pgx.ErrNoRows) {
+				c.JSON(http.StatusNotFound, types.APIResponse{
+					Success: false,
+					Message: "Scholarship not found",
+					Code:    constants.ScholarshipNotFound,
+				})
+				return
+			}
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -81,6 +90,14 @@ func UpdateDiscount(queries repository.StudentDiscounts) gin.HandlerFunc {
 
 		summary, err := queries.GetStudentFeeSummary(ctx, studentID)
 		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				c.JSON(http.StatusNotFound, types.APIResponse{
+					Success: false,
+					Message: "Student not found",
+					Code:    constants.StudentNotFound,
+				})
+				return
+			}
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -104,20 +121,22 @@ func UpdateDiscount(queries repository.StudentDiscounts) gin.HandlerFunc {
 		scholarshipAmount := summary.ScholarshipAmount
 		alreadyCovered := summary.TotalPaid + discountAmount + scholarshipAmount
 
-		remainingBalance := effectiveFee - alreadyCovered + existingDiscount.Amount
+		remainingBalance := effectiveFee - alreadyCovered + existingScholarship.Amount
+
 		if remainingBalance <= 0 {
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
-				Message: "No outstanding balance remaining to apply discount",
+				Message: "No outstanding balance remaining to apply scholarship",
 				Code:    constants.ValidationFailed,
 			})
 			return
 		}
 
-		newDiscountAmount := remainingBalance * int64(req.Percent) / 100
+		newScholarshipAmount := remainingBalance * int64(req.Percent) / 100
 
 		percent, err := utils.ToNumeric(req.Percent)
 		if err != nil {
+
 			slog.Error("failed to convert percent",
 				"error", err,
 				"path", c.FullPath(),
@@ -131,12 +150,11 @@ func UpdateDiscount(queries repository.StudentDiscounts) gin.HandlerFunc {
 			return
 		}
 
-		_, err = queries.UpdateDiscount(ctx, db.UpdateDiscountParams{
-			ID:      discountID,
-			Note:    utils.ToNullableText(req.Note),
-			Type:    req.Type,
+		_, err = queries.UpdateScholarship(ctx, db.UpdateScholarshipParams{
 			Percent: percent,
-			Amount:  newDiscountAmount,
+			Note:    utils.ToNullableText(req.Note),
+			ID:      scholarshipID,
+			Amount:  newScholarshipAmount,
 		})
 
 		if err != nil {
@@ -159,7 +177,8 @@ func UpdateDiscount(queries repository.StudentDiscounts) gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, types.APIResponse{
 			Success: true,
-			Message: "Student discount data updated",
+			Message: "Scholarship added for the student",
 		})
+
 	}
 }
