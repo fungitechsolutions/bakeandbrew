@@ -37,12 +37,12 @@ import { useMutation } from "@tanstack/react-query";
 import api from "@/lib/axios";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/store/auth";
 import { Certificate } from "@/components/certificate/Certificate";
 import { siteInfo } from "@/utils/site-info";
 import { usePrintInvoice } from "./PrintInvoice";
 import { PaymentRow } from "./PaymentRow";
 import { WorkshopCertificate } from "@/components/certificate/WorkshopCertificate";
+import StudentDetailGrid from "./StudentDetailGrid";
 
 type Props = {
   student: Extract<StudentDetail, { success: true }>["data"];
@@ -406,219 +406,14 @@ export default function StudentDetailPage({
         )}
 
         {/* ── Main grid ── */}
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-          {/* Left col */}
-          <div className="flex flex-col gap-5 lg:col-span-2">
-            {/* Personal info */}
-            <SectionCard title="Personal Information" icon={User}>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <InfoRow
-                  label="Full Name"
-                  value={student.fullName}
-                  icon={User}
-                />
-                <InfoRow
-                  label="Date of Birth"
-                  value={new Date(student.dob).toLocaleDateString("en-NP", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                  icon={CalendarDays}
-                />
-                <InfoRow label="Gender" value={student.gender} icon={User} />
-                <InfoRow label="Phone" value={student.phone} icon={Phone} />
-                <InfoRow
-                  label="Email"
-                  value={student.email ?? "Not provided"}
-                  icon={Mail}
-                />
-                <InfoRow label="Source" value={student.source} icon={Hash} />
-                <InfoRow
-                  label="Shift"
-                  value={student.shift ?? "—"}
-                  icon={Clock}
-                />
-                <InfoRow
-                  label="Shift Time"
-                  value={student.shiftTime ?? "—"}
-                  icon={Clock}
-                />
-                <div className="sm:col-span-2">
-                  <InfoRow
-                    label="Address"
-                    value={student.address}
-                    icon={MapPin}
-                  />
-                </div>
-              </div>
-            </SectionCard>
-
-            {/* Guardian */}
-            <SectionCard title="Guardian Information" icon={Users}>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <InfoRow
-                  label="Guardian Name"
-                  value={student.guardianName}
-                  icon={User}
-                />
-                <InfoRow
-                  label="Guardian Phone"
-                  value={student.guardianPhone}
-                  icon={Phone}
-                />
-              </div>
-            </SectionCard>
-
-            {/* Payments */}
-            <SectionCard title="Payment History" icon={CreditCard}>
-              <div className="mb-4 flex items-center justify-between">
-                <p
-                  className="text-[0.82rem] text-[#2d4a3e]/50"
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
-                >
-                  {payments.length} payment{payments.length !== 1 ? "s" : ""}{" "}
-                  recorded
-                </p>
-                <button
-                  onClick={() => setShowPaymentModal(true)}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#2d4a3e] px-3 py-1.5 text-[0.78rem] font-semibold text-white transition-all hover:opacity-90"
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
-                >
-                  <Plus className="h-3 w-3" strokeWidth={2.5} />
-                  Add
-                </button>
-              </div>
-              {payments.length === 0 ? (
-                <p
-                  className="py-6 text-center text-[0.85rem] text-[#2d4a3e]/35"
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
-                >
-                  No payments recorded yet.
-                </p>
-              ) : (
-                <div className="flex flex-col gap-2 max-h-88 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-[#2d4a3e]/20 scrollbar-track-transparent">
-                  {" "}
-                  {[...payments].reverse().map((p, reversedIdx) => {
-                    const originalIdx = payments.length - 1 - reversedIdx;
-
-                    return (
-                      <PaymentRow
-                        key={p.id}
-                        payment={{
-                          id: p.id,
-                          amount: p.amount,
-                          addedAt: String(p.addedAt),
-                          remarks: p.remarks,
-                          addedByName: p.addedByName,
-                          paymentMode: p.paymentMode,
-                        }}
-                        student={student}
-                        receiptNo={originalIdx + 1}
-                      />
-                    );
-                  })}
-                </div>
-              )}
-            </SectionCard>
-          </div>
-
-          {/* Right col */}
-          <div className="flex flex-col gap-5">
-            {/* Courses */}
-            <SectionCard title="Enrolled Courses" icon={BookOpen}>
-              <div className="flex flex-col gap-3">
-                {courses.map((c) => (
-                  <div
-                    key={c.id}
-                    className="flex items-center justify-between rounded-xl border border-[#2d4a3e]/08 bg-[#f4f1ec]/50 px-4 py-3"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="h-2 w-2 rounded-full bg-[#e8552a]" />
-                      <span
-                        className="text-[0.9rem] font-medium text-[#2d4a3e]"
-                        style={{ fontFamily: "var(--font-dm-sans)" }}
-                      >
-                        {c.name}
-                      </span>
-                    </div>
-                    <span
-                      className="text-[0.82rem] font-semibold text-[#2d4a3e]"
-                      style={{ fontFamily: "var(--font-dm-sans)" }}
-                    >
-                      NPR {(c.fee / 100).toLocaleString()}
-                    </span>
-                  </div>
-                ))}
-                <div className="mt-1 flex items-center justify-between border-t border-[#2d4a3e]/08 pt-3">
-                  <span
-                    className="text-[0.78rem] font-semibold uppercase tracking-[0.06em] text-[#2d4a3e]/50"
-                    style={{ fontFamily: "var(--font-dm-sans)" }}
-                  >
-                    Total
-                  </span>
-                  <span
-                    className="text-[0.95rem] font-bold text-[#2d4a3e]"
-                    style={{ fontFamily: "var(--font-dm-sans)" }}
-                  >
-                    NPR {totalFee.toLocaleString()}
-                  </span>
-                </div>
-              </div>
-            </SectionCard>
-
-            {/* Enrollment meta */}
-            <SectionCard title="Enrollment Details" icon={Hash}>
-              <div className="flex flex-col gap-3">
-                {[
-                  { label: "Fiscal Year", value: student.fiscalYear },
-                  { label: "Serial No", value: `#${student.serialNo}` },
-                  {
-                    label: "Enrolled On",
-                    value: new Date(student.createdAt).toLocaleDateString(
-                      "en-NP",
-                      {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      },
-                    ),
-                  },
-                ].map(({ label, value }) => (
-                  <div
-                    key={label}
-                    className="flex items-center justify-between"
-                  >
-                    <span
-                      className="text-[0.78rem] font-semibold uppercase tracking-[0.06em] text-[#2d4a3e]/40"
-                      style={{ fontFamily: "var(--font-dm-sans)" }}
-                    >
-                      {label}
-                    </span>
-                    <span
-                      className="text-[0.88rem] font-medium text-[#2d4a3e]"
-                      style={{ fontFamily: "var(--font-dm-sans)" }}
-                    >
-                      {value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </SectionCard>
-
-            {/* Notes */}
-            {student.notes && (
-              <SectionCard title="Admin Notes" icon={AlertCircle}>
-                <p
-                  className="rounded-xl bg-amber-50 px-4 py-3 text-[0.85rem] leading-[1.6] text-amber-800"
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
-                >
-                  {student.notes}
-                </p>
-              </SectionCard>
-            )}
-          </div>
-        </div>
+        <StudentDetailGrid
+          student={student}
+          courses={courses}
+          payments={payments}
+          totalFee={totalFee}
+          setShowPaymentModal={setShowPaymentModal}
+          PaymentRow={PaymentRow}
+        />
       </div>
     </div>
   );
