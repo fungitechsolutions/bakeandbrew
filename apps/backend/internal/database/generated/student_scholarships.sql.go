@@ -12,25 +12,35 @@ import (
 )
 
 const createScholarship = `-- name: CreateScholarship :one
-INSERT INTO student_scholarships (student_id, percent, note)
-VALUES ($1, $2, $3)
-RETURNING id, student_id, percent, note, created_at
+INSERT INTO student_scholarships (student_id, percent, note, amount, added_by)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, student_id, added_by, percent, note, amount, created_at
 `
 
 type CreateScholarshipParams struct {
 	StudentID pgtype.UUID    `json:"studentId"`
 	Percent   pgtype.Numeric `json:"percent"`
 	Note      pgtype.Text    `json:"note"`
+	Amount    int64          `json:"amount"`
+	AddedBy   pgtype.UUID    `json:"addedBy"`
 }
 
 func (q *Queries) CreateScholarship(ctx context.Context, arg CreateScholarshipParams) (StudentScholarship, error) {
-	row := q.db.QueryRow(ctx, createScholarship, arg.StudentID, arg.Percent, arg.Note)
+	row := q.db.QueryRow(ctx, createScholarship,
+		arg.StudentID,
+		arg.Percent,
+		arg.Note,
+		arg.Amount,
+		arg.AddedBy,
+	)
 	var i StudentScholarship
 	err := row.Scan(
 		&i.ID,
 		&i.StudentID,
+		&i.AddedBy,
 		&i.Percent,
 		&i.Note,
+		&i.Amount,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -47,7 +57,7 @@ func (q *Queries) DeleteScholarship(ctx context.Context, id pgtype.UUID) error {
 }
 
 const getScholarshipByID = `-- name: GetScholarshipByID :one
-SELECT id, student_id, percent, note, created_at FROM student_scholarships
+SELECT id, student_id, added_by, percent, note, amount, created_at FROM student_scholarships
 WHERE id = $1
 `
 
@@ -57,52 +67,80 @@ func (q *Queries) GetScholarshipByID(ctx context.Context, id pgtype.UUID) (Stude
 	err := row.Scan(
 		&i.ID,
 		&i.StudentID,
+		&i.AddedBy,
 		&i.Percent,
 		&i.Note,
+		&i.Amount,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getScholarshipByStudent = `-- name: GetScholarshipByStudent :one
-SELECT id, student_id, percent, note, created_at FROM student_scholarships
-WHERE student_id = $1
+SELECT
+    ss.id, ss.student_id, ss.added_by, ss.percent, ss.note, ss.amount, ss.created_at,
+    u.name AS added_by_name
+FROM student_scholarships ss
+JOIN users u ON u.id = ss.added_by
+WHERE ss.student_id = $1
 `
 
-func (q *Queries) GetScholarshipByStudent(ctx context.Context, studentID pgtype.UUID) (StudentScholarship, error) {
+type GetScholarshipByStudentRow struct {
+	ID          pgtype.UUID        `json:"id"`
+	StudentID   pgtype.UUID        `json:"studentId"`
+	AddedBy     pgtype.UUID        `json:"addedBy"`
+	Percent     pgtype.Numeric     `json:"percent"`
+	Note        pgtype.Text        `json:"note"`
+	Amount      int64              `json:"amount"`
+	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
+	AddedByName string             `json:"addedByName"`
+}
+
+func (q *Queries) GetScholarshipByStudent(ctx context.Context, studentID pgtype.UUID) (GetScholarshipByStudentRow, error) {
 	row := q.db.QueryRow(ctx, getScholarshipByStudent, studentID)
-	var i StudentScholarship
+	var i GetScholarshipByStudentRow
 	err := row.Scan(
 		&i.ID,
 		&i.StudentID,
+		&i.AddedBy,
 		&i.Percent,
 		&i.Note,
+		&i.Amount,
 		&i.CreatedAt,
+		&i.AddedByName,
 	)
 	return i, err
 }
 
 const updateScholarship = `-- name: UpdateScholarship :one
 UPDATE student_scholarships
-SET percent = $2, note = $3
+SET percent = $2, note = $3, amount = $4
 WHERE id = $1
-RETURNING id, student_id, percent, note, created_at
+RETURNING id, student_id, added_by, percent, note, amount, created_at
 `
 
 type UpdateScholarshipParams struct {
 	ID      pgtype.UUID    `json:"id"`
 	Percent pgtype.Numeric `json:"percent"`
 	Note    pgtype.Text    `json:"note"`
+	Amount  int64          `json:"amount"`
 }
 
 func (q *Queries) UpdateScholarship(ctx context.Context, arg UpdateScholarshipParams) (StudentScholarship, error) {
-	row := q.db.QueryRow(ctx, updateScholarship, arg.ID, arg.Percent, arg.Note)
+	row := q.db.QueryRow(ctx, updateScholarship,
+		arg.ID,
+		arg.Percent,
+		arg.Note,
+		arg.Amount,
+	)
 	var i StudentScholarship
 	err := row.Scan(
 		&i.ID,
 		&i.StudentID,
+		&i.AddedBy,
 		&i.Percent,
 		&i.Note,
+		&i.Amount,
 		&i.CreatedAt,
 	)
 	return i, err

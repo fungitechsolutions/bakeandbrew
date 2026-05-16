@@ -12,9 +12,9 @@ import (
 )
 
 const createDiscount = `-- name: CreateDiscount :one
-INSERT INTO student_discounts (student_id, type, percent, note)
-VALUES ($1, $2, $3, $4)
-RETURNING id, student_id, type, percent, note, created_at
+INSERT INTO student_discounts (student_id, type, percent, note, amount, added_by)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id, student_id, added_by, type, percent, note, amount, created_at
 `
 
 type CreateDiscountParams struct {
@@ -22,6 +22,8 @@ type CreateDiscountParams struct {
 	Type      string         `json:"type"`
 	Percent   pgtype.Numeric `json:"percent"`
 	Note      pgtype.Text    `json:"note"`
+	Amount    int64          `json:"amount"`
+	AddedBy   pgtype.UUID    `json:"addedBy"`
 }
 
 func (q *Queries) CreateDiscount(ctx context.Context, arg CreateDiscountParams) (StudentDiscount, error) {
@@ -30,14 +32,18 @@ func (q *Queries) CreateDiscount(ctx context.Context, arg CreateDiscountParams) 
 		arg.Type,
 		arg.Percent,
 		arg.Note,
+		arg.Amount,
+		arg.AddedBy,
 	)
 	var i StudentDiscount
 	err := row.Scan(
 		&i.ID,
 		&i.StudentID,
+		&i.AddedBy,
 		&i.Type,
 		&i.Percent,
 		&i.Note,
+		&i.Amount,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -54,7 +60,7 @@ func (q *Queries) DeleteDiscount(ctx context.Context, id pgtype.UUID) error {
 }
 
 const getDiscountByID = `-- name: GetDiscountByID :one
-SELECT id, student_id, type, percent, note, created_at FROM student_discounts
+SELECT id, student_id, added_by, type, percent, note, amount, created_at FROM student_discounts
 WHERE id = $1
 `
 
@@ -64,9 +70,11 @@ func (q *Queries) GetDiscountByID(ctx context.Context, id pgtype.UUID) (StudentD
 	err := row.Scan(
 		&i.ID,
 		&i.StudentID,
+		&i.AddedBy,
 		&i.Type,
 		&i.Percent,
 		&i.Note,
+		&i.Amount,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -86,27 +94,46 @@ func (q *Queries) GetTotalDiscountPercentByStudent(ctx context.Context, studentI
 }
 
 const listDiscountsByStudent = `-- name: ListDiscountsByStudent :many
-SELECT id, student_id, type, percent, note, created_at FROM student_discounts
-WHERE student_id = $1
-ORDER BY created_at DESC
+SELECT 
+    sd.id, sd.student_id, sd.added_by, sd.type, sd.percent, sd.note, sd.amount, sd.created_at,
+    u.name AS added_by_name
+FROM student_discounts sd
+JOIN users u ON u.id = sd.added_by
+WHERE sd.student_id = $1
+ORDER BY sd.created_at DESC
 `
 
-func (q *Queries) ListDiscountsByStudent(ctx context.Context, studentID pgtype.UUID) ([]StudentDiscount, error) {
+type ListDiscountsByStudentRow struct {
+	ID          pgtype.UUID        `json:"id"`
+	StudentID   pgtype.UUID        `json:"studentId"`
+	AddedBy     pgtype.UUID        `json:"addedBy"`
+	Type        string             `json:"type"`
+	Percent     pgtype.Numeric     `json:"percent"`
+	Note        pgtype.Text        `json:"note"`
+	Amount      int64              `json:"amount"`
+	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
+	AddedByName string             `json:"addedByName"`
+}
+
+func (q *Queries) ListDiscountsByStudent(ctx context.Context, studentID pgtype.UUID) ([]ListDiscountsByStudentRow, error) {
 	rows, err := q.db.Query(ctx, listDiscountsByStudent, studentID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []StudentDiscount
+	var items []ListDiscountsByStudentRow
 	for rows.Next() {
-		var i StudentDiscount
+		var i ListDiscountsByStudentRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.StudentID,
+			&i.AddedBy,
 			&i.Type,
 			&i.Percent,
 			&i.Note,
+			&i.Amount,
 			&i.CreatedAt,
+			&i.AddedByName,
 		); err != nil {
 			return nil, err
 		}
@@ -120,9 +147,9 @@ func (q *Queries) ListDiscountsByStudent(ctx context.Context, studentID pgtype.U
 
 const updateDiscount = `-- name: UpdateDiscount :one
 UPDATE student_discounts
-SET type = $2, percent = $3, note = $4
+SET type = $2, percent = $3, note = $4, amount = $5
 WHERE id = $1
-RETURNING id, student_id, type, percent, note, created_at
+RETURNING id, student_id, added_by, type, percent, note, amount, created_at
 `
 
 type UpdateDiscountParams struct {
@@ -130,6 +157,7 @@ type UpdateDiscountParams struct {
 	Type    string         `json:"type"`
 	Percent pgtype.Numeric `json:"percent"`
 	Note    pgtype.Text    `json:"note"`
+	Amount  int64          `json:"amount"`
 }
 
 func (q *Queries) UpdateDiscount(ctx context.Context, arg UpdateDiscountParams) (StudentDiscount, error) {
@@ -138,14 +166,17 @@ func (q *Queries) UpdateDiscount(ctx context.Context, arg UpdateDiscountParams) 
 		arg.Type,
 		arg.Percent,
 		arg.Note,
+		arg.Amount,
 	)
 	var i StudentDiscount
 	err := row.Scan(
 		&i.ID,
 		&i.StudentID,
+		&i.AddedBy,
 		&i.Type,
 		&i.Percent,
 		&i.Note,
+		&i.Amount,
 		&i.CreatedAt,
 	)
 	return i, err

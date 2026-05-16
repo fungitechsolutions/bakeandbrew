@@ -1,0 +1,1 @@
+ALTER TABLE student_scholarships ADD COLUMN added_by UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT;

@@ -13,4 +13,7 @@ type StudentDiscounts interface {
 	DeleteDiscount(ctx context.Context, id pgtype.UUID) error
 
 	GetStudentFeeSummary(ctx context.Context, id pgtype.UUID) (db.GetStudentFeeSummaryRow, error)
+	GetDiscountByID(ctx context.Context, id pgtype.UUID) (db.StudentDiscount, error)
+
+	ListDiscountsByStudent(ctx context.Context, id pgtype.UUID) ([]db.ListDiscountsByStudentRow, error)
 }

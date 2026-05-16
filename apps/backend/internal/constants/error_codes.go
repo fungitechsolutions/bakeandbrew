@@ -56,4 +56,9 @@ const (
 
 	// student discounts
 	MissingStudentDiscountID = "MISSING_STUDENT_DISCOUNT_ID"
+	DiscountNotFound         = "DISCOUNT_NOT_FOUND"
+
+	// student scholarships
+	MissingStudentScholarshipID = "MISSING_STUDENT_SCHOLARSHIP_ID"
+	ScholarshipNotFound         = "SCHOLARSHIP_NOT_FOUND"
 )

@@ -1,9 +1,12 @@
 package routes
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/suprimkhatri77/sms/backend/internal/config"
+	"github.com/suprimkhatri77/sms/backend/internal/types"
 
 	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
 
@@ -17,6 +20,7 @@ import (
 	adminSettings "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/settings"
 	adminStudents "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/students"
 	adminStudentsDiscount "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/students/discount"
+	adminStudentsScholarship "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/students/scholarship"
 	adminUsers "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/users"
 
 	adminInventoryStockIn "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/inventory/stock/in"
@@ -46,7 +50,15 @@ type Config struct {
 func Setup(r *gin.Engine, cfg Config) {
 	router := r.Group("/api/v1")
 
-	router.POST("/uploads", upload.Upload(cfg.CldClient))
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, types.APIResponse{
+			Success: true,
+			Message: "Server is up and running",
+		})
+
+	})
+
+	router.POST("/uploads", middleware.RequireAuth(cfg.Config), middleware.RequireRole("student", "admin", "superadmin"), upload.Upload(cfg.CldClient))
 
 	authRouter := router.Group("/auth")
 
@@ -85,6 +97,13 @@ func Setup(r *gin.Engine, cfg Config) {
 	adminRouter.POST("/discount/:studentID", adminStudentsDiscount.CreateDiscount(cfg.Queries))
 	adminRouter.PUT("/discount/:discountID", adminStudentsDiscount.UpdateDiscount(cfg.Queries))
 	adminRouter.DELETE("/discount/:discountID", adminStudentsDiscount.DeleteDiscount(cfg.Queries))
+	adminRouter.GET("/discount/:studentID", adminStudentsDiscount.ListDiscount(cfg.Queries))
+
+	// admin/students/scholarship
+	adminRouter.POST("/scholarship/:studentID", adminStudentsScholarship.CreateScholarship(cfg.Queries))
+	adminRouter.PUT("/scholarship/:scholarshipID", adminStudentsScholarship.UpdateScholarship(cfg.Queries))
+	adminRouter.DELETE("/scholarship/:scholarshipID", adminStudentsScholarship.DeleteScholarship(cfg.Queries))
+	adminRouter.GET("/scholarship/:studentID", adminStudentsScholarship.ListStudentScholarshipDetail(cfg.Queries))
 
 	// admin/courses
 	adminRouter.GET("/courses", adminCourses.ListAllCourses(cfg.Queries))
