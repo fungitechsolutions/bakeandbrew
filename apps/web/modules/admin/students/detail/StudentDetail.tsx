@@ -99,8 +99,12 @@ export default function StudentDetailPage({
   const router = useRouter();
 
   const totalPaid = payments.reduce((s, p) => s + p.amount, 0) / 100;
-  const totalFee = courses.reduce((s, c) => s + c.fee, 0) / 100;
-  const balance = totalFee - totalPaid;
+  const totalFee = courses.reduce((s, c) => s + c.feeAtEnrollment, 0) / 100;
+  const discountAmount = discounts.reduce((s, d) => s + d.amount, 0) / 100;
+  const scholarshipAmount = scholarships?.amount
+    ? scholarships.amount / 100
+    : 0;
+  const balance = totalFee - totalPaid - discountAmount - scholarshipAmount;
   // const claimedAmount = student.claimedAmount / 100;
   const issueDate = new Date().toLocaleDateString("en-NP", {
     year: "numeric",

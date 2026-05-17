@@ -136,20 +136,33 @@ func (q *Queries) GetCoursesByIDs(ctx context.Context, dollar_1 []pgtype.UUID) (
 }
 
 const getCoursesByStudentID = `-- name: GetCoursesByStudentID :many
-SELECT c.id, c.name, c.fee, c.slug, c.is_active, c.created_at FROM courses c
+SELECT 
+    c.id, c.name, c.fee, c.slug, c.is_active, c.created_at,
+    sc.fee_at_enrollment
+FROM courses c
 JOIN student_courses sc ON sc.course_id = c.id
 WHERE sc.student_id = $1
 `
 
-func (q *Queries) GetCoursesByStudentID(ctx context.Context, studentID pgtype.UUID) ([]Course, error) {
+type GetCoursesByStudentIDRow struct {
+	ID              pgtype.UUID        `json:"id"`
+	Name            string             `json:"name"`
+	Fee             int32              `json:"fee"`
+	Slug            string             `json:"slug"`
+	IsActive        bool               `json:"isActive"`
+	CreatedAt       pgtype.Timestamptz `json:"createdAt"`
+	FeeAtEnrollment int64              `json:"feeAtEnrollment"`
+}
+
+func (q *Queries) GetCoursesByStudentID(ctx context.Context, studentID pgtype.UUID) ([]GetCoursesByStudentIDRow, error) {
 	rows, err := q.db.Query(ctx, getCoursesByStudentID, studentID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Course
+	var items []GetCoursesByStudentIDRow
 	for rows.Next() {
-		var i Course
+		var i GetCoursesByStudentIDRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
@@ -157,6 +170,7 @@ func (q *Queries) GetCoursesByStudentID(ctx context.Context, studentID pgtype.UU
 			&i.Slug,
 			&i.IsActive,
 			&i.CreatedAt,
+			&i.FeeAtEnrollment,
 		); err != nil {
 			return nil, err
 		}

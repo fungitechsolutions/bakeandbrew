@@ -40,7 +40,7 @@ export function RightColumn({
                 className="text-[0.82rem] font-semibold text-[#2d4a3e]"
                 style={{ fontFamily: "var(--font-dm-sans)" }}
               >
-                NPR {(c.fee / 100).toLocaleString()}
+                NPR {(c.feeAtEnrollment / 100).toLocaleString()}
               </span>
             </div>
           ))}

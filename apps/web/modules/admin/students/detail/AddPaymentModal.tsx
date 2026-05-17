@@ -1,6 +1,22 @@
 "use client";
 
-import { AlertCircle, CreditCard, X } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertCircle,
+  Banknote,
+  Building2,
+  CreditCard,
+  Plus,
+  Smartphone,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 import z from "zod";
 
@@ -28,6 +44,14 @@ export function AddPaymentModal({
   const [remarks, setRemarks] = useState("");
   const [paymentMode, setPaymentMode] = useState("");
   const [error, setError] = useState<AddPaymentModalErrors>({});
+  const [isAddingNewMode, setIsAddingNewMode] = useState(false);
+  const [newModeInput, setNewModeInput] = useState("");
+  const [paymentModes, setPaymentModes] = useState([
+    { value: "cash", label: "Cash", icon: Banknote },
+    { value: "esewa", label: "eSewa", icon: Smartphone },
+    { value: "fonepay", label: "FonePay", icon: Smartphone },
+    { value: "bank", label: "Bank Transfer", icon: Building2 },
+  ]);
 
   const handleSubmit = () => {
     const result = modalSchema.safeParse({
@@ -48,6 +72,20 @@ export function AddPaymentModal({
 
     onAdd(result.data);
     onClose();
+  };
+
+  const handleAddNewMode = () => {
+    const trimmed = newModeInput.trim();
+    if (!trimmed) return;
+    const newEntry = {
+      value: trimmed.toLowerCase().replace(/\s+/g, "_"),
+      label: trimmed,
+      icon: CreditCard,
+    };
+    setPaymentModes((prev) => [...prev, newEntry]);
+    setPaymentMode(newEntry.value);
+    setIsAddingNewMode(false);
+    setNewModeInput("");
   };
 
   return (
@@ -115,23 +153,99 @@ export function AddPaymentModal({
               className="text-[0.78rem] font-semibold uppercase tracking-[0.07em] text-[#2d4a3e]"
               style={{ fontFamily: "var(--font-dm-sans)" }}
             >
-              Payment Mode{" "}
-              {/* <span className="font-normal normal-case text-[#2d4a3e]/40">
-                (optional)
-              </span> */}
+              Payment Mode
             </label>
-            <input
-              type="text"
-              placeholder="e.g. Cash, eSewa, Bank Transfer"
+
+            <Select
               value={paymentMode}
-              onChange={(e) => setPaymentMode(e.target.value)}
-              className={`w-full rounded-xl border bg-white py-3 px-4 text-[0.92rem] text-[#2d4a3e] outline-none transition-all placeholder:text-[#2d4a3e]/30 focus:border-[#e8552a] focus:ring-2 focus:ring-[#e8552a]/15 ${
-                error.paymentMode
-                  ? "border-red-400 ring-2 ring-red-100"
-                  : "border-[#2d4a3e]/15"
-              }`}
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            />
+              onValueChange={(val) => {
+                if (val === "__add_new__") {
+                  setIsAddingNewMode(true);
+                } else {
+                  setPaymentMode(val as string);
+                  setIsAddingNewMode(false);
+                }
+              }}
+            >
+              <SelectTrigger
+                className={`w-full rounded-xl border bg-white py-3 px-4 h-12 text-[0.92rem] text-[#2d4a3e] outline-none transition-all focus:border-[#e8552a] focus:ring-2 focus:ring-[#e8552a]/15 ${
+                  error.paymentMode
+                    ? "border-red-400 ring-2 ring-red-100"
+                    : "border-[#2d4a3e]/15"
+                }`}
+                style={{ fontFamily: "var(--font-dm-sans)" }}
+              >
+                <SelectValue placeholder="Select payment mode" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border border-[#2d4a3e]/10 shadow-lg">
+                {paymentModes.map((mode) => (
+                  <SelectItem
+                    key={mode.value}
+                    value={mode.value}
+                    className="text-[0.92rem] text-[#2d4a3e] cursor-pointer focus:bg-[#e8552a]/8 focus:text-[#e8552a] rounded-lg"
+                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                  >
+                    <span className="flex items-center gap-2">
+                      <mode.icon className="h-4 w-4 text-[#2d4a3e]/50" />
+                      <span>{mode.label}</span>
+                    </span>
+                  </SelectItem>
+                ))}
+                <SelectSeparator className="my-1 bg-[#2d4a3e]/10" />
+                <SelectItem
+                  value="__add_new__"
+                  className="text-[0.92rem] text-[#e8552a] font-medium cursor-pointer focus:bg-[#e8552a]/8 rounded-lg"
+                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                >
+                  <span className="flex items-center gap-2">
+                    <Plus className="h-3.5 w-3.5" />
+                    Add new payment mode
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Inline "add new" input that appears when user picks "+ Add new" */}
+            {isAddingNewMode && (
+              <div className="flex items-center gap-2 mt-1">
+                <input
+                  type="text"
+                  autoFocus
+                  placeholder="e.g. Khalti, Bank Transfer…"
+                  value={newModeInput}
+                  onChange={(e) => setNewModeInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleAddNewMode();
+                    if (e.key === "Escape") {
+                      setIsAddingNewMode(false);
+                      setNewModeInput("");
+                    }
+                  }}
+                  className="flex-1 rounded-xl border border-[#2d4a3e]/15 bg-white py-2.5 px-4 text-[0.92rem] text-[#2d4a3e] outline-none transition-all placeholder:text-[#2d4a3e]/30 focus:border-[#e8552a] focus:ring-2 focus:ring-[#e8552a]/15"
+                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                />
+                <button
+                  type="button"
+                  onClick={handleAddNewMode}
+                  className="rounded-xl bg-[#e8552a] px-4 py-2.5 text-[0.85rem] font-semibold text-white transition-all hover:bg-[#d14b23] active:scale-95"
+                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                >
+                  Add
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAddingNewMode(false);
+                    setNewModeInput("");
+                  }}
+                  className="rounded-xl border border-[#2d4a3e]/15 px-3 py-2.5 text-[0.85rem] text-[#2d4a3e]/50 transition-all hover:border-[#2d4a3e]/30 hover:text-[#2d4a3e]"
+                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+
             {error.paymentMode && (
               <p
                 className="flex items-center gap-1.5 text-[0.78rem] text-red-500"
@@ -141,7 +255,6 @@ export function AddPaymentModal({
               </p>
             )}
           </div>
-
           {/* ── Remarks ── */}
           <div className="flex flex-col gap-1.5">
             <label

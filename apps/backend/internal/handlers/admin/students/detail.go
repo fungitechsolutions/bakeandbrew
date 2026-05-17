@@ -2,6 +2,7 @@ package students
 
 import (
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -100,7 +101,7 @@ func StudentEnrolledCourses(queries repository.AdminRepository) gin.HandlerFunc 
 			})
 			return
 		}
-
+		log.Println("data: ", courses)
 		c.JSON(http.StatusOK, types.APIResponse{
 			Success: true,
 			Data:    courses,

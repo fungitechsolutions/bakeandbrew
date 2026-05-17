@@ -84,6 +84,7 @@ export const studentEnrolledCoursesResponseSchema = z.discriminatedUnion(
           name: z.string(),
           fee: z.number(),
           isActive: z.boolean(),
+          feeAtEnrollment: z.number(),
           createdAt: z.date(),
         }),
       ),
