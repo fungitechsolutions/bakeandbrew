@@ -70,7 +70,7 @@ export function StudentDetailGrid({
       {/* LEFT — Discounts + Scholarship */}
       <div className="flex flex-col gap-5">
         <DiscountSection discounts={discounts} studentID={student.id} />
-        <ScholarshipSection scholarship={scholarship} />
+        <ScholarshipSection scholarship={scholarship} studentID={student.id} />
       </div>
 
       {/* MIDDLE — Personal Info + Guardian + Payments */}

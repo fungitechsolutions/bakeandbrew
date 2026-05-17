@@ -72,6 +72,12 @@ export {
   type StudentDiscountMutationInput,
 } from "./admin/students/discount";
 export {
+  studentScholarshipMutationSchema,
+  type GetStudentScholarshipResponse,
+  type StudentScholarshipMutationResponse,
+  type StudentScholarshipInput,
+} from "./admin/students/scholarship";
+export {
   addPaymentSchema,
   createCourseSchema,
   updateCourseSchema,
