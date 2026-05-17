@@ -32,7 +32,10 @@ WHERE id = $1 RETURNING *;
 DELETE FROM courses WHERE id = $1;
 
 -- name: GetCoursesByStudentID :many
-SELECT c.* FROM courses c
+SELECT 
+    c.*,
+    sc.fee_at_enrollment
+FROM courses c
 JOIN student_courses sc ON sc.course_id = c.id
 WHERE sc.student_id = $1;
 

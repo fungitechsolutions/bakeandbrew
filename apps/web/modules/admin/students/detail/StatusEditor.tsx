@@ -10,25 +10,25 @@ const STATUS_META: Record<
 > = {
   pending: {
     label: "Pending",
-    classes: "bg-amber-50 text-amber-700 border-amber-200",
+    classes: " text-amber-700 ",
     dotClass: "bg-amber-400",
     ringClass: "ring-amber-300",
   },
   active: {
     label: "Active",
-    classes: "bg-green-50 text-green-700 border-green-200",
+    classes: " text-green-700 ",
     dotClass: "bg-green-400",
     ringClass: "ring-green-300",
   },
   completed: {
     label: "Completed",
-    classes: "bg-blue-50 text-blue-700 border-blue-200",
+    classes: " text-blue-700 ",
     dotClass: "bg-blue-400",
     ringClass: "ring-blue-300",
   },
   rejected: {
     label: "Rejected",
-    classes: "bg-red-50 text-red-700 border-red-200",
+    classes: " text-red-700 ",
     dotClass: "bg-red-400",
     ringClass: "ring-red-300",
   },
@@ -71,7 +71,7 @@ export function StatusEditor({
               inline-flex items-center gap-1.5 rounded-full border px-3 py-1
               text-[0.75rem] font-semibold transition-all
               ${meta.classes}
-              ${isSelected ? `ring-2 ${meta.ringClass} ring-offset-1 ring-offset-[#f4f1ec]` : "opacity-50 hover:opacity-80"}
+             
             `}
             style={{ fontFamily: "var(--font-dm-sans)" }}
           >
