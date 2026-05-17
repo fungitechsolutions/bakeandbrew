@@ -7,71 +7,36 @@ import { DeleteScholarshipDialog } from "./DeleteScholarshipDialog";
 import { useState } from "react";
 import { IconBtn } from "./IconButton";
 import { ScholarshipFormModal } from "./ScholarshipFormModal";
-
-const MOCK_SCHOLARSHIP: Scholarship | null = {
-  id: "sc1",
-  studentId: "s1",
-  addedBy: "u3",
-  addedByName: "Hari Bahadur",
-  percent: 25,
-  note: "Merit scholarship – scored 90%+ in entrance",
-  amount: 375000,
-  createdAt: "2025-01-20T11:00:00Z",
-};
-
-type Scholarship = {
-  id: string;
-  studentId: string;
-  addedBy: string;
-  addedByName: string;
-  percent: number;
-  note: string | null;
-  amount: number; // paisa
-  createdAt: string;
-};
+import { StudentScholarshipResponse } from "@repo/types";
 
 type ScholarshipFormData = {
   percent: string;
   note: string;
 };
 
-export function ScholarshipSection() {
-  const [scholarship, setScholarship] = useState<Scholarship | null>(
-    MOCK_SCHOLARSHIP,
-  );
+type Props = {
+  scholarship: Extract<StudentScholarshipResponse, { success: true }>["data"];
+};
+
+export function ScholarshipSection({ scholarship }: Props) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 
   const handleDelete = () => {
-    setScholarship(null);
     setShowDeleteDialog(false);
   };
 
   const handleAdd = (data: ScholarshipFormData) => {
     // TODO: replace with real API call + use returned data
-    const newScholarship: Scholarship = {
-      id: crypto.randomUUID(),
-      studentId: "",
-      addedBy: "",
-      addedByName: "You",
-      percent: Number(data.percent),
-      note: data.note || null,
-      amount: 0,
-      createdAt: new Date().toISOString(),
-    };
-    setScholarship(newScholarship);
+
     setShowAddModal(false);
   };
 
   const handleEdit = (data: ScholarshipFormData) => {
     if (!scholarship) return;
     // TODO: replace with real API call + use returned data
-    setScholarship({
-      ...scholarship,
-      percent: Number(data.percent),
-      note: data.note || null,
-    });
+
     setShowEditModal(false);
   };
 

@@ -1,17 +1,11 @@
 import { Pencil, Trash2 } from "lucide-react";
 import { IconBtn } from "./IconButton";
+import { StudentDiscountResponse } from "@repo/types";
 
-type Discount = {
-  id: string;
-  studentId: string;
-  addedBy: string;
-  addedByName: string;
-  type: string;
-  percent: number;
-  note: string | null;
-  amount: number;
-  createdAt: string;
-};
+type Discount = Extract<
+  StudentDiscountResponse,
+  { success: true }
+>["data"][number];
 export function DiscountRow({
   discount,
   onEdit,

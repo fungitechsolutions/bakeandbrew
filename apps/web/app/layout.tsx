@@ -14,7 +14,15 @@ export const metadata: Metadata = {
   title: `${siteInfo.company.shortName} | Professional Training`,
   description:
     "Apply for professional barista, bakery, and hospitality training. Send an inquiry to start your journey with Brew & Bake Academy.",
-  keywords: ["barista", "bakery", "hospitality", "training", "admission"],
+  keywords: [
+    "barista",
+    "bakery",
+    "hospitality",
+    "training",
+    "admission",
+    "sushi",
+    "bartending",
+  ],
 };
 
 export default async function RootLayout({

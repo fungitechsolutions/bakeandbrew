@@ -1,7 +1,9 @@
 import {
   StudentDetail,
+  StudentDiscountResponse,
   StudentEnrolledCourses,
   StudentPaymentDetails,
+  StudentScholarshipResponse,
 } from "@repo/types";
 import { DiscountSection } from "./DiscountSection";
 import { ScholarshipSection } from "./ScholarshipSection";
@@ -15,6 +17,14 @@ type Course = Extract<
 >["data"][number];
 type Payment = Extract<
   StudentPaymentDetails,
+  { success: true }
+>["data"][number];
+type Scholarship = Extract<
+  StudentScholarshipResponse,
+  { success: true }
+>["data"];
+type Discount = Extract<
+  StudentDiscountResponse,
   { success: true }
 >["data"][number];
 
@@ -43,6 +53,8 @@ export function StudentDetailGrid({
   totalFee,
   setShowPaymentModal,
   PaymentRow,
+  scholarship,
+  discounts,
 }: {
   student: Student;
   payments: Payment[];
@@ -50,13 +62,15 @@ export function StudentDetailGrid({
   totalFee: number;
   setShowPaymentModal: (v: boolean) => void;
   PaymentRow: React.ComponentType<PaymentRowProps>;
+  scholarship: Scholarship;
+  discounts: Discount[];
 }) {
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
       {/* LEFT — Discounts + Scholarship */}
       <div className="flex flex-col gap-5">
-        <DiscountSection />
-        <ScholarshipSection />
+        <DiscountSection discounts={discounts} studentID={student.id} />
+        <ScholarshipSection scholarship={scholarship} />
       </div>
 
       {/* MIDDLE — Personal Info + Guardian + Payments */}

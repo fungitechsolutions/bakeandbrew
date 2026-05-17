@@ -8,7 +8,10 @@ DELETE FROM refresh_tokens WHERE user_id = $1;
 
 -- name: GetRefreshToken :one
 SELECT * FROM refresh_tokens
-WHERE session_id = $1 AND token_hash = $2 AND revoked_at IS NULL AND expires_at > NOW();
+WHERE session_id = $1 
+AND token_hash = $2 
+AND expires_at > NOW()
+AND (revoked_at IS NULL OR revoked_at > NOW() - INTERVAL '5 minutes');
 
 -- name: RevokeRefreshToken :exec
 UPDATE refresh_tokens SET revoked_at = NOW()

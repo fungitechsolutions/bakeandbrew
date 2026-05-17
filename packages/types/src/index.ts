@@ -11,7 +11,7 @@ export {
   type JWTUser,
 } from "./auth";
 
-export { type BaseAPIResponse, type APIResponse } from "./base";
+export { type BaseAPIResponse, type APIResponse, type APIError } from "./base";
 
 export {
   createUserSchema,
@@ -61,6 +61,16 @@ export {
 } from "./inventory";
 
 export { type CoursesList, type CourseDetailResponse } from "./courses";
+
+export {
+  studentDiscountMutationSchema,
+  type CreateStudentDiscountRequest,
+  type UpdateStudentDiscountRequest,
+  type DeleteStudentDiscountResponse,
+  type UpdateStudentDiscountResponse,
+  type CreateStudentDiscountResponse,
+  type StudentDiscountMutationInput,
+} from "./admin/students/discount";
 export {
   addPaymentSchema,
   createCourseSchema,
@@ -87,4 +97,6 @@ export {
   type MarkInquiryReadResponse,
   type DeleteInquiryResponse,
   type AnalyticsResponse,
+  type StudentScholarshipResponse,
+  type StudentDiscountResponse,
 } from "./admin";

@@ -77,33 +77,35 @@ func Setup(r *gin.Engine, cfg Config) {
 	adminRouter.GET("/users", adminUsers.GetPaginatedUsers(cfg.Queries))
 	adminRouter.PUT("/users/:userID", adminUsers.UpdateUser(cfg.Queries))
 
+	adminStudentRouter := adminRouter.Group("/students")
+
 	// admin/students
-	adminRouter.GET("/students", adminStudents.ListStudents(cfg.Queries))
+	adminStudentRouter.GET("", adminStudents.ListStudents(cfg.Queries))
 
 	// admin/students/outstanding
-	adminRouter.GET("/students/outstanding", adminStudents.ListOutstandingStudentsDue(cfg.Queries))
+	adminStudentRouter.GET("/outstanding", adminStudents.ListOutstandingStudentsDue(cfg.Queries))
 
 	// admin/students/sales
-	adminRouter.GET("/students/sales", adminStudents.ListSalesRevenueForStudents(cfg.Queries))
+	adminStudentRouter.GET("/sales", adminStudents.ListSalesRevenueForStudents(cfg.Queries))
 
 	// admin/students/:id
-	adminRouter.GET("/students/:studentID/detail", adminStudents.StudentDetail(cfg.Queries))
-	adminRouter.GET("/students/:studentID/courses", adminStudents.StudentEnrolledCourses(cfg.Queries))
-	adminRouter.GET("/students/:studentID/payments", adminStudents.StudentPaymentDetails(cfg.Queries))
-	adminRouter.PUT("/students/:studentID/status", adminStudents.UpdateStatus(cfg.Queries))
-	adminRouter.POST("/students/:studentID/payments", adminPayments.AddPayment(cfg.Queries))
+	adminStudentRouter.GET("/:studentID/detail", adminStudents.StudentDetail(cfg.Queries))
+	adminStudentRouter.GET("/:studentID/courses", adminStudents.StudentEnrolledCourses(cfg.Queries))
+	adminStudentRouter.GET("/:studentID/payments", adminStudents.StudentPaymentDetails(cfg.Queries))
+	adminStudentRouter.PUT("/:studentID/status", adminStudents.UpdateStatus(cfg.Queries))
+	adminStudentRouter.POST("/:studentID/payments", adminPayments.AddPayment(cfg.Queries))
 
 	// admin/students/discount
-	adminRouter.POST("/discount/:studentID", adminStudentsDiscount.CreateDiscount(cfg.Queries))
-	adminRouter.PUT("/discount/:discountID", adminStudentsDiscount.UpdateDiscount(cfg.Queries))
-	adminRouter.DELETE("/discount/:discountID", adminStudentsDiscount.DeleteDiscount(cfg.Queries))
-	adminRouter.GET("/discount/:studentID", adminStudentsDiscount.ListDiscount(cfg.Queries))
+	adminStudentRouter.POST("/:studentID/discounts", adminStudentsDiscount.CreateDiscount(cfg.Queries))
+	adminStudentRouter.PUT("/:studentID/discounts/:discountID", adminStudentsDiscount.UpdateDiscount(cfg.Queries))
+	adminStudentRouter.DELETE("/:studentID/discounts/:discountID", adminStudentsDiscount.DeleteDiscount(cfg.Queries))
+	adminStudentRouter.GET("/:studentID/discounts", adminStudentsDiscount.ListDiscount(cfg.Queries))
 
 	// admin/students/scholarship
-	adminRouter.POST("/scholarship/:studentID", adminStudentsScholarship.CreateScholarship(cfg.Queries))
-	adminRouter.PUT("/scholarship/:scholarshipID", adminStudentsScholarship.UpdateScholarship(cfg.Queries))
-	adminRouter.DELETE("/scholarship/:scholarshipID", adminStudentsScholarship.DeleteScholarship(cfg.Queries))
-	adminRouter.GET("/scholarship/:studentID", adminStudentsScholarship.ListStudentScholarshipDetail(cfg.Queries))
+	adminStudentRouter.POST("/:studentID/scholarships", adminStudentsScholarship.CreateScholarship(cfg.Queries))
+	adminStudentRouter.PUT("/:studentID/scholarships/:scholarshipID", adminStudentsScholarship.UpdateScholarship(cfg.Queries))
+	adminStudentRouter.DELETE("/:studentID/scholarships/:scholarshipID", adminStudentsScholarship.DeleteScholarship(cfg.Queries))
+	adminStudentRouter.GET("/:studentID/scholarships", adminStudentsScholarship.ListStudentScholarshipDetail(cfg.Queries))
 
 	// admin/courses
 	adminRouter.GET("/courses", adminCourses.ListAllCourses(cfg.Queries))

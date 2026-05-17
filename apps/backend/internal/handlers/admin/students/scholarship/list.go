@@ -1,9 +1,12 @@
 package scholarship
 
 import (
+	"errors"
+	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
 	"github.com/suprimkhatri77/sms/backend/internal/repository"
 	"github.com/suprimkhatri77/sms/backend/internal/types"
@@ -26,6 +29,7 @@ func ListStudentScholarshipDetail(queries repository.StudentsScholarship) gin.Ha
 
 		studentID, err := utils.ConvertToUUID(studentIDFromParam)
 		if err != nil {
+			slog.Error("err", "", err)
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -36,6 +40,15 @@ func ListStudentScholarshipDetail(queries repository.StudentsScholarship) gin.Ha
 
 		scholarship, err := queries.GetScholarshipByStudent(ctx, studentID)
 		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				c.JSON(http.StatusOK, types.APIResponse{
+					Success: true,
+					Message: "No scholarship found",
+					Data:    nil,
+				})
+				return
+			}
+			slog.Error("err", "", err)
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

@@ -1,0 +1,69 @@
+import z from "zod";
+
+const studentDiscountSchema = z.object({
+  id: z.uuid(),
+  studentID: z.uuid(),
+  type: z.string(),
+  note: z.string().optional(),
+  percent: z.number().gt(0).lte(100),
+  amount: z.number().gte(0),
+  createdAt: z.date(),
+});
+
+export const studentDiscountMutationSchema = z.object({
+  type: z
+    .string({ error: "Discount type is required" })
+    .min(1, { error: "Discount type is required" })
+    .max(50, { error: "Discount type cannot exceed 50 characters" }),
+
+  note: z
+    .string({ error: "Note must be a string" })
+    .min(1, { error: "Note cannot be empty" })
+    .max(100, { error: "Note cannot exceed 100 characters" })
+    .optional(),
+
+  percent: z.coerce
+    .number({ error: "Discount percentage is required" })
+    .gt(0, { error: "Discount percentage must be greater than 0" })
+    .lte(100, { error: "Discount percentage cannot exceed 100" }),
+});
+
+export type StudentDiscountMutationInput = z.infer<
+  typeof studentDiscountMutationSchema
+>;
+
+export type CreateStudentDiscountRequest = z.infer<
+  typeof studentDiscountMutationSchema
+>;
+
+export type UpdateStudentDiscountRequest = z.infer<
+  typeof studentDiscountMutationSchema
+>;
+
+export const createStudentDiscountResponseSchema = z.object({
+  success: z.literal(true),
+  message: z.string(),
+  data: studentDiscountSchema,
+});
+
+export type CreateStudentDiscountResponse = z.infer<
+  typeof createStudentDiscountResponseSchema
+>;
+
+export const updateStudentDiscountResponseSchema = z.object({
+  success: z.literal(true),
+  message: z.string(),
+});
+
+export type UpdateStudentDiscountResponse = z.infer<
+  typeof updateStudentDiscountResponseSchema
+>;
+
+export const deleteStudentDiscountResponseSchema = z.object({
+  success: z.literal(true),
+  message: z.string(),
+});
+
+export type DeleteStudentDiscountResponse = z.infer<
+  typeof deleteStudentDiscountResponseSchema
+>;

@@ -373,18 +373,30 @@ func (q *Queries) GetStudentByID(ctx context.Context, id pgtype.UUID) (GetStuden
 const getStudentFeeSummary = `-- name: GetStudentFeeSummary :one
 SELECT
     s.status,
-    COALESCE(SUM(sc.fee_at_enrollment), 0)::BIGINT AS total_fee,
-    COALESCE(SUM(p.amount), 0)::BIGINT             AS total_paid,
-    COALESCE(SUM(d.percent), 0)::NUMERIC           AS total_discount_percent,
-    COALESCE((SELECT percent FROM student_scholarships ss WHERE ss.student_id = s.id), 0)::NUMERIC AS scholarship_percent,
-    COALESCE(SUM(d.amount), 0)::BIGINT             AS total_discount_amount,
-    COALESCE((SELECT amount FROM student_scholarships ss WHERE ss.student_id = s.id), 0)::BIGINT AS scholarship_amount
+    COALESCE(sc.total_fee, 0)::BIGINT        AS total_fee,
+    COALESCE(p.total_paid, 0)::BIGINT        AS total_paid,
+    COALESCE(d.total_discount_percent, 0)::NUMERIC AS total_discount_percent,
+    COALESCE(d.total_discount_amount, 0)::BIGINT   AS total_discount_amount,
+    COALESCE(sch.percent, 0)::NUMERIC        AS scholarship_percent,
+    COALESCE(sch.amount, 0)::BIGINT          AS scholarship_amount
 FROM students s
-JOIN student_courses sc ON sc.student_id = s.id
-LEFT JOIN payments p ON p.student_id = s.id
-LEFT JOIN student_discounts d ON d.student_id = s.id
+LEFT JOIN (
+    SELECT student_id, SUM(fee_at_enrollment) AS total_fee
+    FROM student_courses
+    GROUP BY student_id
+) sc ON sc.student_id = s.id
+LEFT JOIN (
+    SELECT student_id, SUM(amount) AS total_paid
+    FROM payments
+    GROUP BY student_id
+) p ON p.student_id = s.id
+LEFT JOIN (
+    SELECT student_id, SUM(percent) AS total_discount_percent, SUM(amount) AS total_discount_amount
+    FROM student_discounts
+    GROUP BY student_id
+) d ON d.student_id = s.id
+LEFT JOIN student_scholarships sch ON sch.student_id = s.id
 WHERE s.id = $1
-GROUP BY s.id, s.status
 `
 
 type GetStudentFeeSummaryRow struct {
@@ -392,8 +404,8 @@ type GetStudentFeeSummaryRow struct {
 	TotalFee             int64          `json:"totalFee"`
 	TotalPaid            int64          `json:"totalPaid"`
 	TotalDiscountPercent pgtype.Numeric `json:"totalDiscountPercent"`
-	ScholarshipPercent   pgtype.Numeric `json:"scholarshipPercent"`
 	TotalDiscountAmount  int64          `json:"totalDiscountAmount"`
+	ScholarshipPercent   pgtype.Numeric `json:"scholarshipPercent"`
 	ScholarshipAmount    int64          `json:"scholarshipAmount"`
 }
 
@@ -405,8 +417,8 @@ func (q *Queries) GetStudentFeeSummary(ctx context.Context, id pgtype.UUID) (Get
 		&i.TotalFee,
 		&i.TotalPaid,
 		&i.TotalDiscountPercent,
-		&i.ScholarshipPercent,
 		&i.TotalDiscountAmount,
+		&i.ScholarshipPercent,
 		&i.ScholarshipAmount,
 	)
 	return i, err

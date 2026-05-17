@@ -19,7 +19,7 @@ export function AuthProvider({ user }: { user: JWTUser | null }) {
 
     api
       .get("/auth/me")
-      .then((res) => setUser(res.data.data))
+      .then((res) => setUser(res.data.data.user))
       .catch(() => clearUser());
   }, []);
 

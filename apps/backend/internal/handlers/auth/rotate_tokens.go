@@ -31,7 +31,7 @@ func RotateTokens(queries repository.AuthRepository, cfg *config.Config) gin.Han
 				"ip", c.ClientIP(),
 			)
 
-			c.JSON(http.StatusInternalServerError, types.APIResponse{
+			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Missing refresh token",
 				Code:    constants.MissingRefreshToken,
@@ -107,9 +107,9 @@ func RotateTokens(queries repository.AuthRepository, cfg *config.Config) gin.Han
 		})
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
-				utils.SetAuthCookie(c, "access_token", "", -1, cfg)
-				utils.SetAuthCookie(c, "refresh_token", "", -1, cfg)
-				utils.SetPublicCookie(c, "is_logged_in", "", -1, cfg)
+				// utils.SetAuthCookie(c, "access_token", "", -1, cfg)
+				// utils.SetAuthCookie(c, "refresh_token", "", -1, cfg)
+				// utils.SetPublicCookie(c, "is_logged_in", "", -1, cfg)
 
 				c.JSON(http.StatusUnauthorized, types.APIResponse{
 					Success: false,
@@ -124,24 +124,6 @@ func RotateTokens(queries repository.AuthRepository, cfg *config.Config) gin.Han
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Something went wrong",
-				Code:    constants.InternalServerError,
-			})
-			return
-		}
-
-		err = queries.RevokeRefreshToken(ctx, db.RevokeRefreshTokenParams{
-			SessionID: sessionID,
-			TokenHash: refreshTokenHashString,
-		})
-		if err != nil {
-			slog.Error("failed to revoke refresh token",
-				"error", err,
-				"user_id", refreshToken.UserID,
-			)
-
-			c.JSON(http.StatusInternalServerError, types.APIResponse{
-				Success: false,
-				Message: "Failed to process request",
 				Code:    constants.InternalServerError,
 			})
 			return
@@ -177,6 +159,32 @@ func RotateTokens(queries repository.AuthRepository, cfg *config.Config) gin.Han
 			slog.Error("failed to sign access token",
 				"error", err,
 				"user_id", user.ID,
+			)
+
+			c.JSON(http.StatusInternalServerError, types.APIResponse{
+				Success: false,
+				Message: "Failed to process request",
+				Code:    constants.InternalServerError,
+			})
+			return
+		}
+
+		if time.Since(refreshToken.CreatedAt.Time) < 5*time.Minute {
+			utils.SetAuthCookie(c, "access_token", accessTokenString, 15*60, cfg)
+			c.JSON(http.StatusOK, types.APIResponse{
+				Success: true,
+			})
+			return
+		}
+
+		err = queries.RevokeRefreshToken(ctx, db.RevokeRefreshTokenParams{
+			SessionID: sessionID,
+			TokenHash: refreshTokenHashString,
+		})
+		if err != nil {
+			slog.Error("failed to revoke refresh token",
+				"error", err,
+				"user_id", refreshToken.UserID,
 			)
 
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
@@ -246,7 +254,6 @@ func RotateTokens(queries repository.AuthRepository, cfg *config.Config) gin.Han
 
 		c.JSON(http.StatusOK, types.APIResponse{
 			Success: true,
-			Message: "Tokens refreshed.",
 		})
 	}
 }

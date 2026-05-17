@@ -2,6 +2,7 @@ package discount
 
 import (
 	"errors"
+	"log"
 	"log/slog"
 	"net/http"
 
@@ -88,14 +89,20 @@ func CreateDiscount(queries repository.StudentDiscounts) gin.HandlerFunc {
 			return
 		}
 
+		log.Println("totalpaid: ", summary.TotalPaid)
 		// total fee to be paid
 		effectiveFee := summary.TotalFee
+		log.Println("effective fee: ", effectiveFee)
 
 		discountAmount := summary.TotalDiscountAmount
+		log.Println("discount amount: ", discountAmount)
 		scholarshipAmount := summary.ScholarshipAmount
+		log.Println("scholarship amount: ", scholarshipAmount)
 		alreadyCovered := summary.TotalPaid + discountAmount + scholarshipAmount
+		log.Println("already covered amount: ", alreadyCovered)
 
 		remainingBalance := effectiveFee - alreadyCovered
+		log.Println("remaining balance amount: ", remainingBalance)
 		if remainingBalance <= 0 {
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
