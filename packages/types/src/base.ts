@@ -31,5 +31,5 @@ const apiResponseSchema = baseAPIResponseSchema.extend({
 
 export type APIResponse = z.infer<typeof apiResponseSchema>;
 export type FieldError = z.infer<typeof fieldErrorSchema>;
-export type ApiError = z.infer<typeof apiErrorSchema>;
+export type APIError = z.infer<typeof apiErrorSchema>;
 export type BaseAPIResponse = z.infer<typeof baseAPIResponseSchema>;

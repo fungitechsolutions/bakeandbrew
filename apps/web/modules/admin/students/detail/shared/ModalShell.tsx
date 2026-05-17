@@ -1,3 +1,5 @@
+import { Spinner } from "@/components/ui/spinner";
+
 export function ModalShell({
   title,
   icon: Icon,
@@ -49,10 +51,17 @@ export function ModalShell({
           <button
             onClick={onSubmit}
             disabled={submitting}
-            className="rounded-xl bg-[#2d4a3e] px-4 py-2 text-[0.82rem] font-semibold text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-xl bg-[#2d4a3e] px-4 py-2 text-[0.82rem] font-semibold text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 flex items-center gap-2"
             style={{ fontFamily: "var(--font-dm-sans)" }}
           >
-            {submitting ? "Saving…" : submitLabel}
+            {submitting ? (
+              <>
+                <Spinner />
+                Saving…
+              </>
+            ) : (
+              submitLabel
+            )}
           </button>
         </div>
       </div>

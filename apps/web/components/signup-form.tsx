@@ -17,7 +17,7 @@ import { useMutation } from "@tanstack/react-query";
 import api from "@/lib/axios";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
-import { ApiError } from "@repo/types/base";
+import { APIError } from "@repo/types";
 import { mapFieldErrors } from "@/utils/api";
 import { Spinner } from "./ui/spinner";
 import { useAuthStore } from "@/store/auth";
@@ -33,7 +33,7 @@ export function SignupForm({
   const router = useRouter();
   const { mutate, isPending, reset } = useMutation<
     SignupResponse,
-    AxiosError<ApiError>,
+    AxiosError<APIError>,
     SignupPayload
   >({
     mutationFn: async (data: SignupPayload) => {

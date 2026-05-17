@@ -216,8 +216,6 @@ export function WastageClient() {
 
   const records = data.data;
   const limit = data.meta.limit;
-  const total = data.meta.total;
-  const totalPages = data.meta.totalPages;
 
   const filtered = records
     .filter((r) => {

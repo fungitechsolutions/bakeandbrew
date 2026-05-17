@@ -7,104 +7,150 @@ import { AddBtn } from "./AddButton";
 import { DiscountRow } from "./DiscountRow";
 import { Percent } from "lucide-react";
 import { DiscountFormModal } from "./DiscountFormModal";
+import {
+  CreateStudentDiscountRequest,
+  CreateStudentDiscountResponse,
+  DeleteStudentDiscountResponse,
+  StudentDiscountMutationInput,
+  StudentDiscountResponse,
+  UpdateStudentDiscountRequest,
+  UpdateStudentDiscountResponse,
+} from "@repo/types";
+import { useMutation } from "@tanstack/react-query";
+import api from "@/lib/axios";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { APIError } from "@repo/types";
+import axios, { AxiosError } from "axios";
 
-const MOCK_DISCOUNTS: Discount[] = [
-  {
-    id: "d1",
-    studentId: "s1",
-    addedBy: "u1",
-    addedByName: "Sita Sharma",
-    type: "Sibling",
-    percent: 10,
-    note: "Elder sibling already enrolled",
-    amount: 150000,
-    createdAt: "2025-01-15T10:30:00Z",
-  },
-  {
-    id: "d2",
-    studentId: "s1",
-    addedBy: "u2",
-    addedByName: "Ram Thapa",
-    type: "Early Bird",
-    percent: 5,
-    note: "Enrolled before deadline",
-    amount: 75000,
-    createdAt: "2025-01-16T09:00:00Z",
-  },
-  {
-    id: "d3",
-    studentId: "s1",
-    addedBy: "u1",
-    addedByName: "Sita Sharma",
-    type: "Referral",
-    percent: 3,
-    note: null,
-    amount: 45000,
-    createdAt: "2025-02-01T14:15:00Z",
-  },
-];
-type Discount = {
-  id: string;
-  studentId: string;
-  addedBy: string;
-  addedByName: string;
-  type: string;
-  percent: number;
-  note: string | null;
-  amount: number;
-  createdAt: string;
+type Discount = Extract<
+  StudentDiscountResponse,
+  { success: true }
+>["data"][number];
+
+type Props = {
+  discounts: Extract<StudentDiscountResponse, { success: true }>["data"];
+  studentID: string;
 };
 
-type DiscountFormData = {
-  type: string;
-  percent: string;
-  note: string;
+type CreateStudentDiscountPayload = StudentDiscountMutationInput & {
+  studentID: string;
 };
-
-export function DiscountSection() {
-  const [discounts, setDiscounts] = useState<Discount[]>(MOCK_DISCOUNTS);
+type UpdateStudentDiscountPayload = StudentDiscountMutationInput & {
+  studentID: string;
+};
+export function DiscountSection({ discounts, studentID }: Props) {
   const [deleteTarget, setDeleteTarget] = useState<Discount | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editTarget, setEditTarget] = useState<Discount | null>(null);
+  const router = useRouter();
 
-  const handleDelete = (id: string) => {
-    setDiscounts((prev) => prev.filter((d) => d.id !== id));
-    setDeleteTarget(null);
-  };
+  const addDiscount = useMutation<
+    CreateStudentDiscountResponse,
+    AxiosError<APIError>,
+    CreateStudentDiscountPayload
+  >({
+    mutationFn: async (data: CreateStudentDiscountPayload) => {
+      try {
+        const res = await api.post<CreateStudentDiscountResponse>(
+          `/admin/students/${data.studentID}/discounts`,
+          data,
+        );
 
-  const handleAdd = (data: DiscountFormData) => {
-    // TODO: replace with real API call + use returned data
-    const newDiscount: Discount = {
-      id: crypto.randomUUID(),
-      studentId: "",
-      addedBy: "",
-      addedByName: "You",
-      type: data.type,
-      percent: Number(data.percent),
-      note: data.note || null,
-      amount: 0,
-      createdAt: new Date().toISOString(),
-    };
-    setDiscounts((prev) => [...prev, newDiscount]);
-    setShowAddModal(false);
-  };
+        if (!res.data.success) throw res.data;
+        return res.data;
+      } catch (error) {
+        console.error("error: ", error);
+        if (axios.isAxiosError(error)) throw error.response?.data;
+        throw error;
+      }
+    },
+    onSuccess: (result) => {
+      toast.success(result.message);
+      setShowAddModal(false);
+      router.refresh();
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+  const updateDiscount = useMutation<
+    UpdateStudentDiscountResponse,
+    AxiosError<APIError>,
+    CreateStudentDiscountPayload
+  >({
+    mutationFn: async (data: UpdateStudentDiscountPayload) => {
+      try {
+        const res = await api.put<UpdateStudentDiscountResponse>(
+          `/admin/students/${data.studentID}/discounts/${editTarget?.id}`,
+          data,
+        );
 
-  const handleEdit = (data: DiscountFormData) => {
-    if (!editTarget) return;
-    // TODO: replace with real API call + use returned data
-    setDiscounts((prev) =>
-      prev.map((d) =>
-        d.id === editTarget.id
-          ? {
-              ...d,
-              type: data.type,
-              percent: Number(data.percent),
-              note: data.note || null,
+        if (!res.data || !res.data.success) throw res.data;
+        return res.data;
+      } catch (error) {
+        if (axios.isAxiosError<APIError>(error)) {
+          throw (
+            error.response?.data ?? {
+              success: false,
+              message: "Something went wrong",
+              code: "UNKNOWN_ERROR",
+              errors: [],
             }
-          : d,
-      ),
-    );
-    setEditTarget(null);
+          );
+        }
+
+        throw {
+          success: false,
+          message: "Unexpected error occurred",
+          code: "UNKNOWN_ERROR",
+          errors: [],
+        };
+      }
+    },
+    onSuccess: (result) => {
+      toast.success(result.message);
+      setEditTarget(null);
+      router.refresh();
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+  const deleteDiscount = useMutation({
+    mutationFn: async (data: { studentID: string; discountID: string }) => {
+      const res = await api.delete<DeleteStudentDiscountResponse>(
+        `/admin/students/${data.studentID}/discounts/${data.discountID}`,
+      );
+
+      if (!res.data || !res.data.success) throw res.data;
+      return res.data;
+    },
+    onSuccess: (result) => {
+      toast.success(result.message);
+      setDeleteTarget(null);
+      router.refresh();
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    deleteDiscount.mutate({
+      studentID: studentID,
+      discountID: deleteTarget.id,
+    });
+  };
+
+  const handleAdd = async (data: CreateStudentDiscountRequest) => {
+    await addDiscount.mutateAsync({ ...data, studentID: studentID });
+  };
+
+  const handleEdit = async (data: UpdateStudentDiscountRequest) => {
+    if (!editTarget) return;
+    await updateDiscount.mutateAsync({ ...data, studentID: studentID });
   };
 
   return (
@@ -112,13 +158,15 @@ export function DiscountSection() {
       {deleteTarget && (
         <DeleteDiscountDialog
           discount={deleteTarget}
-          onConfirm={() => handleDelete(deleteTarget.id)}
+          isDeleting={deleteDiscount.isPending}
+          onConfirm={() => handleDelete()}
           onCancel={() => setDeleteTarget(null)}
         />
       )}
       {showAddModal && (
         <DiscountFormModal
           onSubmit={handleAdd}
+          isPending={addDiscount.isPending}
           onCancel={() => setShowAddModal(false)}
         />
       )}
@@ -126,9 +174,10 @@ export function DiscountSection() {
         <DiscountFormModal
           initial={{
             type: editTarget.type,
-            percent: String(editTarget.percent),
+            percent: Number(editTarget.percent),
             note: editTarget.note ?? "",
           }}
+          isPending={updateDiscount.isPending}
           onSubmit={handleEdit}
           onCancel={() => setEditTarget(null)}
         />

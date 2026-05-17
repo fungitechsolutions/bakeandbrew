@@ -55,7 +55,10 @@ func (q *Queries) DeleteAllUserRefreshTokens(ctx context.Context, userID pgtype.
 
 const getRefreshToken = `-- name: GetRefreshToken :one
 SELECT id, user_id, token_hash, session_id, expires_at, created_at, revoked_at FROM refresh_tokens
-WHERE session_id = $1 AND token_hash = $2 AND revoked_at IS NULL AND expires_at > NOW()
+WHERE session_id = $1 
+AND token_hash = $2 
+AND expires_at > NOW()
+AND (revoked_at IS NULL OR revoked_at > NOW() - INTERVAL '5 minutes')
 `
 
 type GetRefreshTokenParams struct {

@@ -1,27 +1,24 @@
 "use client";
 
+import { Spinner } from "@/components/ui/spinner";
+import { StudentDiscountResponse } from "@repo/types";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
 
-type Discount = {
-  id: string;
-  studentId: string;
-  addedBy: string;
-  addedByName: string;
-  type: string;
-  percent: number;
-  note: string | null;
-  amount: number;
-  createdAt: string;
-};
+type Discount = Extract<
+  StudentDiscountResponse,
+  { success: true }
+>["data"][number];
 export function DeleteDiscountDialog({
   discount,
   onConfirm,
   onCancel,
+  isDeleting,
 }: {
   discount: Discount;
   onConfirm: () => void;
   onCancel: () => void;
+  isDeleting: boolean;
 }) {
   const [input, setInput] = useState("");
   const ready = input === "DELETE";
@@ -95,11 +92,18 @@ export function DeleteDiscountDialog({
           </button>
           <button
             onClick={onConfirm}
-            disabled={!ready}
-            className="rounded-xl bg-red-500 px-4 py-2 text-[0.82rem] font-semibold text-white transition-all hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-40"
+            disabled={!ready || isDeleting}
+            className="rounded-xl bg-red-500 px-4 py-2 text-[0.82rem] font-semibold text-white transition-all hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-40 flex items-center gap-2"
             style={{ fontFamily: "var(--font-dm-sans)" }}
           >
-            Remove Discount
+            {isDeleting ? (
+              <>
+                <Spinner />
+                Removing...
+              </>
+            ) : (
+              " Remove Discount"
+            )}
           </button>
         </div>
       </div>

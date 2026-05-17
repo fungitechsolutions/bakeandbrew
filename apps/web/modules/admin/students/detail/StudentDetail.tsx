@@ -22,8 +22,10 @@ import {
   AddPayment,
   AddPaymentResponse,
   StudentDetail,
+  StudentDiscountResponse,
   StudentEnrolledCourses,
   StudentPaymentDetails,
+  StudentScholarshipResponse,
   UpdateStudentStatus,
   UpdateStudentStatusResponse,
 } from "@repo/types";
@@ -31,8 +33,6 @@ import { StudentAvatar } from "./StudentAvatar";
 import { AddPaymentModal } from "./AddPaymentModal";
 import { StatusEditor } from "./StatusEditor";
 import { Invoice } from "./Invoice";
-import { SectionCard } from "./SectionCard";
-import { InfoRow } from "./InfoRow";
 import { useMutation } from "@tanstack/react-query";
 import api from "@/lib/axios";
 import { toast } from "sonner";
@@ -48,6 +48,8 @@ type Props = {
   student: Extract<StudentDetail, { success: true }>["data"];
   courses: Extract<StudentEnrolledCourses, { success: true }>["data"];
   payments: Extract<StudentPaymentDetails, { success: true }>["data"];
+  scholarships: Extract<StudentScholarshipResponse, { success: true }>["data"];
+  discounts: Extract<StudentDiscountResponse, { success: true }>["data"];
 };
 
 export type Status = "pending" | "active" | "completed" | "rejected";
@@ -86,6 +88,8 @@ export default function StudentDetailPage({
   student,
   courses,
   payments,
+  scholarships,
+  discounts,
 }: Props) {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showInvoice, setShowInvoice] = useState(false);
@@ -413,6 +417,8 @@ export default function StudentDetailPage({
           totalFee={totalFee}
           setShowPaymentModal={setShowPaymentModal}
           PaymentRow={PaymentRow}
+          scholarship={scholarships}
+          discounts={discounts}
         />
       </div>
     </div>

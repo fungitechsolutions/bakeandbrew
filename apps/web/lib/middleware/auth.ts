@@ -113,7 +113,7 @@ export async function attemptRefresh(
     return response;
   } catch (error) {
     console.log("attemptRefresh threw an error:", error);
-    return NextResponse.redirect(new URL("/auth/login", req.url));
+    return NextResponse.redirect(new URL("/", req.url));
   }
 }
 

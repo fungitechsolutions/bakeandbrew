@@ -315,17 +315,15 @@ function PersonalInfoSection({ student }: { student: Student }) {
             />
           </EditField>
 
-          <div className="sm:col-span-2">
-            <EditField label="Address">
-              <input
-                className={inputCls}
-                style={{ fontFamily: "var(--font-dm-sans)" }}
-                value={form.address}
-                onChange={set("address")}
-                placeholder="Full address"
-              />
-            </EditField>
-          </div>
+          <EditField label="Address">
+            <input
+              className={inputCls}
+              style={{ fontFamily: "var(--font-dm-sans)" }}
+              value={form.address}
+              onChange={set("address")}
+              placeholder="Full address"
+            />
+          </EditField>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -353,12 +351,12 @@ function PersonalInfoSection({ student }: { student: Student }) {
             value={student.shiftTime ?? "—"}
             icon={Clock}
           />
-          <InfoRow label="Address" value={student.address} icon={MapPin} />
           <InfoRow
             label="Batch"
             value={student.batch ?? "—"}
             icon={GraduationCap}
           />
+          <InfoRow label="Address" value={student.address} icon={MapPin} />
         </div>
       )}
     </SectionCard>

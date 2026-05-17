@@ -1,5 +1,6 @@
 import z from "zod";
 import { baseAPIResponseSchema } from "./base";
+import { m, percent } from "motion/react";
 
 export const listStudentResponseSchema = z.discriminatedUnion("success", [
   z.object({
@@ -413,3 +414,61 @@ export const analyticsResponseSchema = z.discriminatedUnion("success", [
 ]);
 
 export type AnalyticsResponse = z.infer<typeof analyticsResponseSchema>;
+
+const studentDiscountSchema = z.object({
+  id: z.uuid(),
+  studentId: z.uuid(),
+  addedBy: z.uuid(),
+  type: z.string(),
+  percent: z.number(),
+  note: z.string(),
+  amount: z.number(),
+  createdAt: z.date(),
+  addedByName: z.string(),
+});
+
+export const studentDiscountResponseSchema = z.discriminatedUnion("success", [
+  z.object({
+    success: z.literal(true),
+    data: z.array(studentDiscountSchema),
+  }),
+  z.object({
+    success: z.literal(false),
+    message: z.string(),
+    code: z.string(),
+  }),
+]);
+
+export type StudentDiscountResponse = z.infer<
+  typeof studentDiscountResponseSchema
+>;
+
+const studentScholarshipSchema = z.object({
+  id: z.uuid(),
+  studentId: z.uuid(),
+  addedBy: z.uuid(),
+  addedByName: z.string(),
+  percent: z.number(),
+  note: z.string(),
+  amount: z.number(),
+  createdAt: z.date(),
+});
+
+export const studentScholarshipResponseSchema = z.discriminatedUnion(
+  "success",
+  [
+    z.object({
+      success: z.literal(true),
+      data: studentScholarshipSchema,
+    }),
+    z.object({
+      success: z.literal(false),
+      message: z.string(),
+      code: z.string(),
+    }),
+  ],
+);
+
+export type StudentScholarshipResponse = z.infer<
+  typeof studentScholarshipResponseSchema
+>;
