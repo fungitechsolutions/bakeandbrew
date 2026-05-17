@@ -1,12 +1,15 @@
+import { Spinner } from "@/components/ui/spinner";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
 
 export function DeleteScholarshipDialog({
   onConfirm,
   onCancel,
+  isPending,
 }: {
   onConfirm: () => void;
   onCancel: () => void;
+  isPending: boolean;
 }) {
   const [input, setInput] = useState("");
   const ready = input === "DELETE";
@@ -72,11 +75,18 @@ export function DeleteScholarshipDialog({
           </button>
           <button
             onClick={onConfirm}
-            disabled={!ready}
-            className="rounded-xl bg-red-500 px-4 py-2 text-[0.82rem] font-semibold text-white transition-all hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-40"
+            disabled={!ready || isPending}
+            className="rounded-xl bg-red-500 px-4 py-2 text-[0.82rem] font-semibold text-white transition-all hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-40 flex items-center gap-2"
             style={{ fontFamily: "var(--font-dm-sans)" }}
           >
-            Remove Scholarship
+            {isPending ? (
+              <>
+                <Spinner />
+                removing...
+              </>
+            ) : (
+              "Remove Scholarship"
+            )}
           </button>
         </div>
       </div>

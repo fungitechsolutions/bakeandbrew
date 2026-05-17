@@ -7,35 +7,132 @@ import { DeleteScholarshipDialog } from "./DeleteScholarshipDialog";
 import { useState } from "react";
 import { IconBtn } from "./IconButton";
 import { ScholarshipFormModal } from "./ScholarshipFormModal";
-import { StudentScholarshipResponse } from "@repo/types";
-
-type ScholarshipFormData = {
-  percent: string;
-  note: string;
-};
+import {
+  APIError,
+  StudentScholarshipInput,
+  StudentScholarshipMutationResponse,
+  StudentScholarshipResponse,
+} from "@repo/types";
+import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import axios, { AxiosError } from "axios";
+import api from "@/lib/axios";
+import { toast } from "sonner";
 
 type Props = {
+  studentID: string;
   scholarship: Extract<StudentScholarshipResponse, { success: true }>["data"];
 };
 
-export function ScholarshipSection({ scholarship }: Props) {
+export function ScholarshipSection({ scholarship, studentID }: Props) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 
-  const handleDelete = () => {
+  const router = useRouter();
+
+  const addScholarship = useMutation<
+    StudentScholarshipMutationResponse,
+    AxiosError<APIError>,
+    StudentScholarshipInput
+  >({
+    mutationFn: async (data: StudentScholarshipInput) => {
+      try {
+        const res = await api.post<StudentScholarshipMutationResponse>(
+          `/admin/students/${studentID}/scholarships`,
+          data,
+        );
+
+        if (!res.data.success) throw res.data;
+        return res.data;
+      } catch (error) {
+        console.error("error: ", error);
+        if (axios.isAxiosError(error)) throw error.response?.data;
+        throw error;
+      }
+    },
+    onSuccess: (result) => {
+      toast.success(result.message);
+      setShowAddModal(false);
+      router.refresh();
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+  const updateScholarship = useMutation<
+    StudentScholarshipMutationResponse,
+    AxiosError<APIError>,
+    StudentScholarshipInput
+  >({
+    mutationFn: async (data: StudentScholarshipInput) => {
+      try {
+        const res = await api.put<StudentScholarshipMutationResponse>(
+          `/admin/students/${studentID}/scholarships/${scholarship.id}`,
+          data,
+        );
+
+        if (!res.data || !res.data.success) throw res.data;
+        return res.data;
+      } catch (error) {
+        if (axios.isAxiosError<APIError>(error)) {
+          throw (
+            error.response?.data ?? {
+              success: false,
+              message: "Something went wrong",
+              code: "UNKNOWN_ERROR",
+              errors: [],
+            }
+          );
+        }
+
+        throw {
+          success: false,
+          message: "Unexpected error occurred",
+          code: "UNKNOWN_ERROR",
+          errors: [],
+        };
+      }
+    },
+    onSuccess: (result) => {
+      toast.success(result.message);
+      router.refresh();
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+  const deleteScholarship = useMutation({
+    mutationFn: async () => {
+      const res = await api.delete<StudentScholarshipMutationResponse>(
+        `/admin/students/${studentID}/scholarships/${scholarship.id}`,
+      );
+
+      if (!res.data || !res.data.success) throw res.data;
+      return res.data;
+    },
+    onSuccess: (result) => {
+      toast.success(result.message);
+      router.refresh();
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const handleDelete = async () => {
+    await deleteScholarship.mutateAsync();
     setShowDeleteDialog(false);
   };
 
-  const handleAdd = (data: ScholarshipFormData) => {
-    // TODO: replace with real API call + use returned data
-
+  const handleAdd = async (data: StudentScholarshipInput) => {
+    await addScholarship.mutateAsync(data);
     setShowAddModal(false);
   };
 
-  const handleEdit = (data: ScholarshipFormData) => {
+  const handleEdit = async (data: StudentScholarshipInput) => {
     if (!scholarship) return;
-    // TODO: replace with real API call + use returned data
+    await updateScholarship.mutateAsync(data);
 
     setShowEditModal(false);
   };
@@ -45,6 +142,7 @@ export function ScholarshipSection({ scholarship }: Props) {
       {showDeleteDialog && (
         <DeleteScholarshipDialog
           onConfirm={handleDelete}
+          isPending={deleteScholarship.isPending}
           onCancel={() => setShowDeleteDialog(false)}
         />
       )}
@@ -52,16 +150,18 @@ export function ScholarshipSection({ scholarship }: Props) {
         <ScholarshipFormModal
           onSubmit={handleAdd}
           onCancel={() => setShowAddModal(false)}
+          isPending={addScholarship.isPending}
         />
       )}
       {showEditModal && scholarship && (
         <ScholarshipFormModal
           initial={{
-            percent: String(scholarship.percent),
+            percent: Number(scholarship.percent),
             note: scholarship.note ?? "",
           }}
           onSubmit={handleEdit}
           onCancel={() => setShowEditModal(false)}
+          isPending={updateScholarship.isPending}
         />
       )}
 

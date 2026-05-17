@@ -17,9 +17,8 @@ import (
 )
 
 type UpdateScholarshipRequest struct {
-	StudentID string  `json:"studentID" binding:"required,uuid"`
-	Percent   float64 `json:"percent" binding:"required,gt=0,lte=100"`
-	Note      string  `json:"note" binding:"omitempty,min=1,max=100"`
+	Percent float64 `json:"percent" binding:"required,gt=0,lte=100"`
+	Note    string  `json:"note" binding:"omitempty,min=1,max=100"`
 }
 
 func UpdateScholarship(queries repository.StudentsScholarship) gin.HandlerFunc {
@@ -46,6 +45,25 @@ func UpdateScholarship(queries repository.StudentsScholarship) gin.HandlerFunc {
 			return
 		}
 
+		studentIDFromParam := c.Param("studentID")
+		if studentIDFromParam == "" {
+			c.JSON(http.StatusBadRequest, types.APIResponse{
+				Success: false,
+				Message: "Missing student ID",
+				Code:    constants.MissingStudentID,
+			})
+			return
+		}
+
+		studentID, err := utils.ConvertToUUID(studentIDFromParam)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, types.APIResponse{
+				Success: false,
+				Message: "Invalid ID format",
+				Code:    constants.InvalidIDFormat,
+			})
+			return
+		}
 		var req UpdateScholarshipRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, types.APIResponse{
@@ -53,16 +71,6 @@ func UpdateScholarship(queries repository.StudentsScholarship) gin.HandlerFunc {
 				Message: "Invalid request data",
 				Code:    constants.ValidationFailed,
 				Errors:  validator.Parse(err, req),
-			})
-			return
-		}
-
-		studentID, err := utils.ConvertToUUID(req.StudentID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, types.APIResponse{
-				Success: false,
-				Message: "Invalid ID format",
-				Code:    constants.InvalidIDFormat,
 			})
 			return
 		}
@@ -177,7 +185,7 @@ func UpdateScholarship(queries repository.StudentsScholarship) gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, types.APIResponse{
 			Success: true,
-			Message: "Scholarship added for the student",
+			Message: "Scholarship updated for the student",
 		})
 
 	}

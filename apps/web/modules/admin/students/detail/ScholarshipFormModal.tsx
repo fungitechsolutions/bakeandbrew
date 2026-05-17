@@ -4,6 +4,14 @@ import { useState } from "react";
 import { ModalShell } from "./shared/ModalShell";
 import { GraduationCap } from "lucide-react";
 import { FormField } from "./shared/FormField";
+import {
+  APIError,
+  StudentScholarshipInput,
+  studentScholarshipMutationSchema,
+} from "@repo/types";
+import z from "zod";
+import { mapFieldErrors } from "@/utils/api";
+import { FieldError } from "@/components/ui/field";
 
 type ScholarshipFormData = {
   percent: string;
@@ -16,16 +24,21 @@ const inputCls =
 export function ScholarshipFormModal({
   initial,
   onSubmit,
+  isPending,
   onCancel,
 }: {
-  initial?: ScholarshipFormData;
-  onSubmit: (data: ScholarshipFormData) => void;
+  initial?: StudentScholarshipInput;
+  onSubmit: (data: StudentScholarshipInput) => void;
   onCancel: () => void;
+  isPending: boolean;
 }) {
-  const [form, setForm] = useState<ScholarshipFormData>(
-    initial ?? { percent: "", note: "" },
-  );
-  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState<ScholarshipFormData>({
+    percent: initial?.percent.toString() ?? "",
+    note: initial?.note ?? "",
+  });
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof ScholarshipFormData, string>>
+  >({});
 
   const set =
     (k: keyof ScholarshipFormData) =>
@@ -34,16 +47,27 @@ export function ScholarshipFormModal({
 
   const isEdit = !!initial;
 
-  const valid =
-    form.percent.trim().length > 0 &&
-    Number(form.percent) > 0 &&
-    Number(form.percent) <= 100;
-
-  const handleSubmit = () => {
-    if (!valid) return;
-    setSubmitting(true);
-    // TODO: call your API here, then call onSubmit with the result
-    onSubmit(form);
+  const handleSubmit = async () => {
+    const validate = studentScholarshipMutationSchema.safeParse({
+      ...form,
+      percent: Number(form.percent),
+    });
+    if (!validate.success) {
+      const tree = z.treeifyError(validate.error).properties;
+      setErrors({
+        percent: tree?.percent?.errors[0],
+        note: tree?.note?.errors[0],
+      });
+      return;
+    }
+    try {
+      await onSubmit({ ...form, percent: Number(form.percent) });
+    } catch (err) {
+      const error = err as APIError;
+      if (error.errors?.length) {
+        setErrors(mapFieldErrors(error));
+      }
+    }
   };
 
   return (
@@ -53,7 +77,7 @@ export function ScholarshipFormModal({
       onCancel={onCancel}
       onSubmit={handleSubmit}
       submitLabel={isEdit ? "Save Changes" : "Award Scholarship"}
-      submitting={submitting}
+      submitting={isPending}
     >
       <FormField label="Percent" required hint="Must be between 0 and 100">
         <div className="relative">
@@ -73,6 +97,7 @@ export function ScholarshipFormModal({
             %
           </span>
         </div>
+        {errors.percent && <FieldError>{errors.percent}</FieldError>}
       </FormField>
 
       <FormField label="Note" hint="Optional — max 100 characters">
@@ -85,6 +110,7 @@ export function ScholarshipFormModal({
           value={form.note}
           onChange={set("note")}
         />
+        {errors.note && <FieldError>{errors.note}</FieldError>}
       </FormField>
     </ModalShell>
   );
