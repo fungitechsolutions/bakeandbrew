@@ -59,7 +59,7 @@ export const studentDetailResponseSchema = z.discriminatedUnion("success", [
       ]),
       status: z.enum(["pending", "active", "completed", "rejected"]),
       notes: z.string(),
-      shift: z.enum(["morning", "afternoon", "evening"]).optional(),
+      shift: z.enum(["morning", "day", "evening"]),
       shiftTime: z.string(),
       batch: z.string().optional(),
       createdAt: z.date(),

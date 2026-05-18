@@ -47,10 +47,10 @@ export const createStudentAdmissionRequest = z.object({
     error: "Please select how you heard about us",
   }),
 
-  email: z
-    .email("Enter a valid email address")
-    .trim()
-    .min(1, "Email is required"),
+  // email: z
+  //   .email("Enter a valid email address")
+  //   .trim()
+  //   .min(1, "Email is required"),
 
   dob: z
     .string()
@@ -83,7 +83,7 @@ export const createStudentAdmissionRequest = z.object({
     .min(1, "Address is required")
     .min(5, "Address is too short"),
 
-  shift: z.enum(["morning", "afternoon", "evening"]),
+  shift: z.enum(["morning", "day", "evening"]),
   shiftTime: z.string().trim().min(1, "Shift time is required"),
 
   // claimedAmount: z

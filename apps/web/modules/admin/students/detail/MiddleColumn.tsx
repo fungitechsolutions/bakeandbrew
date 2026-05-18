@@ -56,7 +56,7 @@ type PersonalInfoForm = {
   gender: "male" | "female" | "other";
   phone: string;
   source: "facebook" | "instagram" | "tiktok" | "referral" | "inperson";
-  shift: "morning" | "afternoon" | "evening" | "";
+  shift: "morning" | "day" | "evening";
   shiftTime: string;
   address: string;
   batch: string;
@@ -152,7 +152,7 @@ function PersonalInfoSection({ student }: { student: Student }) {
     gender: student.gender,
     phone: student.phone,
     source: student.source,
-    shift: student.shift ?? "",
+    shift: student.shift,
     shiftTime: student.shiftTime ?? "",
     address: student.address,
     batch: student?.batch ?? "",
@@ -288,9 +288,8 @@ function PersonalInfoSection({ student }: { student: Student }) {
               value={form.shift}
               onChange={set("shift")}
             >
-              <option value="">— None —</option>
               <option value="morning">Morning</option>
-              <option value="afternoon">Afternoon</option>
+              <option value="day">Day</option>
               <option value="evening">Evening</option>
             </select>
           </EditField>
@@ -468,7 +467,7 @@ export function MiddleColumn({
   PaymentRow: React.ComponentType<PaymentRowProps>;
 }) {
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col  gap-5">
       <PersonalInfoSection student={student} />
       <GuardianSection student={student} />
 
