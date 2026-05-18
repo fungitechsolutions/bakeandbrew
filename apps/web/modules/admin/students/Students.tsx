@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import {
   Search,
@@ -56,16 +56,16 @@ export default function StudentsPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
+  const [searchInput, setSearchInput] = useState(searchParams.get("q") ?? "");
 
   // Read from search params
-  const search = searchParams.get("q") ?? "";
   const statusFilter = (searchParams.get("status") ?? "all") as Status | "all";
   const courseFilter = searchParams.get("course") ?? "all";
   const shiftFilter = searchParams.get("shift") ?? "all";
   const batchFilter = searchParams.get("batch") ?? "all";
   const page = Number(searchParams.get("page") ?? "1");
 
-  const debouncedSearch = useDebounce(search, 400);
+  const debouncedSearch = useDebounce(searchInput, 400);
 
   // Search params updater
   const updateParams = useCallback(
@@ -86,7 +86,10 @@ export default function StudentsPage() {
     [searchParams, pathname, router],
   );
 
-  const handleSearch = (v: string) => updateParams({ q: v });
+  useEffect(() => {
+    updateParams({ q: debouncedSearch });
+  }, [debouncedSearch]);
+
   const handleStatus = (v: Status | "all") => updateParams({ status: v });
   const handleCourse = (v: string) => updateParams({ course: v });
   const handlePage = (p: number) => updateParams({ page: String(p) });
@@ -137,7 +140,7 @@ export default function StudentsPage() {
     courseFilter !== "all",
     shiftFilter !== "all",
     batchFilter !== "all",
-    search !== "",
+    searchInput !== "",
   ].filter(Boolean).length;
 
   return (
@@ -190,14 +193,14 @@ export default function StudentsPage() {
               <input
                 type="text"
                 placeholder="Search by name, reference or phone…"
-                value={search}
-                onChange={(e) => handleSearch(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 className="h-full w-full border-0 bg-transparent py-3.5 pl-11 pr-4 text-[0.88rem] text-[#2d4a3e] outline-none placeholder:text-[#2d4a3e]/30 focus:ring-0"
                 style={{ fontFamily: "var(--font-dm-sans)" }}
               />
-              {search && (
+              {searchInput && (
                 <button
-                  onClick={() => handleSearch("")}
+                  onClick={() => setSearchInput("")}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-[#2d4a3e]/30 hover:text-[#2d4a3e]"
                 >
                   <X className="h-4 w-4" />
