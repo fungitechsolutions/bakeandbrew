@@ -55,6 +55,7 @@ export function StudentDetailGrid({
   PaymentRow,
   scholarship,
   discounts,
+  balanceDue,
 }: {
   student: Student;
   payments: Payment[];
@@ -64,6 +65,7 @@ export function StudentDetailGrid({
   PaymentRow: React.ComponentType<PaymentRowProps>;
   scholarship: Scholarship;
   discounts: Discount[];
+  balanceDue: number;
 }) {
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_1.5fr_1fr]">
@@ -75,6 +77,7 @@ export function StudentDetailGrid({
 
       {/* MIDDLE — Personal Info + Guardian + Payments */}
       <MiddleColumn
+        balanceDue={balanceDue}
         student={student}
         payments={payments}
         setShowPaymentModal={setShowPaymentModal}

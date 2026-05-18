@@ -104,7 +104,7 @@ export default function StudentDetailPage({
   const scholarshipAmount = scholarships?.amount
     ? scholarships.amount / 100
     : 0;
-  const balance = totalFee - totalPaid - discountAmount - scholarshipAmount;
+  const balanceDue = totalFee - totalPaid - discountAmount - scholarshipAmount;
   // const claimedAmount = student.claimedAmount / 100;
   const issueDate = new Date().toLocaleDateString("en-NP", {
     year: "numeric",
@@ -201,11 +201,26 @@ export default function StudentDetailPage({
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setShowPaymentModal(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[#2d4a3e] px-4 py-2 text-[0.85rem] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(45,74,62,0.25)]"
+              disabled={balanceDue <= 0}
+              className="
+    inline-flex items-center gap-1.5 rounded-xl
+    px-4 py-2 text-[0.85rem] font-semibold text-white
+    transition-all
+    bg-[#2d4a3e]
+    hover:-translate-y-0.5
+    hover:shadow-[0_4px_16px_rgba(45,74,62,0.25)]
+
+    disabled:cursor-not-allowed
+    disabled:bg-[#94a39c]
+    disabled:text-white/80
+    disabled:hover:translate-y-0
+    disabled:hover:shadow-none
+    disabled:opacity-70
+  "
               style={{ fontFamily: "var(--font-dm-sans)" }}
             >
               <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
-              Add Payment
+              {balanceDue <= 0 ? "Balance Cleared" : "Add Payment"}
             </button>
             <button
               onClick={() => setShowInvoice(!showInvoice)}
@@ -267,11 +282,11 @@ export default function StudentDetailPage({
             },
             {
               label: "Balance Due",
-              value: `NPR ${Math.abs(balance).toLocaleString()}`,
+              value: `NPR ${Math.abs(balanceDue).toLocaleString()}`,
               sub:
-                balance > 0
+                balanceDue > 0
                   ? "outstanding"
-                  : balance === 0
+                  : balanceDue === 0
                     ? "cleared"
                     : "overpaid",
             },
@@ -415,6 +430,7 @@ export default function StudentDetailPage({
 
         {/* ── Main grid ── */}
         <StudentDetailGrid
+          balanceDue={balanceDue}
           student={student}
           courses={courses}
           payments={payments}

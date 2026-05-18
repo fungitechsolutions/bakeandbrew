@@ -2,6 +2,7 @@ package payments
 
 import (
 	"errors"
+	"log"
 	"log/slog"
 	"net/http"
 
@@ -79,6 +80,46 @@ func AddPayment(queries repository.AdminRepository) gin.HandlerFunc {
 				Success: false,
 				Message: "Invalid ID format",
 				Code:    constants.InvalidIDFormat,
+			})
+			return
+		}
+
+		summary, err := queries.GetStudentFeeSummary(ctx, studentID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, types.APIResponse{
+				Success: false,
+				Message: "Failed to process request",
+				Code:    constants.InternalServerError,
+			})
+			return
+		}
+
+		log.Println("totalPaid: ", summary.TotalPaid)
+		effectiveFee := summary.TotalFee
+		log.Println("total fee: ", summary.TotalFee)
+		discountAmount := summary.TotalDiscountAmount
+		log.Println("dis amount: ", discountAmount)
+
+		scholarshipAmount := summary.ScholarshipAmount
+		log.Println("scholarship amount: ", scholarshipAmount)
+		alreadyCovered := summary.TotalPaid + discountAmount + scholarshipAmount
+		log.Println("already paid: ", alreadyCovered)
+		remaining := effectiveFee - alreadyCovered
+		log.Println("remaining: ", remaining)
+		if remaining <= 0 {
+			c.JSON(http.StatusBadRequest, types.APIResponse{
+				Success: false,
+				Message: "No outstanding balance remaining to add payment",
+				Code:    constants.ValidationFailed,
+			})
+			return
+		}
+
+		if req.Amount*100 > float64(remaining) {
+			c.JSON(http.StatusBadRequest, types.APIResponse{
+				Success: false,
+				Message: "Payment amount is greater than outstanding fees",
+				Code:    constants.ValidationFailed,
 			})
 			return
 		}
