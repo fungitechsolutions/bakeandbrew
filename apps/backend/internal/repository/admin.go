@@ -11,7 +11,7 @@ import (
 type AdminRepository interface {
 	GetStudentByID(ctx context.Context, id pgtype.UUID) (db.GetStudentByIDRow, error)
 	ListStudents(ctx context.Context, params db.ListStudentsParams) ([]db.ListStudentsRow, error)
-	GetStudentsCount(ctx context.Context) (int64, error)
+	GetStudentsCount(ctx context.Context, params db.GetStudentsCountParams) (int64, error)
 	GetCoursesByStudentID(ctx context.Context, studentID pgtype.UUID) ([]db.GetCoursesByStudentIDRow, error)
 	GetPaymentsByStudent(ctx context.Context, studentID pgtype.UUID) ([]db.GetPaymentsByStudentRow, error)
 	AddPayment(ctx context.Context, params db.AddPaymentParams) (db.Payment, error)

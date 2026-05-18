@@ -3,6 +3,7 @@
 import { Users, Clock, DollarSign, AlertTriangle } from "lucide-react";
 import type { OverviewData, RevenueStatsData } from "../types";
 import { formatNPR } from "../types";
+import Link from "next/link";
 
 interface OverviewCardsProps {
   overview: OverviewData;
@@ -16,12 +17,14 @@ interface CardConfig {
   icon: React.ElementType;
   iconBg: string;
   iconColor: string;
+  href: string;
 }
 
 export function OverviewCards({ overview, revenueStats }: OverviewCardsProps) {
   const cards: CardConfig[] = [
     {
       label: "Total Students",
+      href: "/admin/students",
       value: overview.totalStudents,
       subtitle: "Enrolled students",
       icon: Users,
@@ -30,6 +33,7 @@ export function OverviewCards({ overview, revenueStats }: OverviewCardsProps) {
     },
     {
       label: "Pending Approvals",
+      href: "/admin/students?status=pending",
       value: overview.pendingApprovals,
       subtitle: "Awaiting review",
       icon: Clock,
@@ -38,6 +42,7 @@ export function OverviewCards({ overview, revenueStats }: OverviewCardsProps) {
     },
     {
       label: "Total Revenue",
+      href: "/admin/students/sales",
       value: formatNPR(overview.totalRevenue),
       subtitle: `This month: ${formatNPR(revenueStats.thisMonth)}`,
       icon: DollarSign,
@@ -46,6 +51,7 @@ export function OverviewCards({ overview, revenueStats }: OverviewCardsProps) {
     },
     {
       label: "Outstanding Fees",
+      href: "/admin/students/outstanding",
       value: overview.studentsWithBalance,
       subtitle: `Outstanding: ${formatNPR(revenueStats.outstanding)}`,
       icon: AlertTriangle,
@@ -57,7 +63,8 @@ export function OverviewCards({ overview, revenueStats }: OverviewCardsProps) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {cards.map((card) => (
-        <div
+        <Link
+          href={`${card.href}`}
           key={card.label}
           className="group rounded-xl border border-slate-200/70 bg-white p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:border-slate-300/70"
         >
@@ -81,7 +88,7 @@ export function OverviewCards({ overview, revenueStats }: OverviewCardsProps) {
               <card.icon className={`h-5 w-5 ${card.iconColor}`} />
             </div>
           </div>
-        </div>
+        </Link>
       ))}
     </div>
   );

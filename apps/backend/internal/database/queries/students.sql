@@ -66,20 +66,46 @@ SELECT
     s.phone,
     s.status,
     s.created_at,
-  COALESCE(
-    STRING_AGG(c.name, ',' ORDER BY c.name),
-    ''
-) AS courses
+    s.batch,
+    s.shift,
+    COALESCE(
+        STRING_AGG(c.name, ',' ORDER BY c.name),
+        ''
+    ) AS courses
 FROM students s
 LEFT JOIN student_courses sc ON sc.student_id = s.id
 LEFT JOIN courses c ON c.id = sc.course_id
+WHERE
+    (@status::text = '' OR s.status = @status::text)
+    AND (@shift::text = '' OR s.shift = @shift::text)
+    AND (@batch::text = '' OR s.batch = @batch::text)
+    AND (@course::text = '' OR c.name ILIKE @course::text)
+    AND (
+        @search::text = ''
+        OR s.full_name ILIKE '%' || @search || '%'
+        OR s.reference_no ILIKE '%' || @search || '%'
+        OR s.phone ILIKE '%' || @search || '%'
+    )
 GROUP BY s.id
 ORDER BY s.created_at DESC
 LIMIT $1 OFFSET $2;
 
-
 -- name: GetStudentsCount :one
-SELECT COUNT(*) FROM students;
+SELECT COUNT(DISTINCT s.id)
+FROM students s
+LEFT JOIN student_courses sc ON sc.student_id = s.id
+LEFT JOIN courses c ON c.id = sc.course_id
+WHERE
+    (@status::text = '' OR s.status = @status::text)
+    AND (@shift::text = '' OR s.shift = @shift::text)
+    AND (@batch::text = '' OR s.batch = @batch::text)
+    AND (@course::text = '' OR c.name ILIKE @course::text)
+    AND (
+        @search::text = ''
+        OR s.full_name ILIKE '%' || @search || '%'
+        OR s.reference_no ILIKE '%' || @search || '%'
+        OR s.phone ILIKE '%' || @search || '%'
+    );
 
 
 

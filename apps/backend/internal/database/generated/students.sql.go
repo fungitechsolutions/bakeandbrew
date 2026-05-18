@@ -425,11 +425,39 @@ func (q *Queries) GetStudentFeeSummary(ctx context.Context, id pgtype.UUID) (Get
 }
 
 const getStudentsCount = `-- name: GetStudentsCount :one
-SELECT COUNT(*) FROM students
+SELECT COUNT(DISTINCT s.id)
+FROM students s
+LEFT JOIN student_courses sc ON sc.student_id = s.id
+LEFT JOIN courses c ON c.id = sc.course_id
+WHERE
+    ($1::text = '' OR s.status = $1::text)
+    AND ($2::text = '' OR s.shift = $2::text)
+    AND ($3::text = '' OR s.batch = $3::text)
+    AND ($4::text = '' OR c.name ILIKE $4::text)
+    AND (
+        $5::text = ''
+        OR s.full_name ILIKE '%' || $5 || '%'
+        OR s.reference_no ILIKE '%' || $5 || '%'
+        OR s.phone ILIKE '%' || $5 || '%'
+    )
 `
 
-func (q *Queries) GetStudentsCount(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, getStudentsCount)
+type GetStudentsCountParams struct {
+	Status string `json:"status"`
+	Shift  string `json:"shift"`
+	Batch  string `json:"batch"`
+	Course string `json:"course"`
+	Search string `json:"search"`
+}
+
+func (q *Queries) GetStudentsCount(ctx context.Context, arg GetStudentsCountParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getStudentsCount,
+		arg.Status,
+		arg.Shift,
+		arg.Batch,
+		arg.Course,
+		arg.Search,
+	)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -522,21 +550,39 @@ SELECT
     s.phone,
     s.status,
     s.created_at,
-  COALESCE(
-    STRING_AGG(c.name, ',' ORDER BY c.name),
-    ''
-) AS courses
+    s.batch,
+    s.shift,
+    COALESCE(
+        STRING_AGG(c.name, ',' ORDER BY c.name),
+        ''
+    ) AS courses
 FROM students s
 LEFT JOIN student_courses sc ON sc.student_id = s.id
 LEFT JOIN courses c ON c.id = sc.course_id
+WHERE
+    ($3::text = '' OR s.status = $3::text)
+    AND ($4::text = '' OR s.shift = $4::text)
+    AND ($5::text = '' OR s.batch = $5::text)
+    AND ($6::text = '' OR c.name ILIKE $6::text)
+    AND (
+        $7::text = ''
+        OR s.full_name ILIKE '%' || $7 || '%'
+        OR s.reference_no ILIKE '%' || $7 || '%'
+        OR s.phone ILIKE '%' || $7 || '%'
+    )
 GROUP BY s.id
 ORDER BY s.created_at DESC
 LIMIT $1 OFFSET $2
 `
 
 type ListStudentsParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+	Limit  int32  `json:"limit"`
+	Offset int32  `json:"offset"`
+	Status string `json:"status"`
+	Shift  string `json:"shift"`
+	Batch  string `json:"batch"`
+	Course string `json:"course"`
+	Search string `json:"search"`
 }
 
 type ListStudentsRow struct {
@@ -546,11 +592,21 @@ type ListStudentsRow struct {
 	Phone       string             `json:"phone"`
 	Status      string             `json:"status"`
 	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
+	Batch       pgtype.Text        `json:"batch"`
+	Shift       string             `json:"shift"`
 	Courses     interface{}        `json:"courses"`
 }
 
 func (q *Queries) ListStudents(ctx context.Context, arg ListStudentsParams) ([]ListStudentsRow, error) {
-	rows, err := q.db.Query(ctx, listStudents, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listStudents,
+		arg.Limit,
+		arg.Offset,
+		arg.Status,
+		arg.Shift,
+		arg.Batch,
+		arg.Course,
+		arg.Search,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -565,6 +621,8 @@ func (q *Queries) ListStudents(ctx context.Context, arg ListStudentsParams) ([]L
 			&i.Phone,
 			&i.Status,
 			&i.CreatedAt,
+			&i.Batch,
+			&i.Shift,
 			&i.Courses,
 		); err != nil {
 			return nil, err

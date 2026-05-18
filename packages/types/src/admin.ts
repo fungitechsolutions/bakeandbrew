@@ -13,6 +13,8 @@ export const listStudentResponseSchema = z.discriminatedUnion("success", [
         referenceNo: z.string(),
         courses: z.array(z.string()),
         status: z.enum(["pending", "completed", "rejected", "active"]),
+        shift: z.enum(["morning", "day", "evening"]),
+        batch: z.string(),
       }),
     ),
     meta: z.object({

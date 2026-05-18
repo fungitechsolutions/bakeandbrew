@@ -1,7 +1,6 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-// TODO: Uncomment when wiring to real API
 import api from "@/lib/axios";
 import { AnalyticsResponse } from "@repo/types";
 
