@@ -460,11 +460,13 @@ export function MiddleColumn({
   payments,
   setShowPaymentModal,
   PaymentRow,
+  balanceDue,
 }: {
   student: Student;
   payments: Payment[];
   setShowPaymentModal: (v: boolean) => void;
   PaymentRow: React.ComponentType<PaymentRowProps>;
+  balanceDue: number;
 }) {
   return (
     <div className="flex flex-col  gap-5">
@@ -482,11 +484,26 @@ export function MiddleColumn({
           </p>
           <button
             onClick={() => setShowPaymentModal(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[#2d4a3e] px-3 py-1.5 text-[0.78rem] font-semibold text-white transition-all hover:opacity-90"
+            disabled={balanceDue <= 0}
+            className="
+    inline-flex items-center gap-1.5 rounded-xl
+    px-4 py-2 text-[0.85rem] font-semibold text-white
+    transition-all
+    bg-[#2d4a3e]
+    hover:-translate-y-0.5
+    hover:shadow-[0_4px_16px_rgba(45,74,62,0.25)]
+
+    disabled:cursor-not-allowed
+    disabled:bg-[#94a39c]
+    disabled:text-white/80
+    disabled:hover:translate-y-0
+    disabled:hover:shadow-none
+    disabled:opacity-70
+  "
             style={{ fontFamily: "var(--font-dm-sans)" }}
           >
-            <Plus className="h-3 w-3" strokeWidth={2.5} />
-            Add
+            <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
+            {balanceDue <= 0 ? "Balance Cleared" : "Add Payment"}
           </button>
         </div>
         {payments.length === 0 ? (
