@@ -77,6 +77,8 @@ export {
   type StudentScholarshipMutationResponse,
   type StudentScholarshipInput,
 } from "./admin/students/scholarship";
+
+export { type StudentAdmissionResponse } from "./admission";
 export {
   addPaymentSchema,
   createCourseSchema,

@@ -24,12 +24,26 @@ type Setting struct {
 	FiscalYear string
 }
 
+type DataResponse struct {
+	ReferenceNo string `json:"referenceNo"`
+	FiscalYear  string `json:"fiscalYear"`
+	CreatedAt   string `json:"createdAt"`
+}
+
 func CreateStudent(queries repository.StudentRepository, pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 
 		userIDFromContext := c.MustGet("userID").(string)
 		role := c.MustGet("role").(string)
+		if role != "student" {
+			c.JSON(http.StatusForbidden, types.APIResponse{
+				Success: false,
+				Message: "Only students are permitted to submit the admission form",
+				Code:    constants.Forbidden,
+			})
+			return
+		}
 		userID, err := utils.ConvertToUUID(userIDFromContext)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, types.APIResponse{
@@ -335,6 +349,11 @@ func CreateStudent(queries repository.StudentRepository, pool *pgxpool.Pool) gin
 		c.JSON(http.StatusCreated, types.APIResponse{
 			Success: true,
 			Message: "Admission form submitted",
+			Data: DataResponse{
+				ReferenceNo: student.ReferenceNo,
+				FiscalYear:  student.FiscalYear,
+				CreatedAt:   student.CreatedAt.Time.String(),
+			},
 		})
 	}
 }

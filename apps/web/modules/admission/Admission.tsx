@@ -15,6 +15,7 @@ import {
   Upload,
   Loader2,
   Clock,
+  Printer,
 } from "lucide-react";
 import { StepTitle } from "./StepTile";
 import { InputField } from "./InputField";
@@ -29,6 +30,7 @@ import {
   CreateStudentAdmission,
   createStudentAdmissionRequest,
   ImageUploadResponse,
+  StudentAdmissionResponse,
 } from "@repo/types";
 import { useMutation } from "@tanstack/react-query";
 import api from "@/lib/axios";
@@ -38,13 +40,15 @@ import { mapFieldErrors } from "@/utils/api";
 import { cn } from "@/lib/utils";
 import { siteInfo } from "@/utils/site-info";
 import { useAuthStore } from "@/store/auth";
+import { useAdmissionStore } from "@/store/useAdmissionStore";
+import { useRouter } from "next/navigation";
 
 interface FieldError {
   fullName?: string;
   dob?: string;
   gender?: string;
   phone?: string;
-  email?: string;
+  // email?: string;
   address?: string;
   guardianName?: string;
   guardianPhone?: string;
@@ -61,7 +65,7 @@ const FIELD_STEP_MAP: Record<keyof FieldError, number> = {
   dob: 0,
   gender: 0,
   phone: 0,
-  email: 0,
+  // email: 0,
   address: 0,
   photoUrl: 0,
 
@@ -103,8 +107,8 @@ function validateStep(step: number, data: ValidateStepData): FieldError {
     if (!data.phone.trim()) errors.phone = "Phone number is required";
     else if (!/^\+?[\d\s\-()]{7,15}$/.test(data.phone))
       errors.phone = "Enter a valid phone number";
-    if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))
-      errors.email = "Enter a valid email address";
+    // if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))
+    //   errors.email = "Enter a valid email address";
     if (!data.address.trim()) errors.address = "Address is required";
     if (!data.photoUrl.trim()) errors.photoUrl = "Photo is required";
   }
@@ -148,19 +152,46 @@ export default function AdmissionPage({ courses }: Props) {
     publicID: string;
     fileName: string;
   }>();
+  const setSubmittedStudent = useAdmissionStore((s) => s.setSubmittedStudent);
+  const router = useRouter();
 
   const { mutate, isPending, reset } = useMutation({
     mutationFn: async (data: CreateStudentAdmission) => {
-      const res = await api.post<APIResponse>("/students/admission", data);
+      const res = await api.post<StudentAdmissionResponse>(
+        "/students/admission",
+        data,
+      );
       return res.data;
     },
-    onSuccess: (result: APIResponse) => {
+    onSuccess: (result) => {
       toast.success(result.message);
+      setSubmittedStudent({
+        fullName: getFieldValue("fullName"),
+        dob: getFieldValue("dob"),
+        gender: getFieldValue("gender"),
+        phone: getFieldValue("phone"),
+        address: getFieldValue("address"),
+        guardianName: getFieldValue("guardianName"),
+        guardianPhone: getFieldValue("guardianPhone"),
+        source: getFieldValue("source"),
+        shift: getFieldValue("shift") as "morning" | "day" | "evening",
+        shiftTime: getFieldValue("shiftTime"),
+        courses: getFieldValue("courses").map(
+          (id) => courses.find((c) => c.id === id)?.name ?? id,
+        ),
+        photoURL: getFieldValue("photoUrl"),
+        referenceNo: result.data.referenceNo,
+        fiscalYear: result.data.fiscalYear,
+        createdAt: result.data.createdAt,
+        status: "pending",
+        email: user?.email ?? "",
+      });
       setPhoto({ url: "", publicID: "", fileName: "" });
       setCurrentStep(0);
 
       resetForm();
       reset();
+      router.push("/admission/success");
     },
     onError: (error) => {
       if (axios.isAxiosError(error)) {
@@ -196,7 +227,7 @@ export default function AdmissionPage({ courses }: Props) {
       fullName: "",
       phone: "",
       source: "" as CreateStudentAdmission["source"],
-      email: user?.email ?? "",
+      // email: user?.email ?? "",
       dob: "",
       gender: "" as CreateStudentAdmission["gender"],
       guardianName: "",
@@ -289,7 +320,7 @@ export default function AdmissionPage({ courses }: Props) {
       dob: getFieldValue("dob"),
       gender: getFieldValue("gender"),
       phone: getFieldValue("phone"),
-      email: getFieldValue("email"),
+      // email: getFieldValue("email"),
       address: getFieldValue("address"),
       guardianName: getFieldValue("guardianName"),
       guardianPhone: getFieldValue("guardianPhone"),
@@ -507,21 +538,15 @@ export default function AdmissionPage({ courses }: Props) {
                 }}
               </FormField>
 
-              <FormField name="email">
-                {(field) => {
-                  return (
-                    <InputField
-                      label="Email"
-                      icon={Mail}
-                      type="email"
-                      placeholder="optional"
-                      value={field.state.value}
-                      disabled
-                      className="bg-gray-100 text-gray-500 cursor-not-allowed opacity-70 border-gray-200"
-                    />
-                  );
-                }}
-              </FormField>
+              <InputField
+                label="Email"
+                icon={Mail}
+                type="email"
+                placeholder="optional"
+                value={user?.email ?? ""}
+                disabled
+                className="bg-gray-100 text-gray-500 cursor-not-allowed opacity-70 border-gray-200"
+              />
               <FormField name="address">
                 {(field) => {
                   const fieldError = field.state.meta.errors[0]?.message;
@@ -802,6 +827,7 @@ export default function AdmissionPage({ courses }: Props) {
             )}
           >
             <StepTitle icon={CheckCircle2} title="Review & Submit" />
+
             <div className="space-y-4">
               <ReviewSection title="Personal">
                 <ReviewRow
@@ -811,10 +837,7 @@ export default function AdmissionPage({ courses }: Props) {
                 <ReviewRow label="Date of Birth" value={getFieldValue("dob")} />
                 <ReviewRow label="Gender" value={genderLabel} />
                 <ReviewRow label="Phone" value={getFieldValue("phone")} />
-                <ReviewRow
-                  label="Email"
-                  value={getFieldValue("email") ?? user?.email}
-                />
+                <ReviewRow label="Email" value={user?.email ?? ""} />
                 <ReviewRow label="Address" value={getFieldValue("address")} />
                 {photo?.url && (
                   <div className="flex items-center justify-between py-3">

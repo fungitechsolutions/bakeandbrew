@@ -6,7 +6,6 @@ type CreateStudentRequest struct {
 	FullName      string   `json:"fullName" binding:"required,min=2,max=70,alphaspace"`
 	DOB           string   `json:"dob" binding:"required,date_format"`
 	Phone         string   `json:"phone" binding:"required,nepal_phone"`
-	Email         string   `json:"email" binding:"required,email"`
 	Address       string   `json:"address" binding:"required,max=70"`
 	PhotoUrl      string   `json:"photoUrl" binding:"required,url"`
 	Source        string   `json:"source" binding:"required,oneof=facebook instagram tiktok referral inperson"`

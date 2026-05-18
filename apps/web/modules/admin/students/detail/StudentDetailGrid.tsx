@@ -66,7 +66,7 @@ export function StudentDetailGrid({
   discounts: Discount[];
 }) {
   return (
-    <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_1.5fr_1fr]">
       {/* LEFT — Discounts + Scholarship */}
       <div className="flex flex-col gap-5">
         <DiscountSection discounts={discounts} studentID={student.id} />
