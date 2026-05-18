@@ -51,6 +51,8 @@ type ListStudent struct {
 	ReferenceNo string      `json:"referenceNo"`
 	Status      string      `json:"status"`
 	Courses     []string    `json:"courses"`
+	Batch       string      `json:"batch"`
+	Shift       string      `json:"shift"`
 }
 
 type UpdateStudentStatusRequest struct {

@@ -20,21 +20,25 @@ func ListStudents(queries repository.AdminRepository) gin.HandlerFunc {
 		ctx := c.Request.Context()
 
 		pageFromParams, err := strconv.Atoi(c.DefaultQuery("page", "1"))
-
-		if err != nil {
-			c.JSON(http.StatusBadRequest, types.APIResponse{
-				Success: false,
-				Message: "Invalid page parameter",
-				Code:    constants.InvalidPageParam,
-			})
-			return
-		}
-
-		if pageFromParams <= 0 {
+		if err != nil || pageFromParams <= 0 {
 			pageFromParams = 1
 		}
 
-		total, err := queries.GetStudentsCount(ctx)
+		status := c.DefaultQuery("status", "")
+		shift := c.DefaultQuery("shift", "")
+		batch := c.DefaultQuery("batch", "")
+		course := c.DefaultQuery("course", "")
+		search := c.DefaultQuery("q", "")
+
+		filterParams := db.GetStudentsCountParams{
+			Status: status,
+			Shift:  shift,
+			Batch:  batch,
+			Course: course,
+			Search: search,
+		}
+
+		total, err := queries.GetStudentsCount(ctx, filterParams)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
@@ -47,7 +51,7 @@ func ListStudents(queries repository.AdminRepository) gin.HandlerFunc {
 		if total == 0 {
 			c.JSON(http.StatusOK, types.APIResponse{
 				Success: true,
-				Data:    []db.ListStudentsRow{},
+				Data:    []types.ListStudent{},
 				Meta: &types.PaginationMeta{
 					Limit: PAGE_LIMIT,
 					Total: 0,
@@ -66,8 +70,12 @@ func ListStudents(queries repository.AdminRepository) gin.HandlerFunc {
 		students, err := queries.ListStudents(ctx, db.ListStudentsParams{
 			Limit:  PAGE_LIMIT,
 			Offset: int32(offset),
+			Status: status,
+			Shift:  shift,
+			Batch:  batch,
+			Course: course,
+			Search: search,
 		})
-
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
@@ -94,6 +102,8 @@ func ListStudents(queries repository.AdminRepository) gin.HandlerFunc {
 				ReferenceNo: v.ReferenceNo,
 				Courses:     courses,
 				Phone:       v.Phone,
+				Batch:       v.Batch.String,
+				Shift:       v.Shift,
 			})
 		}
 
@@ -106,6 +116,5 @@ func ListStudents(queries repository.AdminRepository) gin.HandlerFunc {
 				TotalPages: int(totalPages),
 			},
 		})
-
 	}
 }
