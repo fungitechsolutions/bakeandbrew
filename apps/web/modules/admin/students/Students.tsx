@@ -95,7 +95,8 @@ export default function StudentsPage() {
   const handlePage = (p: number) => updateParams({ page: String(p) });
   const handleShift = (v: string) => updateParams({ shift: v });
   const handleBatch = (v: string) => updateParams({ batch: v });
-  const clearFilters = () =>
+  const clearFilters = () => {
+    setSearchInput("");
     updateParams({
       status: null,
       course: null,
@@ -103,6 +104,7 @@ export default function StudentsPage() {
       shift: null,
       batch: null,
     });
+  };
 
   const { data, isPending, refetch, isError } = useQuery({
     queryKey: [
