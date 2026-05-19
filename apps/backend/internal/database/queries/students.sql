@@ -235,3 +235,12 @@ WHERE s.status IN ('active', 'completed')
   AND (sqlc.narg('from_date')::TEXT IS NULL OR s.created_at >= sqlc.narg('from_date')::TIMESTAMPTZ)
   AND (sqlc.narg('to_date')::TEXT IS NULL OR s.created_at <= (sqlc.narg('to_date')::TIMESTAMPTZ + INTERVAL '1 day'))
   AND (sqlc.narg('search')::TEXT IS NULL OR u.name ILIKE '%' || sqlc.narg('search')::TEXT || '%' OR u.email ILIKE '%' || sqlc.narg('search')::TEXT || '%');
+
+
+-- name: GetStudentAdmissionStatus :one
+SELECT
+  full_name,
+  created_at,
+  status
+FROM students
+WHERE student_id = $1;

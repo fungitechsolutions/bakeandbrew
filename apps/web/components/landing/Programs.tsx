@@ -109,12 +109,10 @@ export default async function Programs() {
     method: "GET",
   });
 
-  console.log("res: ", res);
   if (!res.ok) {
     throw new Error("Failed to fetch courses data");
   }
   const data = (await res.json()) as CoursesList;
-  console.log("data: ", data);
   if (!data.success) throw new Error(data.message);
 
   const courses = data.data;

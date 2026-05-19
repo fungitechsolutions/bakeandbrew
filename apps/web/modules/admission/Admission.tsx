@@ -15,7 +15,6 @@ import {
   Upload,
   Loader2,
   Clock,
-  Printer,
 } from "lucide-react";
 import { StepTitle } from "./StepTile";
 import { InputField } from "./InputField";
@@ -110,7 +109,7 @@ function validateStep(step: number, data: ValidateStepData): FieldError {
     // if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))
     //   errors.email = "Enter a valid email address";
     if (!data.address.trim()) errors.address = "Address is required";
-    if (!data.photoUrl.trim()) errors.photoUrl = "Photo is required";
+    // if (!data.photoUrl.trim()) errors.photoUrl = "Photo is required";
   }
 
   if (step === 1) {
@@ -179,7 +178,7 @@ export default function AdmissionPage({ courses }: Props) {
         courses: getFieldValue("courses").map(
           (id) => courses.find((c) => c.id === id)?.name ?? id,
         ),
-        photoURL: getFieldValue("photoUrl"),
+        photoURL: getFieldValue("photoUrl") ?? null,
         referenceNo: result.data.referenceNo,
         fiscalYear: result.data.fiscalYear,
         createdAt: result.data.createdAt,
@@ -235,7 +234,7 @@ export default function AdmissionPage({ courses }: Props) {
       courses: [] as string[],
       address: "",
       // claimedAmount: null as number | null,
-      photoUrl: "",
+      photoUrl: null as string | null,
       shift: "" as CreateStudentAdmission["shift"],
       shiftTime: "",
     },
@@ -603,7 +602,8 @@ export default function AdmissionPage({ courses }: Props) {
                         className="mb-1.5 block text-[0.8rem] font-semibold uppercase tracking-[0.07em] text-[#2d4a3e]"
                         style={{ fontFamily: "var(--font-dm-sans)" }}
                       >
-                        Photo <span className="text-[#e8552a]">*</span>
+                        Photo {/*<span className="text-[#e8552a]">*</span> */}{" "}
+                        <span className="text-[10px]">(optional)</span>
                         {/* <span className="font-normal normal-case text-[#2d4a3e]/40">
                           (optional)
                         </span> */}

@@ -18,6 +18,8 @@ type StudentRepository interface {
 	CreateInquiry(ctx context.Context, params db.CreateInquiryParams) (db.Inquiry, error)
 	GetCoursesByIDs(ctx context.Context, param []pgtype.UUID) ([]db.GetCoursesByIDsRow, error)
 	UpdateUserImage(ctx context.Context, params db.UpdateUserImageParams) error
+
+	GetStudentAdmissionStatus(ctx context.Context, id pgtype.UUID) (db.GetStudentAdmissionStatusRow, error)
 }
 
 type studentRepository struct {
@@ -61,4 +63,8 @@ func (s *studentRepository) GetCoursesByIDs(ctx context.Context, param []pgtype.
 
 func (s *studentRepository) UpdateUserImage(ctx context.Context, params db.UpdateUserImageParams) error {
 	return s.queries.UpdateUserImage(ctx, params)
+}
+
+func (s *studentRepository) GetStudentAdmissionStatus(ctx context.Context, id pgtype.UUID) (db.GetStudentAdmissionStatusRow, error) {
+	return s.queries.GetStudentAdmissionStatus(ctx, id)
 }

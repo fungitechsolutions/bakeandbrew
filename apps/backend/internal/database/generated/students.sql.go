@@ -308,6 +308,28 @@ func (q *Queries) GetSalesRevenueTotal(ctx context.Context, arg GetSalesRevenueT
 	return total_collected, err
 }
 
+const getStudentAdmissionStatus = `-- name: GetStudentAdmissionStatus :one
+SELECT
+  full_name,
+  created_at,
+  status
+FROM students
+WHERE student_id = $1
+`
+
+type GetStudentAdmissionStatusRow struct {
+	FullName  string             `json:"fullName"`
+	CreatedAt pgtype.Timestamptz `json:"createdAt"`
+	Status    string             `json:"status"`
+}
+
+func (q *Queries) GetStudentAdmissionStatus(ctx context.Context, studentID pgtype.UUID) (GetStudentAdmissionStatusRow, error) {
+	row := q.db.QueryRow(ctx, getStudentAdmissionStatus, studentID)
+	var i GetStudentAdmissionStatusRow
+	err := row.Scan(&i.FullName, &i.CreatedAt, &i.Status)
+	return i, err
+}
+
 const getStudentByID = `-- name: GetStudentByID :one
 SELECT 
     s.id, s.student_id, s.reference_no, s.fiscal_year, s.serial_no, s.full_name, s.dob, s.gender, s.phone, s.address, s.guardian_name, s.guardian_phone, s.photo_url, s.source, s.status, s.notes, s.shift, s.shift_time, s.batch, s.created_at,

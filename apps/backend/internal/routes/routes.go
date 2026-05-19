@@ -156,7 +156,8 @@ func Setup(r *gin.Engine, cfg Config) {
 
 	// public student routes
 	studentRouter := router.Group("/students")
-	studentRouter.POST("/admission", middleware.RequireAuth(cfg.Config), middleware.RequireRole("student", "admin", "superadmin"), student.CreateStudent(cfg.StudentRepo, cfg.PgxPool))
+	studentRouter.POST("/admission", middleware.RequireAuth(cfg.Config), middleware.RequireRole("student"), student.CreateStudent(cfg.StudentRepo, cfg.PgxPool))
+	studentRouter.GET("/admission/status", middleware.RequireAuth(cfg.Config), middleware.RequireRole("student"), student.GetStudentAdmissionStatus(cfg.StudentRepo))
 	studentRouter.POST("/inquiry", student.CreateInquiry(cfg.StudentRepo))
 
 	// public courses routes
