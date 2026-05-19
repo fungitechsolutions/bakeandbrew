@@ -56,7 +56,7 @@ function buildPrintData(student: SubmittedAdmission): PrintAdmissionData {
     gender: student.gender,
     phone: student.phone,
     address: student.address,
-    photoUrl: student.photoURL ?? undefined,
+    photoUrl: student.photoURL ?? null,
     guardianName: student.guardianName,
     guardianPhone: student.guardianPhone,
     courses: student.courses,
@@ -107,7 +107,6 @@ function InfoRow({
 export default function AdmissionSuccessPage() {
   const router = useRouter();
   const { submittedStudent, clearSubmittedStudent } = useAdmissionStore();
-  console.log("submitted student: ", submittedStudent);
 
   const [showPrint, setShowPrint] = useState(false);
   const [hasPrinted, setHasPrinted] = useState(false);

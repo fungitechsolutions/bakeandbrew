@@ -3,6 +3,7 @@ package student
 import (
 	"errors"
 	"fmt"
+	"log"
 	"log/slog"
 	"net/http"
 	"time"
@@ -69,6 +70,7 @@ func CreateStudent(queries repository.StudentRepository, pool *pgxpool.Pool) gin
 			})
 			return
 		}
+		log.Println("photo url : ", req.PhotoUrl)
 
 		utils.TrimStruct(&req)
 

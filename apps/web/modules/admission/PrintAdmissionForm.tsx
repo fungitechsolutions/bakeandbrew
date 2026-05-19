@@ -14,7 +14,7 @@ export interface PrintAdmissionData {
   phone: string;
   email?: string;
   address: string;
-  photoUrl?: string;
+  photoUrl: string | null;
   guardianName: string;
   guardianPhone: string;
   courses: string[];
@@ -82,7 +82,7 @@ export default function PrintAdmissionForm({ data, onClose }: Props) {
   const printAreaRef = useRef<HTMLDivElement>(null);
 
   const uid = useId().replace(/:/g, "");
-  const formNo = `BB-${new Date().getFullYear()}-${uid.slice(-6).toUpperCase()}`;
+  // const formNo = `BB-${new Date().getFullYear()}-${uid.slice(-6).toUpperCase()}`;
   const today = todayFormatted();
 
   // ── KEY FIX: use window.print() directly ──

@@ -130,15 +130,6 @@ export default function Hero() {
               ))}
             </div>
           </div>
-
-          {/* Scroll cue */}
-          <div
-            className="mt-6 flex items-center gap-3 text-[0.78rem] uppercase tracking-[0.08em] text-white/35"
-            style={{ fontFamily: "var(--font-dm-sans)" }}
-          >
-            <div className="h-px w-8 bg-white/25" />
-            Scroll to explore
-          </div>
         </div>
       </div>
     </section>

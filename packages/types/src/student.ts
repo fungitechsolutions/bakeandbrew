@@ -43,7 +43,7 @@ export const createStudentAdmissionRequest = z.object({
     .min(1, "Phone number is required")
     .regex(/^(98|97)\d{8}$/, "Enter a valid Nepali phone number"),
 
-  source: z.enum(["facebook", "instagram", "tiktok", "referral", "inPerson"], {
+  source: z.enum(["facebook", "instagram", "tiktok", "referral", "inperson"], {
     error: "Please select how you heard about us",
   }),
 
@@ -91,7 +91,7 @@ export const createStudentAdmissionRequest = z.object({
   //   .min(0, "Amount cannot be negative")
   //   .nullable(),
 
-  photoUrl: z.url("Invalid photo URL").min(1, "Photo is required"),
+  photoUrl: z.url("Invalid photo URL").nullable(),
 });
 
 export type CreateStudentAdmission = z.infer<
