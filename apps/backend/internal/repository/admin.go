@@ -42,4 +42,8 @@ type AdminRepository interface {
 	GetSalesRevenue(ctx context.Context, params db.GetSalesRevenueParams) ([]db.GetSalesRevenueRow, error)
 	GetSalesRevenueTotal(ctx context.Context, params db.GetSalesRevenueTotalParams) (int64, error)
 	GetSalesRevenueCount(ctx context.Context, params db.GetSalesRevenueCountParams) (int64, error)
+
+	// admin/students/:id
+	UpdateStudentPersonalInfo(ctx context.Context, params db.UpdateStudentPersonalInfoParams) (pgconn.CommandTag, error)
+	UpdateStudentGuardianInfo(ctx context.Context, params db.UpdateStudentGuardianInfoParams) (pgconn.CommandTag, error)
 }

@@ -8,6 +8,7 @@ package db
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -738,6 +739,69 @@ func (q *Queries) ListStudents(ctx context.Context, arg ListStudentsParams) ([]L
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateStudentGuardianInfo = `-- name: UpdateStudentGuardianInfo :execresult
+UPDATE students
+SET 
+ guardian_name = $2,
+ guardian_phone = $3,
+ updated_at = NOW()
+WHERE id = $1
+`
+
+type UpdateStudentGuardianInfoParams struct {
+	ID            pgtype.UUID `json:"id"`
+	GuardianName  string      `json:"guardianName"`
+	GuardianPhone string      `json:"guardianPhone"`
+}
+
+func (q *Queries) UpdateStudentGuardianInfo(ctx context.Context, arg UpdateStudentGuardianInfoParams) (pgconn.CommandTag, error) {
+	return q.db.Exec(ctx, updateStudentGuardianInfo, arg.ID, arg.GuardianName, arg.GuardianPhone)
+}
+
+const updateStudentPersonalInfo = `-- name: UpdateStudentPersonalInfo :execresult
+UPDATE students
+SET
+  full_name = $2,
+  dob = $3,
+  shift = $4,
+  shift_time = $5,
+  batch = $6,
+  phone = $7,
+  address = $8,
+  source = $9,
+  gender = $10,
+  updated_at = NOW()
+WHERE id = $1
+`
+
+type UpdateStudentPersonalInfoParams struct {
+	ID        pgtype.UUID `json:"id"`
+	FullName  string      `json:"fullName"`
+	Dob       pgtype.Date `json:"dob"`
+	Shift     string      `json:"shift"`
+	ShiftTime string      `json:"shiftTime"`
+	Batch     pgtype.Text `json:"batch"`
+	Phone     string      `json:"phone"`
+	Address   string      `json:"address"`
+	Source    string      `json:"source"`
+	Gender    string      `json:"gender"`
+}
+
+func (q *Queries) UpdateStudentPersonalInfo(ctx context.Context, arg UpdateStudentPersonalInfoParams) (pgconn.CommandTag, error) {
+	return q.db.Exec(ctx, updateStudentPersonalInfo,
+		arg.ID,
+		arg.FullName,
+		arg.Dob,
+		arg.Shift,
+		arg.ShiftTime,
+		arg.Batch,
+		arg.Phone,
+		arg.Address,
+		arg.Source,
+		arg.Gender,
+	)
 }
 
 const updateStudentStatus = `-- name: UpdateStudentStatus :one

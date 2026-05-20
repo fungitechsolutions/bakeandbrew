@@ -95,6 +95,8 @@ func Setup(r *gin.Engine, cfg Config) {
 	adminStudentRouter.GET("/:studentID/payments", adminStudents.StudentPaymentDetails(cfg.Queries))
 	adminStudentRouter.PUT("/:studentID/status", adminStudents.UpdateStatus(cfg.Queries))
 	adminStudentRouter.POST("/:studentID/payments", adminPayments.AddPayment(cfg.Queries))
+	adminStudentRouter.PUT("/:studentID/info/guardian", adminStudents.UpdateGuardianInfo(cfg.Queries))
+	adminStudentRouter.PUT("/:studentID/info/personal", adminStudents.UpdateStudentPersonalInfo(cfg.Queries))
 
 	// admin/students/discount
 	adminStudentRouter.POST("/:studentID/discounts", adminStudentsDiscount.CreateDiscount(cfg.Queries))

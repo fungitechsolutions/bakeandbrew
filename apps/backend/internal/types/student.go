@@ -3,24 +3,24 @@ package types
 import "github.com/jackc/pgx/v5/pgtype"
 
 type CreateStudentRequest struct {
-	FullName      string   `json:"fullName" binding:"required,min=2,max=70,alphaspace"`
-	DOB           string   `json:"dob" binding:"required,date_format"`
-	Phone         string   `json:"phone" binding:"required,nepal_phone"`
-	Address       string   `json:"address" binding:"required,max=70"`
+	FullName      string   `json:"fullName" binding:"required,notblank,min=2,max=70,alphaspace"`
+	DOB           string   `json:"dob" binding:"required,notblank,date_format"`
+	Phone         string   `json:"phone" binding:"required,notblank,nepal_phone"`
+	Address       string   `json:"address" binding:"required,notblank,max=70"`
 	PhotoUrl      string   `json:"photoUrl" binding:"omitempty,url"`
 	Source        string   `json:"source" binding:"required,oneof=facebook instagram tiktok referral inperson"`
-	GuardianName  string   `json:"guardianName" binding:"required,min=2,max=70"`
-	GuardianPhone string   `json:"guardianPhone" binding:"required,nepal_phone"`
+	GuardianName  string   `json:"guardianName" binding:"required,notblank,min=2,max=70"`
+	GuardianPhone string   `json:"guardianPhone" binding:"required,notblank,nepal_phone"`
 	Gender        string   `json:"gender" binding:"required,oneof=male female other"`
 	Shift         string   `json:"shift" binding:"required,oneof=morning day evening"`
-	ShiftTime     string   `json:"shiftTime" binding:"required"`
+	ShiftTime     string   `json:"shiftTime" binding:"required,notblank,min=1,max=100"`
 	Courses       []string `json:"courses" binding:"required,min=1,dive,uuid"`
 }
 
 type CreateStudentInquiryRequest struct {
-	FullName string `json:"fullName" binding:"required,alphaspace"`
-	Phone    string `json:"phone" binding:"required,nepal_phone"`
-	Message  string `json:"message" binding:"required,min=5,max=200"`
+	FullName string `json:"fullName" binding:"required,notblank,alphaspace"`
+	Phone    string `json:"phone" binding:"required,notblank,nepal_phone"`
+	Message  string `json:"message" binding:"required,notblank,min=5,max=200"`
 	Email    string `json:"email" binding:"required,email"`
 	Source   string `json:"source" binding:"required,oneof= facebook instagram tiktok referral inPerson"`
 }

@@ -2,6 +2,7 @@ package validator
 
 import (
 	"regexp"
+	"strings"
 	"sync"
 	"time"
 
@@ -32,6 +33,10 @@ func Init() {
 		v.RegisterValidation("date_format", func(fl validator.FieldLevel) bool {
 			_, err := time.Parse("2006-01-02", fl.Field().String())
 			return err == nil
+		})
+
+		v.RegisterValidation("notblank", func(fl validator.FieldLevel) bool {
+			return strings.TrimSpace(fl.Field().String()) != ""
 		})
 	})
 }
