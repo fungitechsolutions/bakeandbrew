@@ -1,0 +1,88 @@
+package students
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/suprimkhatri77/sms/backend/internal/constants"
+	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
+	"github.com/suprimkhatri77/sms/backend/internal/repository"
+	"github.com/suprimkhatri77/sms/backend/internal/types"
+	"github.com/suprimkhatri77/sms/backend/internal/utils"
+	"github.com/suprimkhatri77/sms/backend/internal/validator"
+)
+
+type updateGuardianInfo struct {
+	GuardianName  string `json:"guardianName" binding:"required,notblank,min=5,max=100"`
+	GuardianPhone string `json:"guardianPhone" binding:"required,notblank,nepal_phone"`
+}
+
+func UpdateGuardianInfo(queries repository.AdminRepository) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx := c.Request.Context()
+
+		studentIDFromParams := c.Param("studentID")
+
+		if studentIDFromParams == "" {
+			c.JSON(http.StatusBadRequest, types.APIResponse{
+				Success: false,
+				Message: "Missing student ID",
+				Code:    constants.MissingStudentID,
+			})
+			return
+		}
+
+		studentID, err := utils.ConvertToUUID(studentIDFromParams)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, types.APIResponse{
+				Success: false,
+				Message: "Invalid ID format",
+				Code:    constants.InvalidIDFormat,
+			})
+			return
+		}
+
+		var req updateGuardianInfo
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, types.APIResponse{
+				Success: false,
+				Message: "Invalid request data",
+				Code:    constants.ValidationFailed,
+				Errors:  validator.Parse(err, req),
+			})
+			return
+		}
+
+		utils.TrimStruct(&req)
+
+		result, err := queries.UpdateStudentGuardianInfo(ctx, db.UpdateStudentGuardianInfoParams{
+			GuardianName:  req.GuardianName,
+			GuardianPhone: req.GuardianPhone,
+			ID:            studentID,
+		})
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, types.APIResponse{
+				Success: false,
+				Message: "Failed to update guardian info",
+				Code:    constants.InternalServerError,
+			})
+			return
+		}
+
+		if result.RowsAffected() == 0 {
+			c.JSON(http.StatusNotFound, types.APIResponse{
+				Success: false,
+				Message: "Student not found",
+				Code:    constants.StudentNotFound,
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, types.APIResponse{
+			Success: true,
+			Message: "Guardian info updated",
+		})
+
+	}
+}

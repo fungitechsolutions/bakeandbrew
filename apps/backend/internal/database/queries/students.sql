@@ -276,3 +276,28 @@ FROM students s WHERE s.student_id = $1;
 SELECT
 id
 FROM students WHERE student_id = $1;
+
+-- name: UpdateStudentPersonalInfo :execresult
+UPDATE students
+SET
+  full_name = $2,
+  dob = $3,
+  shift = $4,
+  shift_time = $5,
+  batch = $6,
+  phone = $7,
+  address = $8,
+  source = $9,
+  gender = $10,
+  updated_at = NOW()
+WHERE id = $1;
+
+-- name: UpdateStudentGuardianInfo :execresult
+UPDATE students
+SET 
+ guardian_name = $2,
+ guardian_phone = $3,
+ updated_at = NOW()
+WHERE id = $1;
+ 
+
