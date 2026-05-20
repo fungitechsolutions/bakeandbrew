@@ -1,10 +1,9 @@
-import { TrendingUp, CreditCard, AlertCircle } from "lucide-react";
-import type { Course, Payment } from "./types/dashboard";
+"use client";
 
-interface FinancialSummaryProps {
-  courses: Course[];
-  payments: Payment[];
-}
+import { TrendingUp, CreditCard, AlertCircle, RefreshCw } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/lib/axios";
+import { GetStudentFeeSummaryResponse } from "@repo/types";
 
 interface StatCardProps {
   label: string;
@@ -75,13 +74,132 @@ function StatCard({ label, value, sub, icon, accent }: StatCardProps) {
 }
 
 function formatNPR(amount: number): string {
-  return `NPR ${amount.toLocaleString("en-NP")}`;
+  return `NPR ${(amount / 100).toLocaleString("en-NP")}`;
 }
 
-export function FinancialSummary({ courses, payments }: FinancialSummaryProps) {
-  const totalFee = courses.reduce((sum, c) => sum + c.feeAtEnrollment, 0);
-  const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
-  const remaining = totalFee - totalPaid;
+function Shimmer({ className }: { className?: string }) {
+  return (
+    <div
+      className={`rounded-lg ${className ?? ""}`}
+      style={{
+        background:
+          "linear-gradient(90deg, rgba(26,26,26,0.06) 0%, rgba(26,26,26,0.1) 50%, rgba(26,26,26,0.06) 100%)",
+        backgroundSize: "200% 100%",
+        animation: "summary-shimmer 1.5s ease-in-out infinite",
+      }}
+    />
+  );
+}
+
+function FinancialSummarySkeleton() {
+  return (
+    <section className="my-7">
+      <style>{`
+        @keyframes summary-shimmer {
+          0%   { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
+      <Shimmer className="h-4 w-40 mb-4" />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={i}
+            className="rounded-xl border border-[#1a1a1a]/8 p-5 space-y-3"
+          >
+            <div className="flex items-start justify-between">
+              <div className="space-y-2 flex-1">
+                <Shimmer className="h-2.5 w-20" />
+                <Shimmer className="h-7 w-32" />
+                <Shimmer className="h-2.5 w-24" />
+              </div>
+              <Shimmer className="w-9 h-9 rounded-lg shrink-0" />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="space-y-1.5">
+        <div className="flex justify-between">
+          <Shimmer className="h-3 w-28" />
+          <Shimmer className="h-3 w-8" />
+        </div>
+        <Shimmer className="h-2 w-full rounded-full" />
+      </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Error state
+// ---------------------------------------------------------------------------
+function FinancialSummaryError({
+  message,
+  onRetry,
+}: {
+  message?: string;
+  onRetry: () => void;
+}) {
+  return (
+    <section className="my-7">
+      <h2
+        className="text-base font-semibold text-[#1a1a1a] mb-4 tracking-tight"
+        style={{ fontFamily: "var(--font-playfair)" }}
+      >
+        Financial Overview
+      </h2>
+      <div className="rounded-xl border border-red-100 bg-red-50/60 px-5 py-8 flex flex-col items-center text-center gap-3">
+        <AlertCircle size={20} className="text-red-400" />
+        <div>
+          <p className="text-sm font-semibold text-[#1a1a1a] mb-1">
+            Couldn&apos;t load financial data
+          </p>
+          <p className="text-xs text-[#1a1a1a]/45 leading-relaxed max-w-xs">
+            {message ?? "Something went wrong fetching your fee summary."}
+          </p>
+        </div>
+        <button
+          onClick={onRetry}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-[#2f4e40] bg-[#2f4e40]/8 border border-[#2f4e40]/20 hover:bg-[#2f4e40]/14 transition-all duration-150 active:scale-95"
+        >
+          <RefreshCw size={13} />
+          Try again
+        </button>
+      </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main component
+// ---------------------------------------------------------------------------
+export function FinancialSummary() {
+  const { data, isPending, isError, error, refetch } = useQuery({
+    queryKey: ["student-fee-summary"],
+    queryFn: async () => {
+      const res = await api.get<GetStudentFeeSummaryResponse>(
+        "/portal/student/fee/summary",
+      );
+      const parsed = res.data;
+
+      if (!parsed.success) {
+        throw new Error(parsed.message ?? "Failed to load fee summary");
+      }
+
+      return parsed.data;
+    },
+    retry: 1,
+    staleTime: 1000 * 60 * 2,
+  });
+
+  if (isPending) return <FinancialSummarySkeleton />;
+
+  if (isError) {
+    const message =
+      error instanceof Error ? error.message : "An unexpected error occurred.";
+    return <FinancialSummaryError message={message} onRetry={refetch} />;
+  }
+
+  const { totalFee, totalPaid, remaining, coursesCount } = data;
   const paidPercent =
     totalFee > 0 ? Math.min((totalPaid / totalFee) * 100, 100) : 0;
 
@@ -98,7 +216,7 @@ export function FinancialSummary({ courses, payments }: FinancialSummaryProps) {
         <StatCard
           label="Total Fee"
           value={formatNPR(totalFee)}
-          sub={`${courses.length} course${courses.length !== 1 ? "s" : ""}`}
+          sub={`${coursesCount} course${coursesCount !== 1 ? "s" : ""}`}
           icon={<CreditCard size={18} />}
           accent="muted"
         />

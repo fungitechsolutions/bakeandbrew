@@ -109,3 +109,10 @@ export {
   type StudentScholarshipResponse,
   type StudentDiscountResponse,
 } from "./admin";
+
+export { type GetStudentOverviewResponse } from "./student_portal/overview";
+export {
+  type GetStudentFeeSummaryResponse,
+  type GetStudentPaymentsResponse,
+} from "./student_portal/payments";
+export { type GetStudentCoursesResponse } from "./student_portal/enrollments";

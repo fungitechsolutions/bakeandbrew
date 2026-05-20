@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { InfoRow } from "./InfoRow";
 import { SectionCard } from "./shared/SectionCard";
+import { cn } from "@/lib/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -78,12 +79,14 @@ const selectCls =
 function EditField({
   label,
   children,
+  className,
 }: {
   label: string;
   children: React.ReactNode;
+  className?: string;
 }) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className={cn("flex flex-col gap-1", className)}>
       <label
         className="text-[0.72rem] font-semibold uppercase tracking-[0.06em] text-[#2d4a3e]/40"
         style={{ fontFamily: "var(--font-dm-sans)" }}
@@ -206,7 +209,9 @@ function PersonalInfoSection({ student }: { student: Student }) {
       }
     >
       {editing ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        // Edit mode: single column on small/medium, 2-col on large
+        // Using min-w-0 on each field to prevent overflow in constrained grid columns
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
           <EditField label="Full Name">
             <input
               className={inputCls}
@@ -250,16 +255,17 @@ function PersonalInfoSection({ student }: { student: Student }) {
             />
           </EditField>
 
-          {/* Email — read-only */}
+          {/* Email — read-only, min-w-0 + overflow-hidden prevent it leaking into adjacent column */}
           <EditField label="Email">
-            <div className="flex items-center gap-1.5 rounded-xl border border-[#2d4a3e]/08 bg-[#2d4a3e]/04 px-3 py-2">
+            <div className="flex min-w-0 items-center gap-1.5 rounded-xl border border-[#2d4a3e]/08 bg-[#2d4a3e]/04 px-3 py-2">
               <Mail
                 className="h-3.5 w-3.5 flex-shrink-0 text-[#2d4a3e]/25"
                 strokeWidth={2}
               />
               <span
-                className="text-[0.88rem] text-[#2d4a3e]/40"
+                className="min-w-0 truncate text-[0.88rem] text-[#2d4a3e]/40"
                 style={{ fontFamily: "var(--font-dm-sans)" }}
+                title={student.email ?? "Not provided"}
               >
                 {student.email ?? "Not provided"}
               </span>
@@ -314,7 +320,8 @@ function PersonalInfoSection({ student }: { student: Student }) {
             />
           </EditField>
 
-          <EditField label="Address">
+          {/* Address spans full width — typically longer text */}
+          <EditField label="Address" className="lg:col-span-2">
             <input
               className={inputCls}
               style={{ fontFamily: "var(--font-dm-sans)" }}
@@ -325,7 +332,9 @@ function PersonalInfoSection({ student }: { student: Student }) {
           </EditField>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        // View mode: single column on small/medium, 2-col on large
+        // Each InfoRow gets min-w-0 so long values (email) truncate instead of overflowing
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <InfoRow label="Full Name" value={student.fullName} icon={User} />
           <InfoRow
             label="Date of Birth"
@@ -338,10 +347,12 @@ function PersonalInfoSection({ student }: { student: Student }) {
           />
           <InfoRow label="Gender" value={student.gender} icon={User} />
           <InfoRow label="Phone" value={student.phone} icon={Phone} />
+          {/* Email: pass a truncate/title prop if InfoRow supports it, or wrap it */}
           <InfoRow
             label="Email"
             value={student.email ?? "Not provided"}
             icon={Mail}
+            truncate={true}
           />
           <InfoRow label="Source" value={student.source} icon={Hash} />
           <InfoRow label="Shift" value={student.shift ?? "—"} icon={Clock} />
@@ -355,7 +366,13 @@ function PersonalInfoSection({ student }: { student: Student }) {
             value={student.batch ?? "—"}
             icon={GraduationCap}
           />
-          <InfoRow label="Address" value={student.address} icon={MapPin} />
+          {/* Address spans full width in view mode too */}
+          <InfoRow
+            label="Address"
+            value={student.address}
+            icon={MapPin}
+            className="lg:col-span-2"
+          />
         </div>
       )}
     </SectionCard>

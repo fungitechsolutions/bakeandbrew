@@ -103,6 +103,50 @@ func (q *Queries) GetPaymentsByStudent(ctx context.Context, studentID pgtype.UUI
 	return items, nil
 }
 
+const getStudentPayments = `-- name: GetStudentPayments :many
+SELECT 
+p.id,
+p.amount,
+p.payment_mode,
+p.remarks,
+p.added_at
+FROM payments p WHERE p.student_id = $1 ORDER BY p.added_at ASC
+`
+
+type GetStudentPaymentsRow struct {
+	ID          pgtype.UUID        `json:"id"`
+	Amount      int32              `json:"amount"`
+	PaymentMode string             `json:"paymentMode"`
+	Remarks     pgtype.Text        `json:"remarks"`
+	AddedAt     pgtype.Timestamptz `json:"addedAt"`
+}
+
+func (q *Queries) GetStudentPayments(ctx context.Context, studentID pgtype.UUID) ([]GetStudentPaymentsRow, error) {
+	rows, err := q.db.Query(ctx, getStudentPayments, studentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetStudentPaymentsRow
+	for rows.Next() {
+		var i GetStudentPaymentsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Amount,
+			&i.PaymentMode,
+			&i.Remarks,
+			&i.AddedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getTotalPaidByStudent = `-- name: GetTotalPaidByStudent :one
 SELECT COALESCE(SUM(amount), 0)::INTEGER AS total_paid
 FROM payments

@@ -46,3 +46,17 @@ VALUES ($1, $2, $3);
 -- name: RemoveStudentFromCourse :exec
 DELETE FROM student_courses
 WHERE student_id = $1 AND course_id = $2;
+
+
+-- name: GetStudentCourses :many
+SELECT 
+    c.name,
+    sc.fee_at_enrollment,
+    c.slug,
+    c.id
+FROM courses c
+JOIN student_courses sc ON sc.course_id = c.id
+WHERE sc.student_id = $1;
+
+-- name: GetStudentCoursesCount :one
+SELECT COUNT(*) FROM student_courses WHERE student_id = $1;

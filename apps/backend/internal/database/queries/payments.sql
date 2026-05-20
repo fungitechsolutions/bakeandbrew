@@ -17,3 +17,12 @@ WHERE student_id = $1;
 
 -- name: DeletePayment :exec
 DELETE FROM payments WHERE id = $1;
+
+-- name: GetStudentPayments :many
+SELECT 
+p.id,
+p.amount,
+p.payment_mode,
+p.remarks,
+p.added_at
+FROM payments p WHERE p.student_id = $1 ORDER BY p.added_at ASC;

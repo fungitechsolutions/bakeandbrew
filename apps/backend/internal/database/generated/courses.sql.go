@@ -182,6 +182,60 @@ func (q *Queries) GetCoursesByStudentID(ctx context.Context, studentID pgtype.UU
 	return items, nil
 }
 
+const getStudentCourses = `-- name: GetStudentCourses :many
+SELECT 
+    c.name,
+    sc.fee_at_enrollment,
+    c.slug,
+    c.id
+FROM courses c
+JOIN student_courses sc ON sc.course_id = c.id
+WHERE sc.student_id = $1
+`
+
+type GetStudentCoursesRow struct {
+	Name            string      `json:"name"`
+	FeeAtEnrollment int64       `json:"feeAtEnrollment"`
+	Slug            string      `json:"slug"`
+	ID              pgtype.UUID `json:"id"`
+}
+
+func (q *Queries) GetStudentCourses(ctx context.Context, studentID pgtype.UUID) ([]GetStudentCoursesRow, error) {
+	rows, err := q.db.Query(ctx, getStudentCourses, studentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetStudentCoursesRow
+	for rows.Next() {
+		var i GetStudentCoursesRow
+		if err := rows.Scan(
+			&i.Name,
+			&i.FeeAtEnrollment,
+			&i.Slug,
+			&i.ID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getStudentCoursesCount = `-- name: GetStudentCoursesCount :one
+SELECT COUNT(*) FROM student_courses WHERE student_id = $1
+`
+
+func (q *Queries) GetStudentCoursesCount(ctx context.Context, studentID pgtype.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, getStudentCoursesCount, studentID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const listActiveCourses = `-- name: ListActiveCourses :many
 SELECT id, name, fee, slug, is_active, created_at FROM courses WHERE is_active = TRUE ORDER BY name ASC
 `
