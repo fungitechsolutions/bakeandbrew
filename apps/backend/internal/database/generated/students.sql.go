@@ -22,7 +22,7 @@ INSERT INTO students (
     $7, $8, $9, $10,
     $11, $12, 'pending', $13,
     $14, $15, $16
-) RETURNING id, student_id, reference_no, fiscal_year, serial_no, full_name, dob, gender, phone, address, guardian_name, guardian_phone, photo_url, source, status, notes, shift, shift_time, batch, created_at
+) RETURNING id, student_id, reference_no, fiscal_year, serial_no, full_name, dob, gender, phone, address, guardian_name, guardian_phone, photo_url, source, status, notes, shift, shift_time, batch, rejection_reason, updated_at, created_at
 `
 
 type CreateStudentParams struct {
@@ -84,6 +84,8 @@ func (q *Queries) CreateStudent(ctx context.Context, arg CreateStudentParams) (S
 		&i.Shift,
 		&i.ShiftTime,
 		&i.Batch,
+		&i.RejectionReason,
+		&i.UpdatedAt,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -332,7 +334,7 @@ func (q *Queries) GetStudentAdmissionStatus(ctx context.Context, studentID pgtyp
 
 const getStudentByID = `-- name: GetStudentByID :one
 SELECT 
-    s.id, s.student_id, s.reference_no, s.fiscal_year, s.serial_no, s.full_name, s.dob, s.gender, s.phone, s.address, s.guardian_name, s.guardian_phone, s.photo_url, s.source, s.status, s.notes, s.shift, s.shift_time, s.batch, s.created_at,
+    s.id, s.student_id, s.reference_no, s.fiscal_year, s.serial_no, s.full_name, s.dob, s.gender, s.phone, s.address, s.guardian_name, s.guardian_phone, s.photo_url, s.source, s.status, s.notes, s.shift, s.shift_time, s.batch, s.rejection_reason, s.updated_at, s.created_at,
     u.email
 FROM students s
 JOIN users u ON s.student_id = u.id
@@ -340,27 +342,29 @@ WHERE s.id = $1
 `
 
 type GetStudentByIDRow struct {
-	ID            pgtype.UUID        `json:"id"`
-	StudentID     pgtype.UUID        `json:"studentId"`
-	ReferenceNo   string             `json:"referenceNo"`
-	FiscalYear    string             `json:"fiscalYear"`
-	SerialNo      int32              `json:"serialNo"`
-	FullName      string             `json:"fullName"`
-	Dob           pgtype.Date        `json:"dob"`
-	Gender        string             `json:"gender"`
-	Phone         string             `json:"phone"`
-	Address       string             `json:"address"`
-	GuardianName  string             `json:"guardianName"`
-	GuardianPhone string             `json:"guardianPhone"`
-	PhotoUrl      pgtype.Text        `json:"photoUrl"`
-	Source        string             `json:"source"`
-	Status        string             `json:"status"`
-	Notes         pgtype.Text        `json:"notes"`
-	Shift         string             `json:"shift"`
-	ShiftTime     string             `json:"shiftTime"`
-	Batch         pgtype.Text        `json:"batch"`
-	CreatedAt     pgtype.Timestamptz `json:"createdAt"`
-	Email         string             `json:"email"`
+	ID              pgtype.UUID        `json:"id"`
+	StudentID       pgtype.UUID        `json:"studentId"`
+	ReferenceNo     string             `json:"referenceNo"`
+	FiscalYear      string             `json:"fiscalYear"`
+	SerialNo        int32              `json:"serialNo"`
+	FullName        string             `json:"fullName"`
+	Dob             pgtype.Date        `json:"dob"`
+	Gender          string             `json:"gender"`
+	Phone           string             `json:"phone"`
+	Address         string             `json:"address"`
+	GuardianName    string             `json:"guardianName"`
+	GuardianPhone   string             `json:"guardianPhone"`
+	PhotoUrl        pgtype.Text        `json:"photoUrl"`
+	Source          string             `json:"source"`
+	Status          string             `json:"status"`
+	Notes           pgtype.Text        `json:"notes"`
+	Shift           string             `json:"shift"`
+	ShiftTime       string             `json:"shiftTime"`
+	Batch           pgtype.Text        `json:"batch"`
+	RejectionReason pgtype.Text        `json:"rejectionReason"`
+	UpdatedAt       pgtype.Timestamptz `json:"updatedAt"`
+	CreatedAt       pgtype.Timestamptz `json:"createdAt"`
+	Email           string             `json:"email"`
 }
 
 func (q *Queries) GetStudentByID(ctx context.Context, id pgtype.UUID) (GetStudentByIDRow, error) {
@@ -386,6 +390,8 @@ func (q *Queries) GetStudentByID(ctx context.Context, id pgtype.UUID) (GetStuden
 		&i.Shift,
 		&i.ShiftTime,
 		&i.Batch,
+		&i.RejectionReason,
+		&i.UpdatedAt,
 		&i.CreatedAt,
 		&i.Email,
 	)
@@ -658,17 +664,23 @@ func (q *Queries) ListStudents(ctx context.Context, arg ListStudentsParams) ([]L
 }
 
 const updateStudentStatus = `-- name: UpdateStudentStatus :one
-UPDATE students SET status = $2
-WHERE id = $1 RETURNING id, student_id, reference_no, fiscal_year, serial_no, full_name, dob, gender, phone, address, guardian_name, guardian_phone, photo_url, source, status, notes, shift, shift_time, batch, created_at
+UPDATE students 
+SET 
+  status = $2,
+  rejection_reason = $3,
+  updated_at = NOW()
+WHERE id = $1 
+RETURNING id, student_id, reference_no, fiscal_year, serial_no, full_name, dob, gender, phone, address, guardian_name, guardian_phone, photo_url, source, status, notes, shift, shift_time, batch, rejection_reason, updated_at, created_at
 `
 
 type UpdateStudentStatusParams struct {
-	ID     pgtype.UUID `json:"id"`
-	Status string      `json:"status"`
+	ID              pgtype.UUID `json:"id"`
+	Status          string      `json:"status"`
+	RejectionReason pgtype.Text `json:"rejectionReason"`
 }
 
 func (q *Queries) UpdateStudentStatus(ctx context.Context, arg UpdateStudentStatusParams) (Student, error) {
-	row := q.db.QueryRow(ctx, updateStudentStatus, arg.ID, arg.Status)
+	row := q.db.QueryRow(ctx, updateStudentStatus, arg.ID, arg.Status, arg.RejectionReason)
 	var i Student
 	err := row.Scan(
 		&i.ID,
@@ -690,6 +702,8 @@ func (q *Queries) UpdateStudentStatus(ctx context.Context, arg UpdateStudentStat
 		&i.Shift,
 		&i.ShiftTime,
 		&i.Batch,
+		&i.RejectionReason,
+		&i.UpdatedAt,
 		&i.CreatedAt,
 	)
 	return i, err

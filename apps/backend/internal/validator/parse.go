@@ -68,6 +68,8 @@ func mapTagToCode(tag string) string {
 		return "INVALID_TYPE"
 	case "dive":
 		return "INVALID_ITEM"
+	case "required_if":
+		return "REQUIRED_FIELD"
 	default:
 		return "VALIDATION_ERROR"
 	}
@@ -113,6 +115,8 @@ func buildMessage(fe validator.FieldError, jsonField string) string {
 		return fmt.Sprintf("%s must contain only letters and numbers", jsonField)
 	case "dive":
 		return fmt.Sprintf("%s contains an invalid item", jsonField)
+	case "required_if":
+		return fmt.Sprintf("%s is required", jsonField)
 	default:
 		return fmt.Sprintf("%s is invalid", jsonField)
 	}

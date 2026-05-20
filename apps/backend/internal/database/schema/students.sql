@@ -13,11 +13,13 @@ CREATE TABLE students (
     guardian_phone VARCHAR NOT NULL,
     photo_url      VARCHAR,
     source         VARCHAR NOT NULL,
-    status         VARCHAR NOT NULL DEFAULT 'pending',
+    status VARCHAR NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'active', 'completed', 'rejected')),
     notes          TEXT,
     shift          TEXT NOT NULL DEFAULT 'morning' CHECK (shift IN ('morning','day','evening')),
     shift_time     TEXT NOT NULL,
     batch          TEXT,
+    rejection_reason TEXT,
+    updated_at TIMESTAMPTZ NOT NULL,
     created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT unique_serial_per_fiscal_year UNIQUE (fiscal_year, serial_no)
 );

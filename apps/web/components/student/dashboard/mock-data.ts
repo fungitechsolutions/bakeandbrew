@@ -1,0 +1,62 @@
+import type { StudentDashboardData } from "./types/dashboard";
+
+export const mockStudent: StudentDashboardData = {
+  id: "a1b2c3d4-0000-0000-0000-000000000001",
+  studentId: "a1b2c3d4-0000-0000-0000-000000000002",
+  referenceNo: "BB-2081-042",
+  fiscalYear: "2081/82",
+  serialNo: 42,
+  fullName: "Priya Sharma",
+  dob: "2000-06-15",
+  gender: "Female",
+  phone: "+977 9841234567",
+  address: "Butwal-11, Rupandehi, Lumbini Province",
+  guardianName: "Ram Sharma",
+  guardianPhone: "+977 9851234567",
+  photoUrl: null,
+  status: "active",
+  shift: "morning",
+  shiftTime: "7:00 AM – 11:00 AM",
+  batch: "Batch 14 – Mid 2081",
+  notes: null,
+  createdAt: "2024-10-01T08:00:00Z",
+  enrolledCourses: [
+    {
+      id: "c1000000-0000-0000-0000-000000000001",
+      name: "Professional Barista Training",
+      slug: "professional-barista-training",
+      feeAtEnrollment: 25000,
+      isActive: true,
+    },
+    {
+      id: "c1000000-0000-0000-0000-000000000002",
+      name: "Artisan Bakery & Pastry",
+      slug: "artisan-bakery-pastry",
+      feeAtEnrollment: 18000,
+      isActive: true,
+    },
+  ],
+  payments: [
+    {
+      id: "p1000000-0000-0000-0000-000000000001",
+      amount: 20000,
+      addedAt: "2024-10-02T10:30:00Z",
+      remarks: "Initial payment",
+      paymentMode: "cash",
+    },
+    {
+      id: "p1000000-0000-0000-0000-000000000002",
+      amount: 10000,
+      addedAt: "2024-11-05T14:00:00Z",
+      remarks: "Second installment",
+      paymentMode: "esewa",
+    },
+    {
+      id: "p1000000-0000-0000-0000-000000000003",
+      amount: 13000,
+      addedAt: "2024-12-15T09:15:00Z",
+      remarks: "Final installment",
+      paymentMode: "bank_transfer",
+    },
+  ],
+};

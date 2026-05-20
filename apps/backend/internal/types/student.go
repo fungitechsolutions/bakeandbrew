@@ -55,5 +55,6 @@ type ListStudent struct {
 }
 
 type UpdateStudentStatusRequest struct {
-	Status string `json:"status" binding:"required,oneof=pending active completed rejected"`
+	Status          string `json:"status" binding:"required,oneof=pending active completed rejected"`
+	RejectionReason string `json:"rejectionReason" binding:"required_if=Status rejected,omitempty,min=1,max=500"`
 }
