@@ -91,26 +91,28 @@ type StockOut struct {
 }
 
 type Student struct {
-	ID            pgtype.UUID        `json:"id"`
-	StudentID     pgtype.UUID        `json:"studentId"`
-	ReferenceNo   string             `json:"referenceNo"`
-	FiscalYear    string             `json:"fiscalYear"`
-	SerialNo      int32              `json:"serialNo"`
-	FullName      string             `json:"fullName"`
-	Dob           pgtype.Date        `json:"dob"`
-	Gender        string             `json:"gender"`
-	Phone         string             `json:"phone"`
-	Address       string             `json:"address"`
-	GuardianName  string             `json:"guardianName"`
-	GuardianPhone string             `json:"guardianPhone"`
-	PhotoUrl      pgtype.Text        `json:"photoUrl"`
-	Source        string             `json:"source"`
-	Status        string             `json:"status"`
-	Notes         pgtype.Text        `json:"notes"`
-	Shift         string             `json:"shift"`
-	ShiftTime     string             `json:"shiftTime"`
-	Batch         pgtype.Text        `json:"batch"`
-	CreatedAt     pgtype.Timestamptz `json:"createdAt"`
+	ID              pgtype.UUID        `json:"id"`
+	StudentID       pgtype.UUID        `json:"studentId"`
+	ReferenceNo     string             `json:"referenceNo"`
+	FiscalYear      string             `json:"fiscalYear"`
+	SerialNo        int32              `json:"serialNo"`
+	FullName        string             `json:"fullName"`
+	Dob             pgtype.Date        `json:"dob"`
+	Gender          string             `json:"gender"`
+	Phone           string             `json:"phone"`
+	Address         string             `json:"address"`
+	GuardianName    string             `json:"guardianName"`
+	GuardianPhone   string             `json:"guardianPhone"`
+	PhotoUrl        pgtype.Text        `json:"photoUrl"`
+	Source          string             `json:"source"`
+	Status          string             `json:"status"`
+	Notes           pgtype.Text        `json:"notes"`
+	Shift           string             `json:"shift"`
+	ShiftTime       string             `json:"shiftTime"`
+	Batch           pgtype.Text        `json:"batch"`
+	RejectionReason pgtype.Text        `json:"rejectionReason"`
+	UpdatedAt       pgtype.Timestamptz `json:"updatedAt"`
+	CreatedAt       pgtype.Timestamptz `json:"createdAt"`
 }
 
 type StudentCourse struct {

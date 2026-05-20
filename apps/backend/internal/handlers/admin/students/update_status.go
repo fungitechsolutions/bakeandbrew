@@ -2,15 +2,18 @@ package students
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
 	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
 	"github.com/suprimkhatri77/sms/backend/internal/repository"
 	"github.com/suprimkhatri77/sms/backend/internal/types"
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
+	"github.com/suprimkhatri77/sms/backend/internal/validator"
 )
 
 func UpdateStatus(queries repository.AdminRepository) gin.HandlerFunc {
@@ -40,19 +43,22 @@ func UpdateStatus(queries repository.AdminRepository) gin.HandlerFunc {
 
 		var req types.UpdateStudentStatusRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
+			slog.Debug("req", "", req)
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid status",
 				Code:    constants.ValidationFailed,
+				Errors:  validator.Parse(err, req),
 			})
 			return
 		}
 
 		utils.TrimStruct(&req)
 
-		student, err := queries.UpdateStudentStatus(ctx, db.UpdateStudentStatusParams{
-			Status: req.Status,
-			ID:     studentID,
+		_, err = queries.UpdateStudentStatus(ctx, db.UpdateStudentStatusParams{
+			ID:              studentID,
+			Status:          req.Status,
+			RejectionReason: pgtype.Text{String: req.RejectionReason, Valid: req.RejectionReason != ""},
 		})
 
 		if err != nil {
@@ -75,7 +81,6 @@ func UpdateStatus(queries repository.AdminRepository) gin.HandlerFunc {
 		c.JSON(http.StatusOK, types.APIResponse{
 			Success: true,
 			Message: "Status updated",
-			Data:    student,
 		})
 	}
 }

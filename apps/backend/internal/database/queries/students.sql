@@ -54,8 +54,13 @@ JOIN users u ON s.student_id = u.id
 WHERE s.id = $1;
 
 -- name: UpdateStudentStatus :one
-UPDATE students SET status = $2
-WHERE id = $1 RETURNING *;
+UPDATE students 
+SET 
+  status = $2,
+  rejection_reason = $3,
+  updated_at = NOW()
+WHERE id = $1 
+RETURNING *;
 
 
 -- name: ListStudents :many

@@ -2,22 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Phone,
-  Mail,
-  MapPin,
-  User,
-  Users,
-  BookOpen,
-  CreditCard,
-  Plus,
-  Printer,
-  CalendarDays,
-  Hash,
-  AlertCircle,
-  Clock,
-} from "lucide-react";
+import { ArrowLeft, Plus, Printer } from "lucide-react";
 import {
   AddPayment,
   AddPaymentResponse,
@@ -262,7 +247,9 @@ export default function StudentDetailPage({
             </span>
             <StatusEditor
               current={currentStatus}
-              onUpdate={(next) => updateStatus({ status: next })}
+              onUpdate={(next, rejectionReason) =>
+                updateStatus({ status: next, rejectionReason: rejectionReason })
+              }
             />
           </div>
         </div>

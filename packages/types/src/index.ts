@@ -84,6 +84,7 @@ export {
   createCourseSchema,
   updateCourseSchema,
   updateSetting,
+  updateStudentStatusSchema,
   type ListStudent,
   type StudentDetail,
   type StudentEnrolledCourses,

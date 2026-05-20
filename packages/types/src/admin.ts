@@ -134,9 +134,26 @@ export type StudentPaymentDetails = z.infer<
   typeof studentPaymentDetailsResponseSchema
 >;
 
-export const updateStudentStatusSchema = z.object({
-  status: z.enum(["pending", "active", "completed", "rejected"]),
-});
+export const updateStudentStatusSchema = z
+  .object({
+    status: z.enum(["pending", "active", "completed", "rejected"]),
+    rejectionReason: z.preprocess(
+      (val) => (val === "" ? undefined : val),
+      z
+        .string()
+        .min(5, { message: "Rejection reason must be at least 5 characters" })
+        .optional(),
+    ),
+  })
+  .superRefine((data, ctx) => {
+    if (data.status === "rejected" && !data.rejectionReason?.trim()) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Rejection reason is required",
+        path: ["rejectionReason"],
+      });
+    }
+  });
 
 export type UpdateStudentStatus = z.infer<typeof updateStudentStatusSchema>;
 
