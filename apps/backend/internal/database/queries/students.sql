@@ -249,3 +249,30 @@ SELECT
   status
 FROM students
 WHERE student_id = $1;
+
+
+
+-- name: GetStudentOverview :one
+SELECT
+ s.id,
+ s.full_name,
+ s.reference_no,
+ s.batch,
+ s.created_at,
+ s.phone,
+ s.shift,
+ s.shift_time,
+ s.gender,
+ s.guardian_name,
+ s.guardian_phone,
+ s.address,
+ s.fiscal_year,
+ s.dob,
+ s.photo_url,
+ s.status
+FROM students s WHERE s.student_id = $1;
+
+-- name: GetStudentID :one
+SELECT
+id
+FROM students WHERE student_id = $1;

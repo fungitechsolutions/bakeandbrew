@@ -14,6 +14,7 @@ import (
 	adminCourses "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/courses"
 	adminInquiries "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/inquiries"
 	"github.com/suprimkhatri77/sms/backend/internal/handlers/admin/inventory/products"
+	studentPortal "github.com/suprimkhatri77/sms/backend/internal/handlers/student_portal"
 
 	adminPayments "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/payments"
 
@@ -164,4 +165,15 @@ func Setup(r *gin.Engine, cfg Config) {
 	coursesRouter := router.Group("/courses")
 	coursesRouter.GET("", courses.ListAllActiveCourses(cfg.Queries))
 	coursesRouter.GET("/:slug", courses.GetCourseDetail(cfg.Queries))
+
+	studentPortalRouter := router.Group(
+		"/portal/student",
+		middleware.RequireAuth(cfg.Config),
+		middleware.RequireRole("student"),
+	)
+
+	studentPortalRouter.GET("/overview", studentPortal.GetStudentOverview(cfg.Queries))
+	studentPortalRouter.GET("/courses", studentPortal.GetStudentCourses(cfg.Queries))
+	studentPortalRouter.GET("/payments", studentPortal.GetStudentPayments(cfg.Queries))
+	studentPortalRouter.GET("/fee/summary", studentPortal.GetStudentFeeSummary(cfg.Queries))
 }

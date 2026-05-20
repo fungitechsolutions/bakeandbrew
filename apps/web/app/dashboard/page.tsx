@@ -1,36 +1,23 @@
-import { Suspense } from "react";
-import Link from "next/link";
-import { UserCircle2 } from "lucide-react";
-import { StudentDashboardData } from "@/components/student/dashboard/types/dashboard";
-import { mockStudent } from "@/components/student/dashboard/mock-data";
 import { StudentHero } from "@/components/student/dashboard/StudentHero";
 import { FinancialSummary } from "@/components/student/dashboard/FinancialSummary";
 import { EnrolledCourses } from "@/components/student/dashboard/EnrolledCourses";
 import { siteInfo } from "@/utils/site-info";
 import { PaymentHistory } from "@/components/student/dashboard/PaymentHistory";
-import { DashboardSkeleton } from "@/components/student/dashboard/DashboardSkeleton";
+import { Discounts } from "@/components/student/dashboard/Discounts";
+import { Scholarship } from "@/components/student/dashboard/Scholarship";
 
-async function getStudentDashboard(): Promise<StudentDashboardData> {
-  return mockStudent;
-}
-
-async function DashboardContent() {
-  const student = await getStudentDashboard();
-
+function DashboardContent() {
   return (
     <div className="space-y-8auto">
       {/* Profile hero */}
-      <StudentHero student={student} />
+      <StudentHero />
 
       {/* Financial summary */}
-      <FinancialSummary
-        courses={student.enrolledCourses}
-        payments={student.payments}
-      />
+      <FinancialSummary />
 
       {/* Courses + side info row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <EnrolledCourses courses={student.enrolledCourses} />
+        <EnrolledCourses />
 
         {/* Quick links / contact card */}
         <aside>
@@ -73,16 +60,17 @@ async function DashboardContent() {
           </div>
         </aside>
       </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-3">
+        <Discounts />
+        <Scholarship />
+      </div>
 
       {/* Full-width payment history */}
-      <PaymentHistory payments={student.payments} />
+      <PaymentHistory />
     </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Page export
-// ---------------------------------------------------------------------------
 export default function DashboardPage() {
   return (
     <div
@@ -105,19 +93,17 @@ export default function DashboardPage() {
           </div>
 
           {/* Profile shortcut */}
-          <Link
+          {/* <Link
             href="/dashboard/profile"
             className="inline-flex items-center gap-2 text-sm font-medium text-[#2f4e40] hover:text-[#c28a4f] bg-white border border-[#1a1a1a]/10 hover:border-[#c28a4f]/30 px-3.5 py-2 rounded-xl transition-all duration-200 hover:shadow-sm"
           >
             <UserCircle2 size={16} />
             <span className="hidden sm:inline">Edit Profile</span>
-          </Link>
+          </Link> */}
         </header>
 
-        {/* Main content wrapped in Suspense for server-side streaming */}
-        <Suspense fallback={<DashboardSkeleton />}>
-          <DashboardContent />
-        </Suspense>
+        {/* Main content */}
+        <DashboardContent />
 
         {/* Footer note */}
         <footer className="mt-12 pt-6 border-t border-[#1a1a1a]/6 text-center">

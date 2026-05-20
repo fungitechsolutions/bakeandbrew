@@ -452,6 +452,83 @@ func (q *Queries) GetStudentFeeSummary(ctx context.Context, id pgtype.UUID) (Get
 	return i, err
 }
 
+const getStudentID = `-- name: GetStudentID :one
+SELECT
+id
+FROM students WHERE student_id = $1
+`
+
+func (q *Queries) GetStudentID(ctx context.Context, studentID pgtype.UUID) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, getStudentID, studentID)
+	var id pgtype.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
+const getStudentOverview = `-- name: GetStudentOverview :one
+SELECT
+ s.id,
+ s.full_name,
+ s.reference_no,
+ s.batch,
+ s.created_at,
+ s.phone,
+ s.shift,
+ s.shift_time,
+ s.gender,
+ s.guardian_name,
+ s.guardian_phone,
+ s.address,
+ s.fiscal_year,
+ s.dob,
+ s.photo_url,
+ s.status
+FROM students s WHERE s.student_id = $1
+`
+
+type GetStudentOverviewRow struct {
+	ID            pgtype.UUID        `json:"id"`
+	FullName      string             `json:"fullName"`
+	ReferenceNo   string             `json:"referenceNo"`
+	Batch         pgtype.Text        `json:"batch"`
+	CreatedAt     pgtype.Timestamptz `json:"createdAt"`
+	Phone         string             `json:"phone"`
+	Shift         string             `json:"shift"`
+	ShiftTime     string             `json:"shiftTime"`
+	Gender        string             `json:"gender"`
+	GuardianName  string             `json:"guardianName"`
+	GuardianPhone string             `json:"guardianPhone"`
+	Address       string             `json:"address"`
+	FiscalYear    string             `json:"fiscalYear"`
+	Dob           pgtype.Date        `json:"dob"`
+	PhotoUrl      pgtype.Text        `json:"photoUrl"`
+	Status        string             `json:"status"`
+}
+
+func (q *Queries) GetStudentOverview(ctx context.Context, studentID pgtype.UUID) (GetStudentOverviewRow, error) {
+	row := q.db.QueryRow(ctx, getStudentOverview, studentID)
+	var i GetStudentOverviewRow
+	err := row.Scan(
+		&i.ID,
+		&i.FullName,
+		&i.ReferenceNo,
+		&i.Batch,
+		&i.CreatedAt,
+		&i.Phone,
+		&i.Shift,
+		&i.ShiftTime,
+		&i.Gender,
+		&i.GuardianName,
+		&i.GuardianPhone,
+		&i.Address,
+		&i.FiscalYear,
+		&i.Dob,
+		&i.PhotoUrl,
+		&i.Status,
+	)
+	return i, err
+}
+
 const getStudentsCount = `-- name: GetStudentsCount :one
 SELECT COUNT(DISTINCT s.id)
 FROM students s
