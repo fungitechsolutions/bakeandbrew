@@ -116,3 +116,9 @@ export {
   type GetStudentPaymentsResponse,
 } from "./student_portal/payments";
 export { type GetStudentCoursesResponse } from "./student_portal/enrollments";
+
+export {
+  updateStudentGuardianInfoInputSchema,
+  updateStudentPersonalInfoInputSchema,
+  type UpdateStudentPersonalInfoResponse,
+} from "./admin/students/personal-info";

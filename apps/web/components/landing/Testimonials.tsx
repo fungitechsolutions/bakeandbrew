@@ -95,9 +95,9 @@ export function TestimonialsSection() {
     <section className="relative py-10">
       <div className="mx-auto max-w-5xl">
         <div className="mx-auto flex max-w-sm flex-col items-center justify-center gap-4">
-          <div className="flex justify-center">
+          {/* <div className="flex justify-center">
             <div className="rounded-lg border px-4 py-1">Testimonials</div>
-          </div>
+          </div> */}
 
           <h2 className="font-bold text-3xl tracking-tighter lg:text-4xl">
             What our students say

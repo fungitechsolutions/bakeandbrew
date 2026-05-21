@@ -13,10 +13,10 @@ export default function Home() {
   return (
     <main>
       <Hero />
-      <WhyUs />
       <Suspense fallback={<ProgramLoadingSkeleton />}>
         <Programs />
       </Suspense>
+      <WhyUs />
       <HowItWorks />
       <ImageGallery />
       <TestimonialsSection />

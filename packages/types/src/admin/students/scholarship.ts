@@ -30,7 +30,7 @@ export type GetStudentScholarshipResponse = z.infer<
 
 export const studentScholarshipMutationSchema = z.object({
   percent: z.number().gt(0).lte(100),
-  note: z.string().min(1).max(100).optional(),
+  note: z.string().trim().min(1).max(100).optional(),
 });
 
 export type StudentScholarshipInput = z.infer<
