@@ -58,11 +58,12 @@ function UserAvatar({
   }
   return (
     <span
-      className="flex items-center justify-center rounded-full bg-[#e8552a] font-semibold text-white select-none"
+      className="flex items-center justify-center rounded-full font-semibold text-white select-none"
       style={{
         width: size,
         height: size,
         fontSize: size * 0.38,
+        background: "var(--brand-brown)",
         fontFamily: "var(--font-dm-sans)",
       }}
     >
@@ -105,7 +106,6 @@ export default function Navbar() {
       ? "/admin"
       : "/dashboard";
 
-  // Lock body scroll when mobile menu open
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
     return () => {
@@ -113,7 +113,6 @@ export default function Navbar() {
     };
   }, [menuOpen]);
 
-  // Animate mobile menu height
   useEffect(() => {
     const el = menuRef.current;
     if (!el) return;
@@ -126,7 +125,6 @@ export default function Navbar() {
     }
   }, [menuOpen]);
 
-  // Close dropdown on outside click
   useEffect(() => {
     if (!dropdownOpen) return;
     const handler = (e: MouseEvent) => {
@@ -142,13 +140,23 @@ export default function Navbar() {
   }, [dropdownOpen]);
 
   return (
-    <header className="fixed left-0 right-0 top-0 z-100 transition-all duration-300 bg-[#2d4a3e]/97 shadow-[0_2px_24px_rgba(0,0,0,0.12)] backdrop-blur-xl">
-      <div className="mx-auto flex h-25 max-w-300 items-center justify-between px-6">
-        {/* Logo */}
+    <header
+      className="fixed left-0 right-0 top-0 z-100 transition-all duration-300"
+      style={{
+        background: "rgba(251,250,247,0.96)",
+        backdropFilter: "blur(16px)",
+        borderBottom: "1px solid rgba(194,138,79,0.18)",
+        boxShadow: "0 2px 24px rgba(47,78,64,0.07)",
+      }}
+    >
+      <div className="mx-auto flex h-25 max-w-400 items-center justify-between px-6">
+        {/* Logo — swap to dark/colored logo now that bg is light */}
         <Link href="/" className="flex items-center gap-2 no-underline">
           <span className="flex h-20 w-20 items-center justify-center overflow-hidden">
             <Image
-              src={siteInfo.assets.whiteLogoNoBG}
+              src={
+                siteInfo.assets.greenBrownNoBG ?? siteInfo.assets.whiteLogoNoBG
+              }
               alt={siteInfo.company.shortName}
               width={120}
               height={120}
@@ -161,9 +169,12 @@ export default function Navbar() {
           {navLinks.map((link) => (
             <Link
               key={link.label}
-              href={`/${link.href}`}
-              className="text-[0.9rem] font-medium tracking-[0.02em] text-white/85 transition-colors duration-200 hover:text-[#d6cbb8]"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
+              href={link.href}
+              className="text-[0.9rem] font-medium tracking-[0.02em] transition-colors duration-200 hover:text-[--brand-green]"
+              style={{
+                color: "rgba(26,26,26,0.6)",
+                fontFamily: "var(--font-dm-sans)",
+              }}
             >
               {link.label}
             </Link>
@@ -174,48 +185,74 @@ export default function Navbar() {
               <>
                 <Link
                   href="/auth/login"
-                  className="px-4 py-2 text-sm font-medium text-white/80 hover:text-white transition"
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                  className="px-4 py-2 text-sm font-medium transition-colors duration-200"
+                  style={{
+                    color: "var(--brand-green)",
+                    fontFamily: "var(--font-dm-sans)",
+                  }}
                 >
                   Login
                 </Link>
                 <Link
                   href="/auth/signup"
-                  className="px-4 py-2 text-sm font-semibold rounded-lg bg-[#e8552a] text-white hover:opacity-90 transition"
-                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                  className="px-5 py-2 text-sm font-semibold rounded-lg text-white transition-all duration-200 hover:-translate-y-[1px]"
+                  style={{
+                    background: "var(--brand-brown)",
+                    boxShadow: "0 3px 14px rgba(194,138,79,0.28)",
+                    fontFamily: "var(--font-dm-sans)",
+                  }}
                 >
-                  Signup
+                  Sign Up
                 </Link>
               </>
             ) : (
-              /* ── Desktop Avatar + Dropdown ── */
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setDropdownOpen((v) => !v)}
-                  className="flex items-center gap-2 rounded-full p-0.5 ring-2 ring-transparent hover:ring-[#d6cbb8]/50 transition-all duration-200 focus:outline-none focus:ring-[#d6cbb8]/60"
+                  className="flex items-center gap-2 rounded-full p-0.5 transition-all duration-200 focus:outline-none"
+                  style={{
+                    outline: dropdownOpen
+                      ? "2px solid rgba(194,138,79,0.45)"
+                      : "2px solid transparent",
+                    outlineOffset: "1px",
+                  }}
                   aria-label="User menu"
                   aria-expanded={dropdownOpen}
                 >
                   <UserAvatar user={user} size={36} />
                 </button>
 
-                {/* Dropdown */}
                 {dropdownOpen && (
                   <div
-                    className="absolute right-0 top-[calc(100%+10px)] w-48 rounded-xl border border-white/10 bg-[#223d32] shadow-[0_8px_32px_rgba(0,0,0,0.35)] overflow-hidden z-50"
-                    style={{ animation: "dropIn 160ms ease" }}
+                    className="absolute right-0 top-[calc(100%+10px)] w-48 rounded-xl overflow-hidden z-50"
+                    style={{
+                      background: "var(--brand-cream)",
+                      border: "1px solid rgba(194,138,79,0.2)",
+                      boxShadow: "0 8px 32px rgba(47,78,64,0.12)",
+                      animation: "dropIn 160ms ease",
+                    }}
                   >
-                    {/* User info header */}
-                    <div className="px-4 py-3 border-b border-white/10">
+                    <div
+                      className="px-4 py-3"
+                      style={{
+                        borderBottom: "1px solid rgba(194,138,79,0.12)",
+                      }}
+                    >
                       <p
-                        className="text-sm font-semibold text-white truncate"
-                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                        className="text-sm font-semibold truncate"
+                        style={{
+                          color: "var(--brand-ink)",
+                          fontFamily: "var(--font-dm-sans)",
+                        }}
                       >
                         {user.name}
                       </p>
                       <p
-                        className="text-xs text-white/50 truncate"
-                        style={{ fontFamily: "var(--font-dm-sans)" }}
+                        className="text-xs truncate"
+                        style={{
+                          color: "rgba(26,26,26,0.42)",
+                          fontFamily: "var(--font-dm-sans)",
+                        }}
                       >
                         {user.email}
                       </p>
@@ -224,8 +261,11 @@ export default function Navbar() {
                     <Link
                       href={dashboardHref}
                       onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:bg-white/5 hover:text-[#d6cbb8] transition-colors duration-150"
-                      style={{ fontFamily: "var(--font-dm-sans)" }}
+                      className="flex items-center gap-3 px-4 py-3 text-sm transition-colors duration-150 hover:bg-[rgba(194,138,79,0.08)] hover:text-[--brand-green]"
+                      style={{
+                        color: "rgba(26,26,26,0.65)",
+                        fontFamily: "var(--font-dm-sans)",
+                      }}
                     >
                       <LayoutDashboard size={15} className="shrink-0" />
                       Dashboard
@@ -234,8 +274,11 @@ export default function Navbar() {
                     <button
                       onClick={() => mutate()}
                       disabled={isPending}
-                      className="flex w-full items-center  gap-3 px-4 py-3 text-sm text-white/80 transition-colors duration-150 hover:bg-white/5 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-white/80"
-                      style={{ fontFamily: "var(--font-dm-sans)" }}
+                      className="flex w-full items-center gap-3 px-4 py-3 text-sm transition-colors duration-150 hover:bg-[rgba(194,138,79,0.08)] hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                      style={{
+                        color: "rgba(26,26,26,0.65)",
+                        fontFamily: "var(--font-dm-sans)",
+                      }}
                     >
                       {isPending ? (
                         <>
@@ -256,13 +299,13 @@ export default function Navbar() {
           </div>
         </nav>
 
-        {/* Mobile right side: avatar (if logged in) + hamburger */}
+        {/* Mobile: avatar + hamburger */}
         <div className="flex items-center gap-2 lg:hidden">
           {user && (
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen((v) => !v)}
-                className="flex items-center rounded-full p-0.5 ring-2 ring-transparent hover:ring-[#d6cbb8]/50 transition-all duration-200 focus:outline-none"
+                className="flex items-center rounded-full p-0.5 transition-all duration-200 focus:outline-none"
                 aria-label="User menu"
                 aria-expanded={dropdownOpen}
               >
@@ -271,19 +314,33 @@ export default function Navbar() {
 
               {dropdownOpen && (
                 <div
-                  className="absolute right-0 top-[calc(100%+10px)] w-44 rounded-xl border border-white/10 bg-[#223d32] shadow-[0_8px_32px_rgba(0,0,0,0.35)] overflow-hidden z-50"
-                  style={{ animation: "dropIn 160ms ease" }}
+                  className="absolute right-0 top-[calc(100%+10px)] w-44 rounded-xl overflow-hidden z-50"
+                  style={{
+                    background: "var(--brand-cream)",
+                    border: "1px solid rgba(194,138,79,0.2)",
+                    boxShadow: "0 8px 32px rgba(47,78,64,0.12)",
+                    animation: "dropIn 160ms ease",
+                  }}
                 >
-                  <div className="px-4 py-3 border-b border-white/10">
+                  <div
+                    className="px-4 py-3"
+                    style={{ borderBottom: "1px solid rgba(194,138,79,0.12)" }}
+                  >
                     <p
-                      className="text-sm font-semibold text-white truncate"
-                      style={{ fontFamily: "var(--font-dm-sans)" }}
+                      className="text-sm font-semibold truncate"
+                      style={{
+                        color: "var(--brand-ink)",
+                        fontFamily: "var(--font-dm-sans)",
+                      }}
                     >
                       {user.name}
                     </p>
                     <p
-                      className="text-xs text-white/50 truncate"
-                      style={{ fontFamily: "var(--font-dm-sans)" }}
+                      className="text-xs truncate"
+                      style={{
+                        color: "rgba(26,26,26,0.42)",
+                        fontFamily: "var(--font-dm-sans)",
+                      }}
                     >
                       {user.email}
                     </p>
@@ -295,8 +352,11 @@ export default function Navbar() {
                       setDropdownOpen(false);
                       setMenuOpen(false);
                     }}
-                    className="flex items-center gap-3 px-4 py-3 text-sm text-white/80 hover:bg-white/5 hover:text-[#d6cbb8] transition-colors duration-150"
-                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                    className="flex items-center gap-3 px-4 py-3 text-sm transition-colors duration-150 hover:bg-[rgba(194,138,79,0.08)] hover:text-[--brand-green]"
+                    style={{
+                      color: "rgba(26,26,26,0.65)",
+                      fontFamily: "var(--font-dm-sans)",
+                    }}
                   >
                     <LayoutDashboard size={15} className="shrink-0" />
                     Dashboard
@@ -305,8 +365,11 @@ export default function Navbar() {
                   <button
                     onClick={() => mutate()}
                     disabled={isPending}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-sm text-white/80 transition-colors duration-150 hover:bg-white/5 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-white/80"
-                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-sm transition-colors duration-150 hover:bg-[rgba(194,138,79,0.08)] hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                    style={{
+                      color: "rgba(26,26,26,0.65)",
+                      fontFamily: "var(--font-dm-sans)",
+                    }}
                   >
                     {isPending ? (
                       <>
@@ -325,11 +388,11 @@ export default function Navbar() {
             </div>
           )}
 
-          {/* Hamburger */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="Toggle menu"
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-white transition-colors duration-200 hover:bg-white/10"
+            className="flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-200 hover:bg-[rgba(194,138,79,0.1)]"
+            style={{ color: "var(--brand-green)" }}
           >
             {menuOpen ? (
               <X className="h-5 w-5" strokeWidth={2} />
@@ -343,10 +406,12 @@ export default function Navbar() {
       {/* Mobile Menu */}
       <div
         ref={menuRef}
-        className="overflow-hidden bg-[#2d4a3e] lg:hidden"
+        className="overflow-hidden lg:hidden"
         style={{
           height: "0px",
           opacity: 0,
+          background: "var(--brand-cream)",
+          borderTop: "1px solid rgba(194,138,79,0.15)",
           transition:
             "height 260ms cubic-bezier(0.4, 0, 0.2, 1), opacity 220ms ease",
         }}
@@ -357,21 +422,27 @@ export default function Navbar() {
               key={link.label}
               href={link.href}
               onClick={() => setMenuOpen(false)}
-              className="border-b border-white/10 py-3 text-[1rem] font-medium text-white/85 transition-colors duration-150 hover:text-[#d6cbb8]"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
+              className="py-3 text-[1rem] font-medium transition-colors duration-150 hover:text-[--brand-green]"
+              style={{
+                color: "rgba(26,26,26,0.65)",
+                borderBottom: "1px solid rgba(194,138,79,0.12)",
+                fontFamily: "var(--font-dm-sans)",
+              }}
             >
               {link.label}
             </Link>
           ))}
 
-          {/* Show login/signup in hamburger only when NOT logged in */}
           {!user && (
-            <div className="flex flex-col gap-2 pt-1">
+            <div className="flex flex-col gap-2 pt-3">
               <Link
                 href="/auth/login"
                 onClick={() => setMenuOpen(false)}
-                className="flex items-center gap-3 rounded-lg py-2 text-white/85 transition hover:text-[#d6cbb8]"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
+                className="flex items-center gap-3 rounded-lg py-2 text-sm font-medium transition"
+                style={{
+                  color: "var(--brand-green)",
+                  fontFamily: "var(--font-dm-sans)",
+                }}
               >
                 <LogIn size={18} />
                 <span>Login</span>
@@ -380,18 +451,20 @@ export default function Navbar() {
               <Link
                 href="/auth/signup"
                 onClick={() => setMenuOpen(false)}
-                className="flex items-center gap-3 rounded-lg py-2 text-white/85 transition hover:text-[#d6cbb8]"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
+                className="flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-[1px]"
+                style={{
+                  background: "var(--brand-brown)",
+                  fontFamily: "var(--font-dm-sans)",
+                }}
               >
                 <UserPlus size={18} />
-                <span>Signup</span>
+                <span>Sign Up</span>
               </Link>
             </div>
           )}
         </div>
       </div>
 
-      {/* Dropdown animation keyframe — injected once */}
       <style>{`
         @keyframes dropIn {
           from { opacity: 0; transform: translateY(-6px) scale(0.97); }

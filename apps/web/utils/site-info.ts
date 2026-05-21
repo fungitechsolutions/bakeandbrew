@@ -23,6 +23,7 @@ export const siteInfo = {
     noBGLogo: "/assets/logo-no-bg.png",
     emblem: "/assets/watermark.png",
     watermarkNoBG: "/assets/watermark-no-bg.png",
+    greenBrownNoBG: "/assets/green-brown-logo-no-bg.png",
   },
   admission: {
     cycleLabel: "Admissions Open",

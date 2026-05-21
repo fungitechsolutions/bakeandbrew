@@ -13,11 +13,13 @@ const studentDiscountSchema = z.object({
 export const studentDiscountMutationSchema = z.object({
   type: z
     .string({ error: "Discount type is required" })
+    .trim()
     .min(1, { error: "Discount type is required" })
     .max(50, { error: "Discount type cannot exceed 50 characters" }),
 
   note: z
     .string({ error: "Note must be a string" })
+    .trim()
     .min(1, { error: "Note cannot be empty" })
     .max(100, { error: "Note cannot exceed 100 characters" })
     .optional(),

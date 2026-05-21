@@ -1,137 +1,382 @@
 import Link from "next/link";
 import { siteInfo } from "@/utils/site-info";
 
-const stats = siteInfo.stats.map((s, index) => ({
-  ...s,
-  colorClass:
-    index === 0
-      ? "text-(--brand-brown)"
-      : index === 1
-        ? "text-[rgba(255,255,255,0.85)]"
-        : index === 2
-          ? "text-[rgba(194,138,79,0.82)]"
-          : "text-[rgba(255,255,255,0.75)]",
-}));
-
 export default function Hero() {
   return (
     <section
       id="home"
-      className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 pb-16 pt-32"
-      style={{
-        background: `
-          linear-gradient(135deg, rgba(45,74,62,0.96) 0%, rgba(45,74,62,0.85) 50%, rgba(29,47,40,0.97) 100%),
-          url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")
-        `,
-      }}
+      className="relative w-full overflow-hidden pb-8 pt-[100px]"
+      style={{ background: "var(--brand-cream)" }}
     >
-      {/* Decorative blobs */}
-      <div
-        className="pointer-events-none absolute top-[15%] right-[-5%] h-[420px] w-[420px] rounded-full"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(232,85,42,0.15) 0%, transparent 70%)",
-        }}
-      />
-      <div
-        className="pointer-events-none absolute bottom-[10%] left-[-8%] h-[320px] w-[320px] rounded-full"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(107,158,107,0.15) 0%, transparent 70%)",
-        }}
-      />
-
-      <div className="relative z-10 mx-auto grid w-full max-w-[1200px] grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
-        {/* ── Left: Content ── */}
-        <div className="order-2 lg:order-1">
-          {/* Badge */}
-          <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-[#e8552a]/30 bg-[#e8552a]/15 px-4 py-[0.4rem]">
-            <span className="h-[7px] w-[7px] rounded-full bg-[#e8552a]" />
-            <span
-              className="text-[0.82rem] font-medium tracking-wider text-[#d6cbb8]"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            >
-              {siteInfo.admission.cycleLabel}
-            </span>
-          </div>
-
-          {/* Headline */}
-          <h1
-            className="mb-6 text-[clamp(2.4rem,5vw,3.8rem)] font-extrabold leading-[1.12] text-white"
-            style={{ fontFamily: "var(--font-playfair)" }}
+      <div className="container mx-auto max-sm:px-2">
+        {/* ─── MOBILE layout ─── */}
+        <div
+          className="relative border-x md:hidden"
+          style={{
+            borderColor: "rgba(194,138,79,0.18)",
+            pointerEvents: "none",
+          }}
+        >
+          <svg
+            className="absolute inset-0 overflow-visible"
+            viewBox="0 0 210 340"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            style={{ color: "rgba(194,138,79,0.18)", pointerEvents: "none" }}
           >
-            Build Your Skills in
-            <br />
-            <span className="text-[rgba(194,138,79,0.95)]">Coffee</span>, Bakery
-            <br />
-            <em
-              className="font-medium text-[#d6cbb8]"
-              style={{ fontStyle: "italic" }}
-            >
-              & Hospitality
-            </em>
-          </h1>
+            <g>
+              <path
+                d="M380.853 105.099L-201.625 464.632"
+                stroke="currentColor"
+                strokeDasharray="4 2"
+                vectorEffect="non-scaling-stroke"
+              />
+              <path
+                d="M-165.247 -267.831L369.777 600.141"
+                stroke="currentColor"
+                strokeDasharray="4 2"
+                vectorEffect="non-scaling-stroke"
+              />
+            </g>
+            <g>
+              <path
+                d="M209.5 260L130 260"
+                stroke="currentColor"
+                vectorEffect="non-scaling-stroke"
+              />
+              <path
+                d="M129.5 339.5L129.5 210"
+                stroke="currentColor"
+                vectorEffect="non-scaling-stroke"
+              />
+              <path
+                d="M159.5 260L159.5 210"
+                stroke="currentColor"
+                vectorEffect="non-scaling-stroke"
+              />
+              <path
+                d="M3.09944e-06 210L209.5 210"
+                stroke="currentColor"
+                vectorEffect="non-scaling-stroke"
+              />
+              <path
+                d="M160 240L130.133 240"
+                stroke="currentColor"
+                vectorEffect="non-scaling-stroke"
+              />
+              <path
+                d="M149.5 240L149.5 260"
+                stroke="currentColor"
+                vectorEffect="non-scaling-stroke"
+              />
+            </g>
+            <g>
+              <rect
+                x="159.5"
+                y="210"
+                width="30"
+                height="30"
+                transform="rotate(90 159.5 210)"
+                stroke="currentColor"
+                vectorEffect="non-scaling-stroke"
+              />
+              <rect
+                x="149.5"
+                y="240"
+                width="20"
+                height="20"
+                transform="rotate(90 149.5 240)"
+                stroke="currentColor"
+                vectorEffect="non-scaling-stroke"
+              />
+              <rect
+                x="159.5"
+                y="240"
+                width="20"
+                height="10"
+                transform="rotate(90 159.5 240)"
+                stroke="currentColor"
+                vectorEffect="non-scaling-stroke"
+              />
+            </g>
+            <path
+              d="M149.643 239.897C155.106 239.897 159.619 244.414 159.619 249.882C159.619 255.35 155.106 259.868 149.643 259.868C138.717 259.868 129.69 250.833 129.69 239.897C129.69 223.493 143.23 209.941 159.619 209.941C186.935 209.941 209.5 232.527 209.5 259.868C209.5 303.613 173.396 339.75 129.69 339.75C58.6695 339.75 -1.22732e-05 281.027 -9.16589e-06 209.941C-4.14648e-06 95.1103 94.7738 0.24998 209.5 0.249985C395.69 0.250001 549.5 154.06 549.5 340.25"
+              stroke="rgba(194,138,79,0.35)"
+              strokeWidth="1.5"
+              vectorEffect="non-scaling-stroke"
+            />
+          </svg>
 
-          {/* Body */}
-          <p
-            className="mb-10 max-w-[440px] text-[1.05rem] leading-[1.75] text-white/70"
-            style={{ fontFamily: "var(--font-dm-sans)" }}
+          {/* content wrapper re-enables pointer events */}
+          <div
+            className="relative flex flex-col"
+            style={{ pointerEvents: "auto" }}
           >
-            {siteInfo.company.name} delivers practical, job-focused training
-            with real mentors, modern labs, and a culture that helps students
-            become confident professionals.
-          </p>
-
-          {/* CTAs */}
-          <div className="flex flex-wrap gap-4">
-            <Link
-              href="/admission"
-              className="inline-block rounded-[10px] bg-[#c28a4f] px-8 py-[0.85rem] text-[0.95rem] font-semibold tracking-[0.02em] text-white shadow-[0_4px_20px_rgba(232,85,42,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_28px_rgba(232,85,42,0.45)]"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            >
-              Apply for Admission
-            </Link>
-            <Link
-              href="#inquiry"
-              className="inline-block rounded-[10px] border border-white/25 px-8 py-[0.85rem] text-[0.95rem] font-medium text-white/85 transition-all duration-200 hover:border-[#d6cbb8] hover:text-[#d6cbb8]"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            >
-              Send Inquiry
-            </Link>
+            <MainContent className="w-full" />
+            <div className="w-full px-4 pb-8">
+              <VideoPanel />
+            </div>
           </div>
         </div>
 
-        {/* ── Right: Stats card ── */}
-        <div className="order-1 lg:order-2">
-          <div
-            className="rounded-[20px] border border-white/12 p-6 backdrop-blur-xl sm:p-10"
-            style={{ background: "rgba(255,255,255,0.06)" }}
+        {/* ─── DESKTOP layout ─── */}
+        <div
+          className="relative hidden border-x md:block"
+          style={{
+            borderColor: "rgba(194,138,79,0.18)",
+            pointerEvents: "none",
+          }}
+        >
+          <svg
+            className="absolute inset-0 overflow-visible"
+            viewBox="0 0 340 210"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            style={{ color: "rgba(194,138,79,0.18)", pointerEvents: "none" }}
           >
-            <div className="grid grid-cols-2 gap-4">
-              {stats.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="rounded-[14px] border border-white/8 p-5 text-center"
-                  style={{ background: "rgba(255,255,255,0.04)" }}
-                >
-                  <div
-                    className={`mb-1 text-[2.2rem] font-bold leading-none ${stat.colorClass}`}
-                    style={{ fontFamily: "var(--font-lora)" }}
-                  >
-                    {stat.number}
-                  </div>
-                  <div
-                    className="text-[0.8rem] leading-[1.4] text-white/55"
-                    style={{ fontFamily: "var(--font-lora)" }}
-                  >
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
+            <g>
+              <path
+                d="M105.1 -170.853L464.633 411.625"
+                stroke="currentColor"
+                strokeDasharray="4 2"
+                vectorEffect="non-scaling-stroke"
+              />
+              <path
+                d="M-267.831 375.247L600.141 -159.777"
+                stroke="currentColor"
+                strokeDasharray="4 2"
+                vectorEffect="non-scaling-stroke"
+              />
+            </g>
+            <g>
+              <path
+                d="M260 0.5V80"
+                stroke="currentColor"
+                vectorEffect="non-scaling-stroke"
+              />
+              <path
+                d="M339.5 80.5H210"
+                stroke="currentColor"
+                vectorEffect="non-scaling-stroke"
+              />
+              <path
+                d="M210 210V0.5"
+                stroke="currentColor"
+                vectorEffect="non-scaling-stroke"
+              />
+            </g>
+            <g>
+              <rect
+                x="210"
+                y="50.5"
+                width="30"
+                height="30"
+                stroke="currentColor"
+                vectorEffect="non-scaling-stroke"
+              />
+              <rect
+                x="240"
+                y="60.5"
+                width="20"
+                height="20"
+                stroke="currentColor"
+                vectorEffect="non-scaling-stroke"
+              />
+              <rect
+                x="240"
+                y="50.5"
+                width="20"
+                height="10"
+                stroke="currentColor"
+                vectorEffect="non-scaling-stroke"
+              />
+            </g>
+            <path
+              d="M239.897 60.3571C239.897 54.894 244.414 50.381 249.882 50.381C255.35 50.381 259.868 54.894 259.868 60.3571C259.868 71.2835 250.833 80.3095 239.897 80.3095C223.493 80.3095 209.941 66.7704 209.941 50.381C209.941 23.0652 232.527 0.499999 259.868 0.5C303.613 0.499995 339.75 36.6043 339.75 80.3095C339.75 151.33 281.027 210 209.941 210C95.1103 210 0.25 115.226 0.25 0.5C0.250008 -185.69 154.06 -339.5 340.25 -339.5"
+              stroke="rgba(194,138,79,0.35)"
+              strokeWidth="1.5"
+              vectorEffect="non-scaling-stroke"
+            />
+          </svg>
+
+          {/* content wrapper re-enables pointer events */}
+          <div
+            className="relative grid aspect-[1.618/1] grid-cols-[1.618fr_minmax(0,1fr)] grid-rows-[1fr_1.618fr]"
+            style={{ pointerEvents: "auto" }}
+          >
+            <MainContent className="col-1 row-[1/span_2]" />
+            <div className="col-2 row-1" />
+            <div className="col-2 row-2 flex items-center justify-center overflow-hidden p-4 lg:p-8">
+              <VideoPanel />
             </div>
           </div>
         </div>
       </div>
     </section>
+  );
+}
+
+function MainContent({ className }: { className?: string }) {
+  return (
+    <div
+      className={`flex flex-col justify-center overflow-hidden p-6 lg:p-10 ${className ?? ""}`}
+    >
+      {/* Admission badge */}
+      {/* <div
+        className="mb-6 inline-flex w-fit items-center gap-2 rounded-full px-4 py-1.5"
+        style={{
+          border: "1px solid rgba(194,138,79,0.35)",
+          background: "rgba(194,138,79,0.1)",
+        }}
+      >
+        <span
+          className="h-[7px] w-[7px] rounded-full"
+          style={{ background: "var(--brand-brown)" }}
+        />
+        <span
+          className="text-[0.78rem] font-medium tracking-widest uppercase"
+          style={{
+            color: "var(--brand-brown)",
+            fontFamily: "var(--font-dm-sans)",
+          }}
+        >
+          {siteInfo.admission.cycleLabel}
+        </span>
+      </div> */}
+
+      {/* Headline */}
+      <h1
+        className="mb-5 font-heading leading-[1.08] font-bold tracking-tight text-[2.2rem] sm:text-[2.8rem] lg:text-[3.2rem] xl:text-[3.6rem]"
+        style={{
+          color: "var(--brand-ink)",
+          fontFamily: "var(--font-playfair)",
+        }}
+      >
+        <span style={{ color: "var(--brand-brown)" }}>Brew.</span> Bake.
+        <br />
+        <em
+          className="font-medium"
+          style={{ color: "var(--brand-green)", fontStyle: "italic" }}
+        >
+          Build a Career.
+        </em>
+      </h1>
+
+      {/* Body */}
+      <p
+        className="mb-8 max-w-[400px] text-[0.95rem] leading-relaxed sm:text-base"
+        style={{
+          color: "rgba(26,26,26,0.55)",
+          fontFamily: "var(--font-dm-sans)",
+        }}
+      >
+        Practical training. Industry mentors.{" "}
+        <span style={{ color: "rgba(26,26,26,0.75)", fontWeight: 500 }}>
+          Graduate job-ready, not just certified.
+        </span>
+      </p>
+
+      {/* CTAs */}
+      <div className="mb-8 flex flex-wrap gap-3 sm:gap-4">
+        <Link
+          href="/admission"
+          className="inline-block rounded-[10px] px-7 py-3 text-[0.92rem] font-semibold tracking-[0.02em] text-white transition-all duration-200 hover:-translate-y-0.5"
+          style={{
+            background: "var(--brand-brown)",
+            boxShadow: "0 4px 18px rgba(194,138,79,0.3)",
+            fontFamily: "var(--font-dm-sans)",
+          }}
+        >
+          Apply for Admission
+        </Link>
+        <Link
+          href="#inquiry"
+          className="inline-block rounded-[10px] px-7 py-3 text-[0.92rem] font-medium transition-all duration-200"
+          style={{
+            border: "1px solid rgba(47,78,64,0.3)",
+            color: "var(--brand-green)",
+            fontFamily: "var(--font-dm-sans)",
+          }}
+        >
+          Send Inquiry
+        </Link>
+      </div>
+
+      {/* Stats row */}
+      <div className="flex flex-wrap gap-6 sm:gap-8">
+        {siteInfo.stats.map((stat: { number: string; label: string }) => (
+          <div key={stat.label}>
+            <div
+              className="text-xl font-bold leading-none sm:text-2xl"
+              style={{
+                color: "var(--brand-brown)",
+                fontFamily: "var(--font-lora)",
+              }}
+            >
+              {stat.number}
+            </div>
+            <div
+              className="mt-0.5 text-[0.75rem] leading-snug"
+              style={{
+                color: "rgba(26,26,26,0.45)",
+                fontFamily: "var(--font-dm-sans)",
+              }}
+            >
+              {stat.label}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function VideoPanel() {
+  return (
+    <div
+      className="relative w-full overflow-hidden rounded-2xl"
+      style={{
+        aspectRatio: "16/10",
+        boxShadow:
+          "0 8px 40px rgba(47,78,64,0.18), 0 0 0 1px rgba(194,138,79,0.15)",
+      }}
+    >
+      <video
+        src="https://www.pexels.com/download/video/8935791/"
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(135deg, rgba(47,78,64,0.25) 0%, rgba(47,78,64,0.05) 60%, transparent 100%)",
+        }}
+      />
+      <div
+        className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full px-3 py-1"
+        style={{
+          background: "rgba(251,250,247,0.85)",
+          backdropFilter: "blur(8px)",
+        }}
+      >
+        <span
+          className="h-1.5 w-1.5 rounded-full"
+          style={{ background: "var(--brand-brown)" }}
+        />
+        <span
+          className="text-[0.7rem] font-medium tracking-wide"
+          style={{
+            color: "var(--brand-ink)",
+            fontFamily: "var(--font-dm-sans)",
+          }}
+        >
+          Live training sessions
+        </span>
+      </div>
+    </div>
   );
 }
