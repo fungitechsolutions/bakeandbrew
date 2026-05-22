@@ -33,12 +33,19 @@ SELECT
     created_at,
     image_url 
 FROM users 
-WHERE role IN ('student', 'admin') 
+WHERE 
+    role IN ('student', 'admin', 'instructor')
+    AND (sqlc.narg('role')::text IS NULL OR role = sqlc.narg('role')::text)
+    AND (sqlc.narg('name')::text IS NULL OR name ILIKE '%' || sqlc.narg('name')::text || '%')
+    AND (sqlc.narg('email')::text IS NULL OR email ILIKE '%' || sqlc.narg('email')::text || '%')
 ORDER BY created_at DESC, id ASC
 LIMIT $1 OFFSET $2;
 
 
--- name: GetUsersCount :one
-SELECT COUNT(*) FROM users WHERE ROLE IN ('student','admin');
+-- name: GetUsersRoleCount :many
+SELECT role, COUNT(*) as count
+FROM users
+WHERE role IN ('student', 'admin', 'instructor')
+GROUP BY role;
 
 

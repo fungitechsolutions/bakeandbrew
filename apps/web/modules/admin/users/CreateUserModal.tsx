@@ -4,7 +4,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { useForm } from "@tanstack/react-form-nextjs";
 import { APIResponse, CreateUserInput, createUserSchema } from "@repo/types";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/axios";
 import { toast } from "sonner";
 import axios from "axios";
@@ -19,10 +19,12 @@ interface CreateUserModalProps {
 const ROLE_OPTIONS: { value: CreateUserInput["role"]; label: string }[] = [
   { value: "student", label: "Student" },
   { value: "admin", label: "Admin" },
+  { value: "instructor", label: "Instructor" },
 ];
 
 export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
   const [errors, setErrors] = useState<Partial<CreateUserInput>>({});
+  const queryClient = useQueryClient();
 
   const { mutate, isPending, reset } = useMutation({
     mutationFn: async (data: CreateUserInput) => {
@@ -30,6 +32,7 @@ export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
       return res.data;
     },
     onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       toast.success(result.message);
       onClose();
       formReset();
@@ -56,7 +59,7 @@ export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
       name: "",
       email: "",
       password: "",
-      role: "student" as "student" | "admin",
+      role: "student" as "student" | "admin" | "instructor",
     },
     validators: {
       onSubmit: createUserSchema,

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { UserAvatar } from "./UserAvatar";
 import { X } from "lucide-react";
-import { UserRole } from "@/utils/mock";
 import {
   APIResponse,
   UpdateUserInput,
@@ -23,9 +22,10 @@ interface EditUserCardProps {
   onClose: () => void;
 }
 
-const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
+const ROLE_OPTIONS: { value: UpdateUserInput["role"]; label: string }[] = [
   { value: "student", label: "Student" },
   { value: "admin", label: "Admin" },
+  { value: "instructor", label: "Instructor" },
 ];
 
 export function EditUserCard({ user, onClose }: EditUserCardProps) {
@@ -64,7 +64,7 @@ export function EditUserCard({ user, onClose }: EditUserCardProps) {
     defaultValues: {
       name: user?.name ?? "",
       email: user?.email ?? "",
-      role: user?.role as "student" | "admin",
+      role: user?.role as "student" | "admin" | "instructor",
     },
     validators: {
       onSubmit: updateUserSchema,

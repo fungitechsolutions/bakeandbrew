@@ -1,8 +1,13 @@
-import { UserRole } from "@/utils/mock";
 import { User } from "@repo/types";
 
 interface StatsBarProps {
   users: User[];
+  total: number;
+  roleCount: {
+    student: number;
+    admin: number;
+    instructor: number;
+  };
 }
 
 interface StatItem {
@@ -10,15 +15,12 @@ interface StatItem {
   count: number;
 }
 
-export function StatsBar({ users }: StatsBarProps) {
-  function countByRole(role: UserRole): number {
-    return users.filter((u) => u.role === role).length;
-  }
-
+export function StatsBar({ users, total, roleCount }: StatsBarProps) {
   const stats: StatItem[] = [
-    { label: "Total", count: users.length },
-    { label: "Students", count: countByRole("student") },
-    { label: "Admins", count: countByRole("admin") },
+    { label: "Total", count: total },
+    { label: "Students", count: roleCount.student },
+    { label: "Admins", count: roleCount.admin },
+    { label: "Instructors", count: roleCount.instructor },
     // { label: "Superadmins", count: countByRole("superadmin") },
   ];
 

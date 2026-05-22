@@ -14,7 +14,7 @@ export const createUserSchema = z.object({
     .string()
     .min(8, "Password must have atleast 8 characters")
     .max(50, "Password must be >= 50 characters"),
-  role: z.enum(["admin", "student"]),
+  role: z.enum(["admin", "student", "instructor"]),
 });
 
 export const updateUserSchema = z.object({
@@ -25,7 +25,7 @@ export const updateUserSchema = z.object({
     .regex(/^[A-Za-z ]+$/, "Name can only contain letters and spaces")
     .trim(),
   email: z.email().trim(),
-  role: z.enum(["admin", "student"]),
+  role: z.enum(["admin", "student", "instructor"]),
 });
 
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
