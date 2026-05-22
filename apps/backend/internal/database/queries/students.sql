@@ -117,11 +117,19 @@ WHERE
 -- name: GetStudentsWithOutstandingFees :many
 SELECT
     u.id AS user_id,
+    s.id AS student_id,
     u.name,
     u.email,
     COALESCE(fees.total_fee, 0)::BIGINT AS total_course_fee,
     COALESCE(pays.total_paid, 0)::BIGINT AS total_paid,
-    (COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0))::BIGINT AS outstanding
+    COALESCE(discounts.total_discount, 0)::BIGINT AS total_discount,
+    COALESCE(scholarships.total_scholarship, 0)::BIGINT AS total_scholarship,
+    (
+        COALESCE(fees.total_fee, 0)
+        - COALESCE(pays.total_paid, 0)
+        - COALESCE(discounts.total_discount, 0)
+        - COALESCE(scholarships.total_scholarship, 0)
+    )::BIGINT AS outstanding
 FROM users u
 JOIN students s ON s.student_id = u.id
 JOIN (
@@ -134,8 +142,23 @@ LEFT JOIN (
     FROM payments
     GROUP BY student_id
 ) pays ON pays.student_id = s.id
+LEFT JOIN (
+    SELECT student_id, SUM(amount) AS total_discount
+    FROM student_discounts
+    GROUP BY student_id
+) discounts ON discounts.student_id = s.id
+LEFT JOIN (
+    SELECT student_id, SUM(amount) AS total_scholarship
+    FROM student_scholarships
+    GROUP BY student_id
+) scholarships ON scholarships.student_id = s.id
 WHERE s.status IN ('active', 'completed')
-  AND (COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0)) > 0
+  AND (
+        COALESCE(fees.total_fee, 0)
+        - COALESCE(pays.total_paid, 0)
+        - COALESCE(discounts.total_discount, 0)
+        - COALESCE(scholarships.total_scholarship, 0)
+      ) > 0
   AND (sqlc.narg('from_date')::TEXT IS NULL OR s.created_at >= sqlc.narg('from_date')::TIMESTAMPTZ)
   AND (sqlc.narg('to_date')::TEXT IS NULL OR s.created_at <= (sqlc.narg('to_date')::TIMESTAMPTZ + INTERVAL '1 day'))
   AND (sqlc.narg('search')::TEXT IS NULL OR u.name ILIKE '%' || sqlc.narg('search')::TEXT || '%' OR u.email ILIKE '%' || sqlc.narg('search')::TEXT || '%')
@@ -158,8 +181,23 @@ FROM (
         FROM payments
         GROUP BY student_id
     ) pays ON pays.student_id = s.id
+    LEFT JOIN (
+        SELECT student_id, SUM(amount) AS total_discount
+        FROM student_discounts
+        GROUP BY student_id
+    ) discounts ON discounts.student_id = s.id
+    LEFT JOIN (
+        SELECT student_id, SUM(amount) AS total_scholarship
+        FROM student_scholarships
+        GROUP BY student_id
+    ) scholarships ON scholarships.student_id = s.id
     WHERE s.status IN ('active', 'completed')
-      AND (COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0)) > 0
+      AND (
+            COALESCE(fees.total_fee, 0)
+            - COALESCE(pays.total_paid, 0)
+            - COALESCE(discounts.total_discount, 0)
+            - COALESCE(scholarships.total_scholarship, 0)
+          ) > 0
       AND (sqlc.narg('from_date')::TEXT IS NULL OR s.created_at >= sqlc.narg('from_date')::TIMESTAMPTZ)
       AND (sqlc.narg('to_date')::TEXT IS NULL OR s.created_at <= (sqlc.narg('to_date')::TIMESTAMPTZ + INTERVAL '1 day'))
       AND (sqlc.narg('search')::TEXT IS NULL OR u.name ILIKE '%' || sqlc.narg('search')::TEXT || '%' OR u.email ILIKE '%' || sqlc.narg('search')::TEXT || '%')
@@ -169,7 +207,10 @@ FROM (
 SELECT COALESCE(SUM(outstanding), 0)::BIGINT AS grand_total_outstanding
 FROM (
     SELECT
-        COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0) AS outstanding
+        COALESCE(fees.total_fee, 0)
+        - COALESCE(pays.total_paid, 0)
+        - COALESCE(discounts.total_discount, 0)
+        - COALESCE(scholarships.total_scholarship, 0) AS outstanding
     FROM users u
     JOIN students s ON s.student_id = u.id
     JOIN (
@@ -182,8 +223,23 @@ FROM (
         FROM payments
         GROUP BY student_id
     ) pays ON pays.student_id = s.id
+    LEFT JOIN (
+        SELECT student_id, SUM(amount) AS total_discount
+        FROM student_discounts
+        GROUP BY student_id
+    ) discounts ON discounts.student_id = s.id
+    LEFT JOIN (
+        SELECT student_id, SUM(amount) AS total_scholarship
+        FROM student_scholarships
+        GROUP BY student_id
+    ) scholarships ON scholarships.student_id = s.id
     WHERE s.status IN ('active', 'completed')
-      AND (COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0)) > 0
+      AND (
+            COALESCE(fees.total_fee, 0)
+            - COALESCE(pays.total_paid, 0)
+            - COALESCE(discounts.total_discount, 0)
+            - COALESCE(scholarships.total_scholarship, 0)
+          ) > 0
       AND (sqlc.narg('from_date')::TEXT IS NULL OR s.created_at >= sqlc.narg('from_date')::TIMESTAMPTZ)
       AND (sqlc.narg('to_date')::TEXT IS NULL OR s.created_at <= (sqlc.narg('to_date')::TIMESTAMPTZ + INTERVAL '1 day'))
       AND (sqlc.narg('search')::TEXT IS NULL OR u.name ILIKE '%' || sqlc.narg('search')::TEXT || '%' OR u.email ILIKE '%' || sqlc.narg('search')::TEXT || '%')
@@ -192,11 +248,19 @@ FROM (
 -- name: GetSalesRevenue :many
 SELECT
     u.id AS user_id,
+    s.id AS student_id,
     u.name,
     u.email,
     COALESCE(fees.total_fee, 0)::BIGINT AS total_course_fee,
     COALESCE(pays.total_paid, 0)::BIGINT AS total_paid,
-    (COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0))::BIGINT AS outstanding
+    COALESCE(discounts.total_discount, 0)::BIGINT AS total_discount,
+    COALESCE(scholarships.total_scholarship, 0)::BIGINT AS total_scholarship,
+    (
+        COALESCE(fees.total_fee, 0)
+        - COALESCE(pays.total_paid, 0)
+        - COALESCE(discounts.total_discount, 0)
+        - COALESCE(scholarships.total_scholarship, 0)
+    )::BIGINT AS outstanding
 FROM users u
 JOIN students s ON s.student_id = u.id
 JOIN (
@@ -211,6 +275,16 @@ LEFT JOIN (
       AND (sqlc.narg('to_date')::TEXT IS NULL OR added_at <= (sqlc.narg('to_date')::TIMESTAMPTZ + INTERVAL '1 day'))
     GROUP BY student_id
 ) pays ON pays.student_id = s.id
+LEFT JOIN (
+    SELECT student_id, SUM(amount) AS total_discount
+    FROM student_discounts
+    GROUP BY student_id
+) discounts ON discounts.student_id = s.id
+LEFT JOIN (
+    SELECT student_id, SUM(amount) AS total_scholarship
+    FROM student_scholarships
+    GROUP BY student_id
+) scholarships ON scholarships.student_id = s.id
 WHERE s.status IN ('active', 'completed')
   AND (sqlc.narg('from_date')::TEXT IS NULL OR s.created_at >= sqlc.narg('from_date')::TIMESTAMPTZ)
   AND (sqlc.narg('to_date')::TEXT IS NULL OR s.created_at <= (sqlc.narg('to_date')::TIMESTAMPTZ + INTERVAL '1 day'))

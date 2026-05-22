@@ -13,18 +13,29 @@ const getAnalyticsOverview = `-- name: GetAnalyticsOverview :one
 SELECT
     COUNT(DISTINCT s.id)::INTEGER AS total_students,
     COUNT(DISTINCT s.id) FILTER (WHERE s.status = 'pending')::INTEGER AS pending_approvals,
-    (SELECT COALESCE(SUM(amount), 0)::INTEGER FROM payments) AS total_revenue,
+    (SELECT COALESCE(SUM(amount), 0)::BIGINT FROM payments) AS total_revenue,
     COUNT(DISTINCT s.id) FILTER (
         WHERE s.status IN ('active', 'completed')
         AND (
-            SELECT COALESCE(SUM(p2.amount), 0)
-            FROM payments p2
-            WHERE p2.student_id = s.id
-        ) < (
             SELECT COALESCE(SUM(fee_at_enrollment), 0)
             FROM student_courses sc
             WHERE sc.student_id = s.id
         )
+        - (
+            SELECT COALESCE(SUM(p2.amount), 0)
+            FROM payments p2
+            WHERE p2.student_id = s.id
+        )
+        - (
+            SELECT COALESCE(SUM(sd.amount), 0)
+            FROM student_discounts sd
+            WHERE sd.student_id = s.id
+        )
+        - (
+            SELECT COALESCE(SUM(ss.amount), 0)
+            FROM student_scholarships ss
+            WHERE ss.student_id = s.id
+        ) > 0
     )::INTEGER AS students_with_balance
 FROM students s
 `
@@ -32,7 +43,7 @@ FROM students s
 type GetAnalyticsOverviewRow struct {
 	TotalStudents       int32 `json:"totalStudents"`
 	PendingApprovals    int32 `json:"pendingApprovals"`
-	TotalRevenue        int32 `json:"totalRevenue"`
+	TotalRevenue        int64 `json:"totalRevenue"`
 	StudentsWithBalance int32 `json:"studentsWithBalance"`
 }
 
@@ -216,7 +227,10 @@ SELECT
         SELECT SUM(outstanding)
         FROM (
             SELECT
-                COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0) AS outstanding
+                COALESCE(fees.total_fee, 0)
+                - COALESCE(pays.total_paid, 0)
+                - COALESCE(discounts.total_discount, 0)
+                - COALESCE(scholarships.total_scholarship, 0) AS outstanding
             FROM students s
             JOIN (
                 SELECT student_id, SUM(fee_at_enrollment) AS total_fee
@@ -228,8 +242,23 @@ SELECT
                 FROM payments
                 GROUP BY student_id
             ) pays ON pays.student_id = s.id
+            LEFT JOIN (
+                SELECT student_id, SUM(amount) AS total_discount
+                FROM student_discounts
+                GROUP BY student_id
+            ) discounts ON discounts.student_id = s.id
+            LEFT JOIN (
+                SELECT student_id, SUM(amount) AS total_scholarship
+                FROM student_scholarships
+                GROUP BY student_id
+            ) scholarships ON scholarships.student_id = s.id
             WHERE s.status IN ('active', 'completed')
-              AND (COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0)) > 0
+              AND (
+                    COALESCE(fees.total_fee, 0)
+                    - COALESCE(pays.total_paid, 0)
+                    - COALESCE(discounts.total_discount, 0)
+                    - COALESCE(scholarships.total_scholarship, 0)
+                  ) > 0
         ) AS balances
     ), 0)::INTEGER AS outstanding
 FROM payments p

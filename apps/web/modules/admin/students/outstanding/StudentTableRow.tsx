@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import type { OutstandingStudent } from "./types/outstanding";
 
 function formatCurrency(amount: number): string {
@@ -72,6 +73,18 @@ export function StudentTableSkeleton() {
           </td>
           <td className="px-5 py-4 border-b border-[#f0ede8]">
             <div
+              className="w-20 h-3.5 bg-[#e8e3da] rounded animate-[shimmer_1.5s_infinite]"
+              style={{ animationDelay: `${i * 0.08}s` }}
+            />
+          </td>
+          <td className="px-5 py-4 border-b border-[#f0ede8]">
+            <div
+              className="w-20 h-3.5 bg-[#e8e3da] rounded animate-[shimmer_1.5s_infinite]"
+              style={{ animationDelay: `${i * 0.08}s` }}
+            />
+          </td>
+          <td className="px-5 py-4 border-b border-[#f0ede8]">
+            <div
               className="w-[90px] h-[26px] bg-[#e8e3da] rounded-[20px] animate-[shimmer_1.5s_infinite]"
               style={{ animationDelay: `${i * 0.08}s` }}
             />
@@ -87,6 +100,7 @@ interface StudentTableRowProps {
 }
 
 export function StudentTableRow({ student }: StudentTableRowProps) {
+  const router = useRouter();
   const progressPct =
     student.totalCourseFee > 0
       ? Math.min((student.totalPaid / student.totalCourseFee) * 100, 100)
@@ -96,7 +110,10 @@ export function StudentTableRow({ student }: StudentTableRowProps) {
     "px-5 py-4 border-b border-[#f0ede8] align-middle group-last:border-b-0";
 
   return (
-    <tr className="group transition-colors duration-[120ms] hover:bg-[#f9f7f3]">
+    <tr
+      onClick={() => router.push(`/admin/students/${student.studentId}`)}
+      className="group transition-colors duration-[120ms] hover:bg-[#f9f7f3]"
+    >
       <td className={tdClass}>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-[#2f4e40] text-[#c28a4f] font-[var(--font-dm-sans)] text-[13px] font-bold flex items-center justify-center shrink-0 tracking-[0.04em]">
@@ -129,6 +146,16 @@ export function StudentTableRow({ student }: StudentTableRowProps) {
             />
           </div>
         </div>
+      </td>
+      <td className={tdClass}>
+        <span className="font-[var(--font-dm-sans)] text-sm text-[#4a4540] tabular-nums">
+          {formatCurrency(student.totalDiscount / 100)}
+        </span>
+      </td>
+      <td className={tdClass}>
+        <span className="font-[var(--font-dm-sans)] text-sm text-[#4a4540] tabular-nums">
+          {formatCurrency(student.totalScholarship / 100)}
+        </span>
       </td>
       <td className={tdClass}>
         <OutstandingBadge amount={student.outstanding / 100} />

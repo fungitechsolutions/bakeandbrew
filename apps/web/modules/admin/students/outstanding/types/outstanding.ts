@@ -5,6 +5,9 @@ export interface OutstandingStudent {
   totalCourseFee: number;
   totalPaid: number;
   outstanding: number;
+  studentId: string;
+  totalDiscount: number;
+  totalScholarship: number;
 }
 
 export interface OutstandingResponse {

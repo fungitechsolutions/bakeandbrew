@@ -15,6 +15,7 @@ import { Pagination } from "./OutstandingPagination";
 import { ErrorState } from "./OustandingError";
 import { EmptyState } from "./OustandingEmpty";
 import { OutstandingFiltersBar } from "./OutstandingFiltersBar";
+import Link from "next/link";
 
 function parseFilters(searchParams: URLSearchParams): OutstandingFilters {
   return {
@@ -93,6 +94,12 @@ export function OutstandingStudentsView() {
                       Paid
                     </th>
                     <th className="px-5 py-3.5 text-left font-[var(--font-dm-sans)] text-[11px] font-semibold tracking-[0.08em] uppercase text-[#9e9589] bg-[#faf8f4] border-b border-[#e8e3da] whitespace-nowrap">
+                      Discounts
+                    </th>
+                    <th className="px-5 py-3.5 text-left font-[var(--font-dm-sans)] text-[11px] font-semibold tracking-[0.08em] uppercase text-[#9e9589] bg-[#faf8f4] border-b border-[#e8e3da] whitespace-nowrap">
+                      Scholarship
+                    </th>
+                    <th className="px-5 py-3.5 text-left font-[var(--font-dm-sans)] text-[11px] font-semibold tracking-[0.08em] uppercase text-[#9e9589] bg-[#faf8f4] border-b border-[#e8e3da] whitespace-nowrap">
                       Outstanding
                     </th>
                   </tr>
@@ -119,6 +126,8 @@ export function OutstandingStudentsView() {
                         <div className="w-10 h-10 rounded-full bg-[#e8e3da] shrink-0 animate-[shimmer_1.5s_infinite]" />
                         <div className="flex flex-col gap-1.5 flex-1">
                           <div className="h-3.5 w-2/5 bg-[#e8e3da] rounded animate-[shimmer_1.5s_infinite]" />
+                          <div className="h-3.5 w-2/5 bg-[#e8e3da] rounded animate-[shimmer_1.5s_infinite]" />
+                          <div className="h-3.5 w-2/5 bg-[#e8e3da] rounded animate-[shimmer_1.5s_infinite]" />
                           <div className="h-3 w-3/5 bg-[#e8e3da] rounded animate-[shimmer_1.5s_infinite]" />
                         </div>
                       </div>
@@ -126,14 +135,17 @@ export function OutstandingStudentsView() {
                       <div className="flex flex-col gap-2">
                         <div className="h-3 w-1/2 bg-[#e8e3da] rounded animate-[shimmer_1.5s_infinite]" />
                         <div className="h-3 w-1/2 bg-[#e8e3da] rounded animate-[shimmer_1.5s_infinite]" />
+                        <div className="h-3 w-1/2 bg-[#e8e3da] rounded animate-[shimmer_1.5s_infinite]" />
+                        <div className="h-3 w-1/2 bg-[#e8e3da] rounded animate-[shimmer_1.5s_infinite]" />
                         <div className="h-6 w-[35%] bg-[#e8e3da] rounded-[20px] animate-[shimmer_1.5s_infinite]" />
                       </div>
                     </div>
                   ))
                 : students.map((student) => (
-                    <div
+                    <Link
+                      href={`/admin/students/${student.userId}`}
                       key={student.userId}
-                      className="p-4 border-b border-[#f0ede8] last:border-b-0 transition-colors duration-[120ms] hover:bg-[#f9f7f3]"
+                      className="block p-4 border-b border-[#f0ede8] last:border-b-0 transition-colors duration-[120ms] hover:bg-[#f9f7f3]"
                     >
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-10 h-10 rounded-full bg-[#2f4e40] text-[#c28a4f] font-[var(--font-dm-sans)] text-[13px] font-bold flex items-center justify-center shrink-0">
@@ -163,7 +175,7 @@ export function OutstandingStudentsView() {
                               style: "currency",
                               currency: "NPR",
                               minimumFractionDigits: 0,
-                            }).format(student.totalCourseFee)}
+                            }).format(student.totalCourseFee / 100)}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
@@ -175,7 +187,31 @@ export function OutstandingStudentsView() {
                               style: "currency",
                               currency: "NPR",
                               minimumFractionDigits: 0,
-                            }).format(student.totalPaid)}
+                            }).format(student.totalPaid / 100)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="font-[var(--font-dm-sans)] text-xs text-[#9e9589]">
+                            Discounts
+                          </span>
+                          <span className="font-[var(--font-dm-sans)] text-[13px] font-medium text-[#2f4e40] tabular-nums">
+                            {new Intl.NumberFormat("en-NP", {
+                              style: "currency",
+                              currency: "NPR",
+                              minimumFractionDigits: 0,
+                            }).format(student.totalDiscount / 100)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="font-[var(--font-dm-sans)] text-xs text-[#9e9589]">
+                            Scholarship
+                          </span>
+                          <span className="font-[var(--font-dm-sans)] text-[13px] font-medium text-[#2f4e40] tabular-nums">
+                            {new Intl.NumberFormat("en-NP", {
+                              style: "currency",
+                              currency: "NPR",
+                              minimumFractionDigits: 0,
+                            }).format(student.totalScholarship / 100)}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
@@ -187,11 +223,11 @@ export function OutstandingStudentsView() {
                               style: "currency",
                               currency: "NPR",
                               minimumFractionDigits: 0,
-                            }).format(student.outstanding)}
+                            }).format(student.outstanding / 100)}
                           </span>
                         </div>
                       </div>
-                    </div>
+                    </Link>
                   ))}
             </div>
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import type { SalesStudent } from "./types/sales";
 
 function formatCurrency(amount: number): string {
@@ -109,6 +110,12 @@ export function SalesTableSkeleton() {
           <td>
             <div className="skel skel-chip" />
           </td>
+          <td>
+            <div className="skel skel-chip" />
+          </td>
+          <td>
+            <div className="skel skel-chip" />
+          </td>
           <style jsx>{`
             .skeleton-row td {
               padding: 16px 20px;
@@ -182,13 +189,17 @@ interface SalesTableRowProps {
 }
 
 export function SalesTableRow({ student }: SalesTableRowProps) {
+  const router = useRouter();
   const progressPct =
     student.totalCourseFee > 0
       ? Math.min((student.totalPaid / student.totalCourseFee) * 100, 100)
       : 0;
 
   return (
-    <tr className="data-row">
+    <tr
+      onClick={() => router.push(`/admin/students/${student.studentId}`)}
+      className="data-row"
+    >
       <td className="cell-student">
         <div className="student-cell">
           <div className="avatar">{getInitials(student.name)}</div>
@@ -216,6 +227,17 @@ export function SalesTableRow({ student }: SalesTableRowProps) {
           </div>
           <span className="pct-label">{Math.round(progressPct)}%</span>
         </div>
+      </td>
+
+      <td className="cell-right">
+        <span className="amount-text">
+          {formatCurrency(student.totalDiscount / 100)}
+        </span>
+      </td>
+      <td className="cell-right">
+        <span className="amount-text">
+          {formatCurrency(student.totalScholarship / 100)}
+        </span>
       </td>
 
       <td className="cell-right">

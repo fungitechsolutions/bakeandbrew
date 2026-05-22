@@ -5,6 +5,9 @@ export interface SalesStudent {
   totalCourseFee: number;
   totalPaid: number;
   outstanding: number;
+  totalDiscount: number;
+  totalScholarship: number;
+  studentId: string;
 }
 
 export interface SalesResponse {
