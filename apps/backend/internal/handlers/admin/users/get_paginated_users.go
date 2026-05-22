@@ -105,8 +105,26 @@ func GetPaginatedUsers(queries repository.UserRepository) gin.HandlerFunc {
 		if filter.Role != "" {
 			filteredCount = int64(roleCountMap[filter.Role])
 		}
-		totalPages := (filteredCount + PAGE_LIMIT - 1) / PAGE_LIMIT
+		if filteredCount == 0 {
+			c.JSON(http.StatusOK, types.APIResponse{
+				Success: true,
+				Data:    []db.GetPaginatedUsersRow{},
+				Meta: UsersPaginationMeta{
+					Limit:      int(PAGE_LIMIT),
+					Total:      int(total),
+					TotalPages: 0,
+					Offset:     0,
+					RoleCounts: RoleCounts{
+						Student:    int64(roleCountMap["student"]),
+						Admin:      int64(roleCountMap["admin"]),
+						Instructor: int64(roleCountMap["instructor"]),
+					},
+				},
+			})
+			return
+		}
 
+		totalPages := (filteredCount + PAGE_LIMIT - 1) / PAGE_LIMIT
 		if pageFromParams > int(totalPages) {
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,

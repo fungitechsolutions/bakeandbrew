@@ -245,7 +245,10 @@ export function UsersPageClient() {
           <UsersTableSkeleton />
         </div>
       ) : users?.length === 0 ? (
-        <UsersEmptyState onCreateUser={() => setIsCreateOpen(true)} />
+        <UsersEmptyState
+          role={role === "all" ? "users" : role}
+          onCreateUser={() => setIsCreateOpen(true)}
+        />
       ) : users && users.length > 0 ? (
         <>
           <StatsBar
