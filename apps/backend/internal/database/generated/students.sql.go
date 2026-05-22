@@ -121,8 +121,23 @@ FROM (
         FROM payments
         GROUP BY student_id
     ) pays ON pays.student_id = s.id
+    LEFT JOIN (
+        SELECT student_id, SUM(amount) AS total_discount
+        FROM student_discounts
+        GROUP BY student_id
+    ) discounts ON discounts.student_id = s.id
+    LEFT JOIN (
+        SELECT student_id, SUM(amount) AS total_scholarship
+        FROM student_scholarships
+        GROUP BY student_id
+    ) scholarships ON scholarships.student_id = s.id
     WHERE s.status IN ('active', 'completed')
-      AND (COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0)) > 0
+      AND (
+            COALESCE(fees.total_fee, 0)
+            - COALESCE(pays.total_paid, 0)
+            - COALESCE(discounts.total_discount, 0)
+            - COALESCE(scholarships.total_scholarship, 0)
+          ) > 0
       AND ($1::TEXT IS NULL OR s.created_at >= $1::TIMESTAMPTZ)
       AND ($2::TEXT IS NULL OR s.created_at <= ($2::TIMESTAMPTZ + INTERVAL '1 day'))
       AND ($3::TEXT IS NULL OR u.name ILIKE '%' || $3::TEXT || '%' OR u.email ILIKE '%' || $3::TEXT || '%')
@@ -146,7 +161,10 @@ const getOutstandingFeesTotal = `-- name: GetOutstandingFeesTotal :one
 SELECT COALESCE(SUM(outstanding), 0)::BIGINT AS grand_total_outstanding
 FROM (
     SELECT
-        COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0) AS outstanding
+        COALESCE(fees.total_fee, 0)
+        - COALESCE(pays.total_paid, 0)
+        - COALESCE(discounts.total_discount, 0)
+        - COALESCE(scholarships.total_scholarship, 0) AS outstanding
     FROM users u
     JOIN students s ON s.student_id = u.id
     JOIN (
@@ -159,8 +177,23 @@ FROM (
         FROM payments
         GROUP BY student_id
     ) pays ON pays.student_id = s.id
+    LEFT JOIN (
+        SELECT student_id, SUM(amount) AS total_discount
+        FROM student_discounts
+        GROUP BY student_id
+    ) discounts ON discounts.student_id = s.id
+    LEFT JOIN (
+        SELECT student_id, SUM(amount) AS total_scholarship
+        FROM student_scholarships
+        GROUP BY student_id
+    ) scholarships ON scholarships.student_id = s.id
     WHERE s.status IN ('active', 'completed')
-      AND (COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0)) > 0
+      AND (
+            COALESCE(fees.total_fee, 0)
+            - COALESCE(pays.total_paid, 0)
+            - COALESCE(discounts.total_discount, 0)
+            - COALESCE(scholarships.total_scholarship, 0)
+          ) > 0
       AND ($1::TEXT IS NULL OR s.created_at >= $1::TIMESTAMPTZ)
       AND ($2::TEXT IS NULL OR s.created_at <= ($2::TIMESTAMPTZ + INTERVAL '1 day'))
       AND ($3::TEXT IS NULL OR u.name ILIKE '%' || $3::TEXT || '%' OR u.email ILIKE '%' || $3::TEXT || '%')
@@ -183,11 +216,19 @@ func (q *Queries) GetOutstandingFeesTotal(ctx context.Context, arg GetOutstandin
 const getSalesRevenue = `-- name: GetSalesRevenue :many
 SELECT
     u.id AS user_id,
+    s.id AS student_id,
     u.name,
     u.email,
     COALESCE(fees.total_fee, 0)::BIGINT AS total_course_fee,
     COALESCE(pays.total_paid, 0)::BIGINT AS total_paid,
-    (COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0))::BIGINT AS outstanding
+    COALESCE(discounts.total_discount, 0)::BIGINT AS total_discount,
+    COALESCE(scholarships.total_scholarship, 0)::BIGINT AS total_scholarship,
+    (
+        COALESCE(fees.total_fee, 0)
+        - COALESCE(pays.total_paid, 0)
+        - COALESCE(discounts.total_discount, 0)
+        - COALESCE(scholarships.total_scholarship, 0)
+    )::BIGINT AS outstanding
 FROM users u
 JOIN students s ON s.student_id = u.id
 JOIN (
@@ -202,6 +243,16 @@ LEFT JOIN (
       AND ($4::TEXT IS NULL OR added_at <= ($4::TIMESTAMPTZ + INTERVAL '1 day'))
     GROUP BY student_id
 ) pays ON pays.student_id = s.id
+LEFT JOIN (
+    SELECT student_id, SUM(amount) AS total_discount
+    FROM student_discounts
+    GROUP BY student_id
+) discounts ON discounts.student_id = s.id
+LEFT JOIN (
+    SELECT student_id, SUM(amount) AS total_scholarship
+    FROM student_scholarships
+    GROUP BY student_id
+) scholarships ON scholarships.student_id = s.id
 WHERE s.status IN ('active', 'completed')
   AND ($3::TEXT IS NULL OR s.created_at >= $3::TIMESTAMPTZ)
   AND ($4::TEXT IS NULL OR s.created_at <= ($4::TIMESTAMPTZ + INTERVAL '1 day'))
@@ -219,12 +270,15 @@ type GetSalesRevenueParams struct {
 }
 
 type GetSalesRevenueRow struct {
-	UserID         pgtype.UUID `json:"userId"`
-	Name           string      `json:"name"`
-	Email          string      `json:"email"`
-	TotalCourseFee int64       `json:"totalCourseFee"`
-	TotalPaid      int64       `json:"totalPaid"`
-	Outstanding    int64       `json:"outstanding"`
+	UserID           pgtype.UUID `json:"userId"`
+	StudentID        pgtype.UUID `json:"studentId"`
+	Name             string      `json:"name"`
+	Email            string      `json:"email"`
+	TotalCourseFee   int64       `json:"totalCourseFee"`
+	TotalPaid        int64       `json:"totalPaid"`
+	TotalDiscount    int64       `json:"totalDiscount"`
+	TotalScholarship int64       `json:"totalScholarship"`
+	Outstanding      int64       `json:"outstanding"`
 }
 
 func (q *Queries) GetSalesRevenue(ctx context.Context, arg GetSalesRevenueParams) ([]GetSalesRevenueRow, error) {
@@ -244,10 +298,13 @@ func (q *Queries) GetSalesRevenue(ctx context.Context, arg GetSalesRevenueParams
 		var i GetSalesRevenueRow
 		if err := rows.Scan(
 			&i.UserID,
+			&i.StudentID,
 			&i.Name,
 			&i.Email,
 			&i.TotalCourseFee,
 			&i.TotalPaid,
+			&i.TotalDiscount,
+			&i.TotalScholarship,
 			&i.Outstanding,
 		); err != nil {
 			return nil, err
@@ -585,11 +642,19 @@ func (q *Queries) GetStudentsCount(ctx context.Context, arg GetStudentsCountPara
 const getStudentsWithOutstandingFees = `-- name: GetStudentsWithOutstandingFees :many
 SELECT
     u.id AS user_id,
+    s.id AS student_id,
     u.name,
     u.email,
     COALESCE(fees.total_fee, 0)::BIGINT AS total_course_fee,
     COALESCE(pays.total_paid, 0)::BIGINT AS total_paid,
-    (COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0))::BIGINT AS outstanding
+    COALESCE(discounts.total_discount, 0)::BIGINT AS total_discount,
+    COALESCE(scholarships.total_scholarship, 0)::BIGINT AS total_scholarship,
+    (
+        COALESCE(fees.total_fee, 0)
+        - COALESCE(pays.total_paid, 0)
+        - COALESCE(discounts.total_discount, 0)
+        - COALESCE(scholarships.total_scholarship, 0)
+    )::BIGINT AS outstanding
 FROM users u
 JOIN students s ON s.student_id = u.id
 JOIN (
@@ -602,8 +667,23 @@ LEFT JOIN (
     FROM payments
     GROUP BY student_id
 ) pays ON pays.student_id = s.id
+LEFT JOIN (
+    SELECT student_id, SUM(amount) AS total_discount
+    FROM student_discounts
+    GROUP BY student_id
+) discounts ON discounts.student_id = s.id
+LEFT JOIN (
+    SELECT student_id, SUM(amount) AS total_scholarship
+    FROM student_scholarships
+    GROUP BY student_id
+) scholarships ON scholarships.student_id = s.id
 WHERE s.status IN ('active', 'completed')
-  AND (COALESCE(fees.total_fee, 0) - COALESCE(pays.total_paid, 0)) > 0
+  AND (
+        COALESCE(fees.total_fee, 0)
+        - COALESCE(pays.total_paid, 0)
+        - COALESCE(discounts.total_discount, 0)
+        - COALESCE(scholarships.total_scholarship, 0)
+      ) > 0
   AND ($3::TEXT IS NULL OR s.created_at >= $3::TIMESTAMPTZ)
   AND ($4::TEXT IS NULL OR s.created_at <= ($4::TIMESTAMPTZ + INTERVAL '1 day'))
   AND ($5::TEXT IS NULL OR u.name ILIKE '%' || $5::TEXT || '%' OR u.email ILIKE '%' || $5::TEXT || '%')
@@ -620,12 +700,15 @@ type GetStudentsWithOutstandingFeesParams struct {
 }
 
 type GetStudentsWithOutstandingFeesRow struct {
-	UserID         pgtype.UUID `json:"userId"`
-	Name           string      `json:"name"`
-	Email          string      `json:"email"`
-	TotalCourseFee int64       `json:"totalCourseFee"`
-	TotalPaid      int64       `json:"totalPaid"`
-	Outstanding    int64       `json:"outstanding"`
+	UserID           pgtype.UUID `json:"userId"`
+	StudentID        pgtype.UUID `json:"studentId"`
+	Name             string      `json:"name"`
+	Email            string      `json:"email"`
+	TotalCourseFee   int64       `json:"totalCourseFee"`
+	TotalPaid        int64       `json:"totalPaid"`
+	TotalDiscount    int64       `json:"totalDiscount"`
+	TotalScholarship int64       `json:"totalScholarship"`
+	Outstanding      int64       `json:"outstanding"`
 }
 
 func (q *Queries) GetStudentsWithOutstandingFees(ctx context.Context, arg GetStudentsWithOutstandingFeesParams) ([]GetStudentsWithOutstandingFeesRow, error) {
@@ -645,10 +728,13 @@ func (q *Queries) GetStudentsWithOutstandingFees(ctx context.Context, arg GetStu
 		var i GetStudentsWithOutstandingFeesRow
 		if err := rows.Scan(
 			&i.UserID,
+			&i.StudentID,
 			&i.Name,
 			&i.Email,
 			&i.TotalCourseFee,
 			&i.TotalPaid,
+			&i.TotalDiscount,
+			&i.TotalScholarship,
 			&i.Outstanding,
 		); err != nil {
 			return nil, err

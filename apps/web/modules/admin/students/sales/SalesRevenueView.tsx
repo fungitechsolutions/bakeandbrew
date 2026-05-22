@@ -10,6 +10,7 @@ import { Pagination } from "./SalesPagination";
 import { EmptyState, ErrorState } from "./EmptyState";
 import { SalesSummaryCard } from "./SalesSummaryCard";
 import { SalesFiltersBar } from "./SalesFiltersBar";
+import Link from "next/link";
 
 function parseFilters(searchParams: URLSearchParams): SalesFilters {
   return {
@@ -62,8 +63,7 @@ export function SalesRevenueView() {
         totalStudents={meta?.total ?? 0}
         isLoading={isPending}
       />
-
-      <SalesFiltersBar isPending={isPending} />
+      {!isPending && <SalesFiltersBar isPending={isPending} />}
 
       {/* Table card */}
       <div className="bg-white border border-[#e8e3da] rounded-[14px] overflow-hidden">
@@ -86,6 +86,12 @@ export function SalesRevenueView() {
                     </th>
                     <th className="px-5 py-[14px] text-right font-dm-sans text-[11px] font-semibold tracking-[0.08em] uppercase text-[#9e9589] bg-[#faf8f4] border-b border-[#e8e3da] whitespace-nowrap">
                       Collected
+                    </th>
+                    <th className="px-5 py-[14px] text-right font-dm-sans text-[11px] font-semibold tracking-[0.08em] uppercase text-[#9e9589] bg-[#faf8f4] border-b border-[#e8e3da] whitespace-nowrap">
+                      Discounts
+                    </th>
+                    <th className="px-5 py-[14px] text-right font-dm-sans text-[11px] font-semibold tracking-[0.08em] uppercase text-[#9e9589] bg-[#faf8f4] border-b border-[#e8e3da] whitespace-nowrap">
+                      Scholarship
                     </th>
                     <th className="px-5 py-[14px] text-right font-dm-sans text-[11px] font-semibold tracking-[0.08em] uppercase text-[#9e9589] bg-[#faf8f4] border-b border-[#e8e3da] whitespace-nowrap">
                       Remaining
@@ -112,13 +118,17 @@ export function SalesRevenueView() {
                       <div className="flex gap-3 mb-3">
                         <div className="w-10 h-10 rounded-full bg-[#e8e3da] shrink-0 animate-shimmer" />
                         <div className="flex flex-col gap-1.5 flex-1">
-                          <div className="h-[14px] w-[40%] bg-[#e8e3da] rounded-[4px] animate-shimmer" />
+                          <div className="h-[14px] w-[20%] bg-[#e8e3da] rounded-[4px] animate-shimmer" />
+                          <div className="h-[14px] w-[10%] bg-[#e8e3da] rounded-[4px] animate-shimmer" />
+                          <div className="h-[14px] w-[10%] bg-[#e8e3da] rounded-[4px] animate-shimmer" />
                           <div className="h-3 w-[60%] bg-[#e8e3da] rounded-[4px] animate-shimmer" />
                         </div>
                       </div>
                       <div className="flex flex-col gap-2">
                         <div className="h-3 w-[50%] bg-[#e8e3da] rounded-[4px] animate-shimmer" />
                         <div className="h-3 w-[50%] bg-[#e8e3da] rounded-[4px] animate-shimmer" />
+                        <div className="h-3 w-[50%] bg-[#e8e3da] rounded-[4px] animate-shimmer" />
+                        <div className="h-[22px] w-[35%] bg-[#e8e3da] rounded-[20px] animate-shimmer" />
                         <div className="h-[22px] w-[35%] bg-[#e8e3da] rounded-[20px] animate-shimmer" />
                       </div>
                     </div>
@@ -136,12 +146,13 @@ export function SalesRevenueView() {
                         style: "currency",
                         currency: "NPR",
                         minimumFractionDigits: 0,
-                      }).format(n);
+                      }).format(n / 100);
 
                     return (
-                      <div
+                      <Link
+                        href={`/admin/students/${student.studentId}`}
                         key={student.userId}
-                        className="p-4 border-b border-[#f0ede8] last:border-b-0 transition-[background] duration-[120ms] hover:bg-[#f9f7f3]"
+                        className="block p-4 border-b  border-[#f0ede8] last:border-b-0 transition-[background] duration-[120ms] hover:bg-[#f9f7f3]"
                       >
                         {/* Card header */}
                         <div className="flex items-center gap-3 mb-3">
@@ -181,6 +192,22 @@ export function SalesRevenueView() {
                               {fmt(student.totalPaid)}
                             </span>
                           </div>
+                          <div className="flex justify-between items-center mb-1.5">
+                            <span className="font-dm-sans text-xs text-[#9e9589]">
+                              Discounts
+                            </span>
+                            <span className="font-dm-sans text-[13px] font-medium text-[#2f4e40] tabular-nums">
+                              {fmt(student.totalDiscount)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center mb-1.5">
+                            <span className="font-dm-sans text-xs text-[#9e9589]">
+                              Scholarship
+                            </span>
+                            <span className="font-dm-sans text-[13px] font-medium text-[#2f4e40] tabular-nums">
+                              {fmt(student.totalScholarship)}
+                            </span>
+                          </div>
 
                           {/* Progress bar */}
                           <div className="w-full h-1 bg-[#e8e3da] rounded-[2px] overflow-hidden mb-2">
@@ -207,7 +234,7 @@ export function SalesRevenueView() {
                             </span>
                           </div>
                         </div>
-                      </div>
+                      </Link>
                     );
                   })}
             </div>
