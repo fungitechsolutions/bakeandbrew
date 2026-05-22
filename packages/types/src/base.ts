@@ -33,3 +33,12 @@ export type APIResponse = z.infer<typeof apiResponseSchema>;
 export type FieldError = z.infer<typeof fieldErrorSchema>;
 export type APIError = z.infer<typeof apiErrorSchema>;
 export type BaseAPIResponse = z.infer<typeof baseAPIResponseSchema>;
+
+const baseErrorResponse = z.object({
+  success: z.literal(false),
+  message: z.string(),
+  code: z.string(),
+  errors: z.array(errorResponse).optional(),
+});
+
+export type BaseErrorResponse = z.infer<typeof baseErrorResponse>;

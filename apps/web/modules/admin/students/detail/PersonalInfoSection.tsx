@@ -27,7 +27,7 @@ import z from "zod";
 import { useMutation } from "@tanstack/react-query";
 import {
   UpdateStudentPersonalInfo,
-  UpdateStudentPersonalInfoResponse,
+  UpdateStudentInfoResponse,
 } from "@repo/types/admin/students/personal-info";
 import api from "@/lib/axios";
 import axios, { AxiosError } from "axios";
@@ -72,6 +72,12 @@ function EditField({
   );
 }
 
+const shiftTimeMap: Record<string, string> = {
+  morning: "8:00–10:00 AM",
+  day: "11:00 AM–1:00 PM",
+  evening: "6:00–8:00 PM",
+};
+
 export function PersonalInfoSection({ student }: { student: Student }) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -89,6 +95,7 @@ export function PersonalInfoSection({ student }: { student: Student }) {
   const [errors, setErrors] =
     useState<Partial<Record<keyof PersonalInfoForm, string>>>();
   const router = useRouter();
+  const isPhoneValid = /^(98|97)\d{8}$/.test(form.phone);
 
   const set =
     <K extends keyof PersonalInfoForm>(key: K) =>
@@ -96,7 +103,7 @@ export function PersonalInfoSection({ student }: { student: Student }) {
       setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
   const { mutateAsync } = useMutation<
-    UpdateStudentPersonalInfoResponse,
+    UpdateStudentInfoResponse,
     AxiosError<APIError>,
     UpdateStudentPersonalInfo
   >({
@@ -115,7 +122,6 @@ export function PersonalInfoSection({ student }: { student: Student }) {
       if (axios.isAxiosError(error)) {
         const data = error.response?.data as APIResponse;
         if (data.errors) {
-          console.log("errors: ", data.errors);
           setErrors(mapFieldErrors(data));
         }
       }
@@ -127,24 +133,24 @@ export function PersonalInfoSection({ student }: { student: Student }) {
     setSaving(true);
     console.log("batch: ", form.batch);
     const validateFields = updateStudentPersonalInfoInputSchema.safeParse(form);
-    if (!validateFields.success) {
-      setSaving(false);
-      const tree = z.treeifyError(validateFields.error).properties;
-      console.log("error: ", tree);
-      setErrors({
-        fullName: tree?.fullName?.errors[0],
-        dob: tree?.dob?.errors[0],
-        gender: tree?.gender?.errors[0],
-        phone: tree?.phone?.errors[0],
-        shift: tree?.shift?.errors[0],
-        shiftTime: tree?.shiftTime?.errors[0],
-        address: tree?.address?.errors[0],
-        batch: tree?.batch?.errors[0],
-        source: tree?.source?.errors[0],
-      });
+    // if (!validateFields.success) {
+    //   setSaving(false);
+    //   const tree = z.treeifyError(validateFields.error).properties;
+    //   console.log("error: ", tree);
+    //   setErrors({
+    //     fullName: tree?.fullName?.errors[0],
+    //     dob: tree?.dob?.errors[0],
+    //     gender: tree?.gender?.errors[0],
+    //     phone: tree?.phone?.errors[0],
+    //     shift: tree?.shift?.errors[0],
+    //     shiftTime: tree?.shiftTime?.errors[0],
+    //     address: tree?.address?.errors[0],
+    //     batch: tree?.batch?.errors[0],
+    //     source: tree?.source?.errors[0],
+    //   });
 
-      return;
-    }
+    //   return;
+    // }
     try {
       await mutateAsync(form);
       setEditing(false);
@@ -231,12 +237,17 @@ export function PersonalInfoSection({ student }: { student: Student }) {
               onChange={set("phone")}
               placeholder="Phone number"
             />
+            {isPhoneValid && (
+              <span className="text-[0.72rem] text-emerald-600 font-medium">
+                ✓ Valid Nepali number
+              </span>
+            )}
             {errors?.phone && <FieldError>{errors.phone}</FieldError>}
           </EditField>
 
           {/* Email */}
           <EditField label="Email">
-            <div className="flex min-w-0 items-center gap-1.5 rounded-xl border border-[#2d4a3e]/08 bg-[#2d4a3e]/04 px-3 py-2">
+            <div className="flex min-w-0 items-center gap-1.5 rounded-xl border border-[#2d4a3e]/08 bg-[#2d4a3e]/04 px-3 py-2 cursor-not-allowed">
               <Mail
                 className="h-3.5 w-3.5 flex-shrink-0 text-[#2d4a3e]/25"
                 strokeWidth={2}
@@ -272,7 +283,14 @@ export function PersonalInfoSection({ student }: { student: Student }) {
               className={selectCls}
               style={{ fontFamily: "var(--font-dm-sans)" }}
               value={form.shift}
-              onChange={set("shift")}
+              onChange={(e) => {
+                const value = e.target.value as PersonalInfoForm["shift"];
+                setForm((prev) => ({
+                  ...prev,
+                  shift: value,
+                  shiftTime: shiftTimeMap[value] ?? prev.shiftTime,
+                }));
+              }}
             >
               <option value="morning">Morning</option>
               <option value="day">Day</option>
@@ -283,12 +301,16 @@ export function PersonalInfoSection({ student }: { student: Student }) {
 
           <EditField label="Shift Time">
             <input
-              className={inputCls}
+              className={cn(inputCls, "cursor-not-allowed opacity-60")}
               style={{ fontFamily: "var(--font-dm-sans)" }}
               value={form.shiftTime}
               onChange={set("shiftTime")}
-              placeholder="e.g. 6:00 AM – 8:00 AM"
+              placeholder="Auto-filled based on shift"
+              disabled
             />
+            <span className="text-[0.70rem] text-[#2d4a3e]/40">
+              Automatically set when a shift is selected
+            </span>
             {errors?.shiftTime && <FieldError>{errors.shiftTime}</FieldError>}
           </EditField>
 

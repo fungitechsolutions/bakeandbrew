@@ -60,7 +60,7 @@ export function DiscountSection({ discounts, studentID }: Props) {
         if (!res.data.success) throw res.data;
         return res.data;
       } catch (error) {
-        console.error("error: ", error);
+        // console.error("error: ", error);
         if (axios.isAxiosError(error)) throw error.response?.data;
         throw error;
       }

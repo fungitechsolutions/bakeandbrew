@@ -269,7 +269,7 @@ export default function CoursesPage() {
       toast.success(result.message);
     },
     onError: (error, _, context) => {
-      console.error("error: ", error);
+      // console.error("error: ", error);
       if (context?.previousCourses) {
         queryClient.setQueryData(["admin-courses"], context.previousCourses);
       }

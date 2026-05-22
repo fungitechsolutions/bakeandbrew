@@ -60,10 +60,10 @@ function DashboardContent() {
           </div>
         </aside>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-3">
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-3">
         <Discounts />
         <Scholarship />
-      </div>
+      </div> */}
 
       {/* Full-width payment history */}
       <PaymentHistory />

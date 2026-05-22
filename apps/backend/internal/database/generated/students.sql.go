@@ -530,6 +530,19 @@ func (q *Queries) GetStudentOverview(ctx context.Context, studentID pgtype.UUID)
 	return i, err
 }
 
+const getStudentStatusByUserID = `-- name: GetStudentStatusByUserID :one
+SELECT status
+FROM students
+WHERE student_id = $1
+`
+
+func (q *Queries) GetStudentStatusByUserID(ctx context.Context, studentID pgtype.UUID) (string, error) {
+	row := q.db.QueryRow(ctx, getStudentStatusByUserID, studentID)
+	var status string
+	err := row.Scan(&status)
+	return status, err
+}
+
 const getStudentsCount = `-- name: GetStudentsCount :one
 SELECT COUNT(DISTINCT s.id)
 FROM students s

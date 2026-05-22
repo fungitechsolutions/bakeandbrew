@@ -299,5 +299,10 @@ SET
  guardian_phone = $3,
  updated_at = NOW()
 WHERE id = $1;
+
+-- name: GetStudentStatusByUserID :one
+SELECT status
+FROM students
+WHERE student_id = $1;
  
 
