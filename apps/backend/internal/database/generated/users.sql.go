@@ -62,14 +62,21 @@ SELECT
     created_at,
     image_url 
 FROM users 
-WHERE role IN ('student', 'admin') 
+WHERE 
+    role IN ('student', 'admin', 'instructor')
+    AND ($3::text IS NULL OR role = $3::text)
+    AND ($4::text IS NULL OR name ILIKE '%' || $4::text || '%')
+    AND ($5::text IS NULL OR email ILIKE '%' || $5::text || '%')
 ORDER BY created_at DESC, id ASC
 LIMIT $1 OFFSET $2
 `
 
 type GetPaginatedUsersParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+	Limit  int32       `json:"limit"`
+	Offset int32       `json:"offset"`
+	Role   pgtype.Text `json:"role"`
+	Name   pgtype.Text `json:"name"`
+	Email  pgtype.Text `json:"email"`
 }
 
 type GetPaginatedUsersRow struct {
@@ -82,7 +89,13 @@ type GetPaginatedUsersRow struct {
 }
 
 func (q *Queries) GetPaginatedUsers(ctx context.Context, arg GetPaginatedUsersParams) ([]GetPaginatedUsersRow, error) {
-	rows, err := q.db.Query(ctx, getPaginatedUsers, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, getPaginatedUsers,
+		arg.Limit,
+		arg.Offset,
+		arg.Role,
+		arg.Name,
+		arg.Email,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -146,15 +159,36 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error)
 	return i, err
 }
 
-const getUsersCount = `-- name: GetUsersCount :one
-SELECT COUNT(*) FROM users WHERE ROLE IN ('student','admin')
+const getUsersRoleCount = `-- name: GetUsersRoleCount :many
+SELECT role, COUNT(*) as count
+FROM users
+WHERE role IN ('student', 'admin', 'instructor')
+GROUP BY role
 `
 
-func (q *Queries) GetUsersCount(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, getUsersCount)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
+type GetUsersRoleCountRow struct {
+	Role  string `json:"role"`
+	Count int64  `json:"count"`
+}
+
+func (q *Queries) GetUsersRoleCount(ctx context.Context) ([]GetUsersRoleCountRow, error) {
+	rows, err := q.db.Query(ctx, getUsersRoleCount)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUsersRoleCountRow
+	for rows.Next() {
+		var i GetUsersRoleCountRow
+		if err := rows.Scan(&i.Role, &i.Count); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listusers = `-- name: Listusers :many

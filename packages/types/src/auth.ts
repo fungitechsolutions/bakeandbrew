@@ -76,10 +76,17 @@ export type SignupInput = z.infer<typeof signupInputSchema>;
 export type SignupResponse = z.infer<typeof signupResponseSchema>;
 
 export const usersListSchema = baseAPIResponseSchema.extend({
-  data: z.array(userSchema).optional(),
+  data: z.array(userSchema),
   meta: z.object({
     total: z.number(),
     totalPages: z.number(),
+    offset: z.number(),
+    limit: z.number(),
+    roleCounts: z.object({
+      student: z.number(),
+      admin: z.number(),
+      instructor: z.number(),
+    }),
   }),
 });
 
