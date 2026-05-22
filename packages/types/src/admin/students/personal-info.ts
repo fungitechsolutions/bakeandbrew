@@ -73,6 +73,6 @@ export const updateStudentInfoResponseSchema = z.object({
   message: z.string(),
 });
 
-export type UpdateStudentPersonalInfoResponse = z.infer<
+export type UpdateStudentInfoResponse = z.infer<
   typeof updateStudentInfoResponseSchema
 >;

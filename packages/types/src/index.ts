@@ -11,7 +11,12 @@ export {
   type JWTUser,
 } from "./auth";
 
-export { type BaseAPIResponse, type APIResponse, type APIError } from "./base";
+export {
+  type BaseAPIResponse,
+  type APIResponse,
+  type APIError,
+  type BaseErrorResponse,
+} from "./base";
 
 export {
   createUserSchema,
@@ -120,5 +125,5 @@ export { type GetStudentCoursesResponse } from "./student_portal/enrollments";
 export {
   updateStudentGuardianInfoInputSchema,
   updateStudentPersonalInfoInputSchema,
-  type UpdateStudentPersonalInfoResponse,
+  type UpdateStudentInfoResponse,
 } from "./admin/students/personal-info";

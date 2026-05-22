@@ -14,4 +14,5 @@ type StudentPortal interface {
 	GetStudentCourses(ctx context.Context, id pgtype.UUID) ([]db.GetStudentCoursesRow, error)
 	GetStudentID(ctx context.Context, id pgtype.UUID) (pgtype.UUID, error)
 	GetStudentCoursesCount(ctx context.Context, id pgtype.UUID) (int64, error)
+	GetStudentStatusByUserID(ctx context.Context, id pgtype.UUID) (string, error)
 }

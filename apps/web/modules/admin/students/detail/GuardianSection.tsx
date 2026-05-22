@@ -3,12 +3,28 @@
 import { useState } from "react";
 import { SectionCard } from "./shared/SectionCard";
 import { EditToolbar } from "./shared/EditToolBar";
-import { StudentDetail } from "@repo/types";
+import {
+  BaseErrorResponse,
+  StudentDetail,
+  updateStudentGuardianInfoInputSchema,
+} from "@repo/types";
 import { EditIconBtn } from "./shared/EditIconButton";
 import { EditField } from "./shared/EditField";
 import { inputCls } from "./shared/utils";
 import { InfoRow } from "./InfoRow";
 import { Phone, User, Users } from "lucide-react";
+import z from "zod";
+import { useMutation } from "@tanstack/react-query";
+import {
+  UpdateStudentGuardianInfoInput,
+  UpdateStudentInfoResponse,
+} from "@repo/types/admin/students/personal-info";
+import api from "@/lib/axios";
+import { toast } from "sonner";
+import axios from "axios";
+import { mapFieldErrors } from "@/utils/api";
+import { FieldError } from "@/components/ui/field";
+import { useRouter } from "next/navigation";
 
 type Student = Extract<StudentDetail, { success: true }>["data"];
 
@@ -23,17 +39,52 @@ export function GuardianSection({ student }: { student: Student }) {
     guardianName: student.guardianName,
     guardianPhone: student.guardianPhone,
   });
+  const [errors, setErrors] =
+    useState<Partial<Record<keyof GuardianForm, string>>>();
+  const router = useRouter();
 
   const set =
     <K extends keyof GuardianForm>(key: K) =>
     (e: React.ChangeEvent<HTMLInputElement>) =>
       setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
+  const { mutateAsync } = useMutation({
+    mutationFn: async (data: UpdateStudentGuardianInfoInput) => {
+      const res = await api.put<UpdateStudentInfoResponse>(
+        `/admin/students/${student.id}/info/guardian`,
+        data,
+      );
+      return res.data;
+    },
+    onSuccess: (result) => {
+      toast.success(result.message);
+      router.refresh();
+    },
+    onError: (error) => {
+      if (axios.isAxiosError(error)) {
+        const data = error.response?.data as BaseErrorResponse;
+        if (data.errors) {
+          setErrors(mapFieldErrors(data));
+        }
+      }
+      toast.error(error.message);
+    },
+  });
+
   const handleSave = async () => {
     setSaving(true);
+    const validateFields = updateStudentGuardianInfoInputSchema.safeParse(form);
+    if (!validateFields.success) {
+      setSaving(false);
+      const tree = z.treeifyError(validateFields.error).properties;
+      setErrors({
+        guardianName: tree?.guardianName?.errors[0],
+        guardianPhone: tree?.guardianPhone?.errors[0],
+      });
+      return;
+    }
     try {
-      // TODO: await yourApiCall(form)
-      console.log("PATCH guardian info", form);
+      await mutateAsync(form);
       setEditing(false);
     } finally {
       setSaving(false);
@@ -75,6 +126,9 @@ export function GuardianSection({ student }: { student: Student }) {
               placeholder="Guardian's full name"
               autoFocus
             />
+            {errors?.guardianName && (
+              <FieldError>{errors.guardianName}</FieldError>
+            )}
           </EditField>
 
           <EditField label="Guardian Phone">
@@ -85,6 +139,9 @@ export function GuardianSection({ student }: { student: Student }) {
               onChange={set("guardianPhone")}
               placeholder="Guardian's phone number"
             />
+            {errors?.guardianPhone && (
+              <FieldError>{errors.guardianPhone}</FieldError>
+            )}
           </EditField>
         </div>
       ) : (
