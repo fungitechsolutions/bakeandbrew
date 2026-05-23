@@ -1,14 +1,12 @@
 "use client";
 
+import api from "@/lib/axios";
+import { GetStudentPendingOverviewResponse } from "@repo/types";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface PendingStatusProps {
-  studentName: string;
-  submittedAt: string; // ISO date string
-}
+import PendingLoading from "./PendingLoading";
+import PendingError from "./PendingError";
 
 interface TimelineStep {
   label: string;
@@ -16,8 +14,6 @@ interface TimelineStep {
   done: boolean;
   active: boolean;
 }
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", {
@@ -27,8 +23,6 @@ function formatDate(iso: string): string {
     year: "numeric",
   });
 }
-
-// ─── Icons ────────────────────────────────────────────────────────────────────
 
 function HomeIcon() {
   return (
@@ -66,8 +60,6 @@ function CheckIcon() {
     </svg>
   );
 }
-
-// ─── Timeline Item ────────────────────────────────────────────────────────────
 
 interface TimelineItemProps extends TimelineStep {
   step: number;
@@ -168,26 +160,41 @@ function TimelineItem({
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
-
-export default function PendingStatus({
-  studentName,
-  submittedAt,
-}: PendingStatusProps) {
+export default function PendingStatus() {
   const [mounted, setMounted] = useState<boolean>(false);
+
+  const { data, isPending, isError, refetch, error } = useQuery({
+    queryKey: ["student-portal-pending"],
+    queryFn: async () => {
+      const res = await api.get<GetStudentPendingOverviewResponse>(
+        "/portal/student/pending-overview",
+      );
+      const parsed = res.data;
+      if (!parsed.success)
+        throw new Error(parsed.message ?? "Something went wrong");
+      return parsed.data;
+    },
+  });
 
   useEffect(() => {
     const timer = setTimeout(() => setMounted(true), 80);
     return () => clearTimeout(timer);
   }, []);
 
-  const firstName = studentName.split(" ")[0] ?? "Student";
+  if (isPending) return <PendingLoading />;
+  if (isError) {
+    const message =
+      error instanceof Error ? error.message : "An unexpected error occurred.";
+    return <PendingError message={message} reset={refetch} />;
+  }
+
+  const firstName = data.fullName.split(" ")[0] ?? "Student";
 
   const steps: (TimelineStep & { step: number; isLast: boolean })[] = [
     {
       step: 1,
       label: "Application Submitted",
-      description: `Received on ${formatDate(submittedAt)}.`,
+      description: `Received on ${formatDate(data.submittedAt)}.`,
       done: true,
       active: false,
       isLast: false,
@@ -222,7 +229,7 @@ export default function PendingStatus({
   ];
 
   return (
-    <div className="flex min-h-screen w-full items-start justify-center bg-[#fbfaf7] px-6 py-20 sm:px-10 lg:px-16">
+    <div className="flex min-h-screen w-full items-start justify-center  px-6 py-20 sm:px-10 lg:px-16">
       {/* Grain */}
       <div
         aria-hidden="true"
@@ -293,7 +300,7 @@ export default function PendingStatus({
           </span>
           <span className="h-px w-4 flex-shrink-0 bg-[#1a1a1a]/15" />
           <span className="font-dm-sans text-sm font-medium text-[#1a1a1a]/55">
-            {formatDate(submittedAt)}
+            {formatDate(data.submittedAt)}
           </span>
         </div>
 

@@ -72,10 +72,10 @@ func CreateStudent(queries repository.StudentRepository, pool *pgxpool.Pool) gin
 
 		utils.TrimStruct(&req)
 
-		dob, err := time.Parse("2006-01-02", req.DOB)
+		dobAD, err := time.Parse("2006-01-02", req.DobAD)
 		if err != nil {
 			slog.Warn("invalid dob format",
-				"dob", req.DOB,
+				"dob", req.DobBS,
 				"path", c.FullPath(),
 				"ip", c.ClientIP(),
 			)
@@ -176,7 +176,8 @@ func CreateStudent(queries repository.StudentRepository, pool *pgxpool.Pool) gin
 			PhotoUrl:      pgtype.Text{String: req.PhotoUrl, Valid: true},
 			Source:        req.Source,
 			Address:       req.Address,
-			Dob:           pgtype.Date{Time: dob, Valid: true},
+			DobAd:         pgtype.Date{Time: dobAD, Valid: true},
+			DobBs:         req.DobBS,
 			ReferenceNo:   referenceNumber,
 			SerialNo:      serialNo,
 			FiscalYear:    settings.FiscalYear,

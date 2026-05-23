@@ -179,4 +179,6 @@ func Setup(r *gin.Engine, cfg Config) {
 	studentPortalRouter.GET("/payments", studentPortal.GetStudentPayments(cfg.Queries))
 	studentPortalRouter.GET("/fee/summary", studentPortal.GetStudentFeeSummary(cfg.Queries))
 	studentPortalRouter.GET("/status", studentPortal.GetStudentStatusByUserID(cfg.Queries))
+	studentPortalRouter.GET("/pending-overview", studentPortal.GetStudentPendingOverview(cfg.Queries))
+	studentPortalRouter.GET("/rejected-overview", studentPortal.GetStudentRejectedOverview(cfg.Queries))
 }

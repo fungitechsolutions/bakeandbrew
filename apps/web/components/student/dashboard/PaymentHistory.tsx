@@ -100,7 +100,7 @@ function PaymentRow({
         className="text-sm font-bold text-[#2f4e40] text-right shrink-0"
         style={{ fontFamily: "var(--font-lora)" }}
       >
-        {formatNPR(payment.amount)}
+        {formatNPR(payment.amount / 100)}
       </p>
     </div>
   );
@@ -251,7 +251,7 @@ export function PaymentHistory() {
         </h2>
         {data.length > 0 && (
           <span className="text-xs font-semibold text-[#2f4e40] bg-[#2f4e40]/8 px-2.5 py-1 rounded-full border border-[#2f4e40]/15">
-            {formatNPR(total)} total
+            {formatNPR(total / 100)} total
           </span>
         )}
       </div>

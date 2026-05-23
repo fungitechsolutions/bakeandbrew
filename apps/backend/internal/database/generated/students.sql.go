@@ -14,16 +14,16 @@ import (
 
 const createStudent = `-- name: CreateStudent :one
 INSERT INTO students (
-    reference_no, fiscal_year, serial_no, full_name, dob, gender,
+    reference_no, fiscal_year, serial_no, full_name, dob_ad, gender,
     phone, address, guardian_name, guardian_phone,
     photo_url, source, status, student_id,
-    shift, shift_time,batch
+    shift, shift_time, batch, dob_bs
 ) VALUES (
     $1, $2, $3, $4, $5, $6,
     $7, $8, $9, $10,
     $11, $12, 'pending', $13,
-    $14, $15, $16
-) RETURNING id, student_id, reference_no, fiscal_year, serial_no, full_name, dob, gender, phone, address, guardian_name, guardian_phone, photo_url, source, status, notes, shift, shift_time, batch, rejection_reason, updated_at, created_at
+    $14, $15, $16, $17
+) RETURNING id, student_id, reference_no, fiscal_year, serial_no, full_name, dob_ad, dob_bs, gender, phone, address, guardian_name, guardian_phone, photo_url, source, status, notes, shift, shift_time, batch, rejection_reason, updated_at, created_at
 `
 
 type CreateStudentParams struct {
@@ -31,7 +31,7 @@ type CreateStudentParams struct {
 	FiscalYear    string      `json:"fiscalYear"`
 	SerialNo      int32       `json:"serialNo"`
 	FullName      string      `json:"fullName"`
-	Dob           pgtype.Date `json:"dob"`
+	DobAd         pgtype.Date `json:"dobAd"`
 	Gender        string      `json:"gender"`
 	Phone         string      `json:"phone"`
 	Address       string      `json:"address"`
@@ -43,6 +43,7 @@ type CreateStudentParams struct {
 	Shift         string      `json:"shift"`
 	ShiftTime     string      `json:"shiftTime"`
 	Batch         pgtype.Text `json:"batch"`
+	DobBs         string      `json:"dobBs"`
 }
 
 func (q *Queries) CreateStudent(ctx context.Context, arg CreateStudentParams) (Student, error) {
@@ -51,7 +52,7 @@ func (q *Queries) CreateStudent(ctx context.Context, arg CreateStudentParams) (S
 		arg.FiscalYear,
 		arg.SerialNo,
 		arg.FullName,
-		arg.Dob,
+		arg.DobAd,
 		arg.Gender,
 		arg.Phone,
 		arg.Address,
@@ -63,6 +64,7 @@ func (q *Queries) CreateStudent(ctx context.Context, arg CreateStudentParams) (S
 		arg.Shift,
 		arg.ShiftTime,
 		arg.Batch,
+		arg.DobBs,
 	)
 	var i Student
 	err := row.Scan(
@@ -72,7 +74,8 @@ func (q *Queries) CreateStudent(ctx context.Context, arg CreateStudentParams) (S
 		&i.FiscalYear,
 		&i.SerialNo,
 		&i.FullName,
-		&i.Dob,
+		&i.DobAd,
+		&i.DobBs,
 		&i.Gender,
 		&i.Phone,
 		&i.Address,
@@ -392,7 +395,7 @@ func (q *Queries) GetStudentAdmissionStatus(ctx context.Context, studentID pgtyp
 
 const getStudentByID = `-- name: GetStudentByID :one
 SELECT 
-    s.id, s.student_id, s.reference_no, s.fiscal_year, s.serial_no, s.full_name, s.dob, s.gender, s.phone, s.address, s.guardian_name, s.guardian_phone, s.photo_url, s.source, s.status, s.notes, s.shift, s.shift_time, s.batch, s.rejection_reason, s.updated_at, s.created_at,
+    s.id, s.student_id, s.reference_no, s.fiscal_year, s.serial_no, s.full_name, s.dob_ad, s.dob_bs, s.gender, s.phone, s.address, s.guardian_name, s.guardian_phone, s.photo_url, s.source, s.status, s.notes, s.shift, s.shift_time, s.batch, s.rejection_reason, s.updated_at, s.created_at,
     u.email
 FROM students s
 JOIN users u ON s.student_id = u.id
@@ -406,7 +409,8 @@ type GetStudentByIDRow struct {
 	FiscalYear      string             `json:"fiscalYear"`
 	SerialNo        int32              `json:"serialNo"`
 	FullName        string             `json:"fullName"`
-	Dob             pgtype.Date        `json:"dob"`
+	DobAd           pgtype.Date        `json:"dobAd"`
+	DobBs           string             `json:"dobBs"`
 	Gender          string             `json:"gender"`
 	Phone           string             `json:"phone"`
 	Address         string             `json:"address"`
@@ -435,7 +439,8 @@ func (q *Queries) GetStudentByID(ctx context.Context, id pgtype.UUID) (GetStuden
 		&i.FiscalYear,
 		&i.SerialNo,
 		&i.FullName,
-		&i.Dob,
+		&i.DobAd,
+		&i.DobBs,
 		&i.Gender,
 		&i.Phone,
 		&i.Address,
@@ -538,7 +543,7 @@ SELECT
  s.guardian_phone,
  s.address,
  s.fiscal_year,
- s.dob,
+ s.dob_ad,
  s.photo_url,
  s.status
 FROM students s WHERE s.student_id = $1
@@ -558,7 +563,7 @@ type GetStudentOverviewRow struct {
 	GuardianPhone string             `json:"guardianPhone"`
 	Address       string             `json:"address"`
 	FiscalYear    string             `json:"fiscalYear"`
-	Dob           pgtype.Date        `json:"dob"`
+	DobAd         pgtype.Date        `json:"dobAd"`
 	PhotoUrl      pgtype.Text        `json:"photoUrl"`
 	Status        string             `json:"status"`
 }
@@ -580,10 +585,54 @@ func (q *Queries) GetStudentOverview(ctx context.Context, studentID pgtype.UUID)
 		&i.GuardianPhone,
 		&i.Address,
 		&i.FiscalYear,
-		&i.Dob,
+		&i.DobAd,
 		&i.PhotoUrl,
 		&i.Status,
 	)
+	return i, err
+}
+
+const getStudentPendingOverview = `-- name: GetStudentPendingOverview :one
+SELECT
+    full_name,
+    created_at AS submitted_at
+FROM students
+WHERE student_id = $1
+  AND status = 'pending'
+`
+
+type GetStudentPendingOverviewRow struct {
+	FullName    string             `json:"fullName"`
+	SubmittedAt pgtype.Timestamptz `json:"submittedAt"`
+}
+
+func (q *Queries) GetStudentPendingOverview(ctx context.Context, studentID pgtype.UUID) (GetStudentPendingOverviewRow, error) {
+	row := q.db.QueryRow(ctx, getStudentPendingOverview, studentID)
+	var i GetStudentPendingOverviewRow
+	err := row.Scan(&i.FullName, &i.SubmittedAt)
+	return i, err
+}
+
+const getStudentRejectedOverview = `-- name: GetStudentRejectedOverview :one
+SELECT
+    full_name,
+    rejection_reason,
+    updated_at AS decided_at
+FROM students
+WHERE student_id = $1
+  AND status = 'rejected'
+`
+
+type GetStudentRejectedOverviewRow struct {
+	FullName        string             `json:"fullName"`
+	RejectionReason pgtype.Text        `json:"rejectionReason"`
+	DecidedAt       pgtype.Timestamptz `json:"decidedAt"`
+}
+
+func (q *Queries) GetStudentRejectedOverview(ctx context.Context, studentID pgtype.UUID) (GetStudentRejectedOverviewRow, error) {
+	row := q.db.QueryRow(ctx, getStudentRejectedOverview, studentID)
+	var i GetStudentRejectedOverviewRow
+	err := row.Scan(&i.FullName, &i.RejectionReason, &i.DecidedAt)
 	return i, err
 }
 
@@ -863,7 +912,7 @@ const updateStudentPersonalInfo = `-- name: UpdateStudentPersonalInfo :execresul
 UPDATE students
 SET
   full_name = $2,
-  dob = $3,
+  dob_ad = $3,
   shift = $4,
   shift_time = $5,
   batch = $6,
@@ -871,6 +920,7 @@ SET
   address = $8,
   source = $9,
   gender = $10,
+  dob_bs = $11,
   updated_at = NOW()
 WHERE id = $1
 `
@@ -878,7 +928,7 @@ WHERE id = $1
 type UpdateStudentPersonalInfoParams struct {
 	ID        pgtype.UUID `json:"id"`
 	FullName  string      `json:"fullName"`
-	Dob       pgtype.Date `json:"dob"`
+	DobAd     pgtype.Date `json:"dobAd"`
 	Shift     string      `json:"shift"`
 	ShiftTime string      `json:"shiftTime"`
 	Batch     pgtype.Text `json:"batch"`
@@ -886,13 +936,14 @@ type UpdateStudentPersonalInfoParams struct {
 	Address   string      `json:"address"`
 	Source    string      `json:"source"`
 	Gender    string      `json:"gender"`
+	DobBs     string      `json:"dobBs"`
 }
 
 func (q *Queries) UpdateStudentPersonalInfo(ctx context.Context, arg UpdateStudentPersonalInfoParams) (pgconn.CommandTag, error) {
 	return q.db.Exec(ctx, updateStudentPersonalInfo,
 		arg.ID,
 		arg.FullName,
-		arg.Dob,
+		arg.DobAd,
 		arg.Shift,
 		arg.ShiftTime,
 		arg.Batch,
@@ -900,6 +951,7 @@ func (q *Queries) UpdateStudentPersonalInfo(ctx context.Context, arg UpdateStude
 		arg.Address,
 		arg.Source,
 		arg.Gender,
+		arg.DobBs,
 	)
 }
 
@@ -910,7 +962,7 @@ SET
   rejection_reason = $3,
   updated_at = NOW()
 WHERE id = $1 
-RETURNING id, student_id, reference_no, fiscal_year, serial_no, full_name, dob, gender, phone, address, guardian_name, guardian_phone, photo_url, source, status, notes, shift, shift_time, batch, rejection_reason, updated_at, created_at
+RETURNING id, student_id, reference_no, fiscal_year, serial_no, full_name, dob_ad, dob_bs, gender, phone, address, guardian_name, guardian_phone, photo_url, source, status, notes, shift, shift_time, batch, rejection_reason, updated_at, created_at
 `
 
 type UpdateStudentStatusParams struct {
@@ -929,7 +981,8 @@ func (q *Queries) UpdateStudentStatus(ctx context.Context, arg UpdateStudentStat
 		&i.FiscalYear,
 		&i.SerialNo,
 		&i.FullName,
-		&i.Dob,
+		&i.DobAd,
+		&i.DobBs,
 		&i.Gender,
 		&i.Phone,
 		&i.Address,

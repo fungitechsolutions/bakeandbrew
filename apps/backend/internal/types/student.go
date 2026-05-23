@@ -4,7 +4,8 @@ import "github.com/jackc/pgx/v5/pgtype"
 
 type CreateStudentRequest struct {
 	FullName      string   `json:"fullName" binding:"required,notblank,min=2,max=70,alphaspace"`
-	DOB           string   `json:"dob" binding:"required,notblank,date_format"`
+	DobAD         string   `json:"dobAD" binding:"required,notblank,date_format"`
+	DobBS         string   `json:"dobBS" binding:"required,notblank,date_format"`
 	Phone         string   `json:"phone" binding:"required,notblank,nepal_phone"`
 	Address       string   `json:"address" binding:"required,notblank,max=70"`
 	PhotoUrl      string   `json:"photoUrl" binding:"omitempty,url"`
