@@ -16,7 +16,7 @@ type APIResponse struct {
 	Message string     `json:"message,omitempty"`
 	Code    string     `json:"code,omitempty"`
 	Errors  []AppError `json:"errors,omitempty"`
-	Data    any        `json:"data,omitempty"`
+	Data    any        `json:"data"`
 	Meta    any        `json:"meta,omitempty"`
 }
 

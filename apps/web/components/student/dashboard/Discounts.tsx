@@ -1,3 +1,8 @@
+"use client";
+
+import api from "@/lib/axios";
+import { GetStudentDiscountsResponse } from "@repo/types";
+import { useQuery } from "@tanstack/react-query";
 import { AlertCircle, BadgePercent, RefreshCw, Tag } from "lucide-react";
 
 function formatNPR(amount: number): string {
@@ -40,25 +45,6 @@ interface DiscountItem {
   note: string | null;
   createdAt: string;
 }
-
-const MOCK_DISCOUNTS: DiscountItem[] = [
-  {
-    id: "d1",
-    type: "Early Enrollment",
-    percent: 10,
-    amount: 2500,
-    note: "Applied for batch 14 early registration",
-    createdAt: "2024-10-01T08:00:00Z",
-  },
-  {
-    id: "d2",
-    type: "Sibling Discount",
-    percent: 5,
-    amount: 1250,
-    note: null,
-    createdAt: "2024-10-01T08:00:00Z",
-  },
-];
 
 function DiscountsSkeleton() {
   return (
@@ -185,20 +171,27 @@ function SectionError({
 }
 
 export function Discounts() {
-  // TODO: replace with useQuery when API is ready
-  const isPending = false;
-  const isError = false;
-  const discounts = MOCK_DISCOUNTS;
+  const { data, isPending, refetch, isError, error } = useQuery({
+    queryKey: ["student-portal-discounts"],
+    queryFn: async () => {
+      const res = await api.get<GetStudentDiscountsResponse>(
+        "/portal/student/discounts",
+      );
+      const parsed = res.data;
+      if (!parsed.success) throw new Error(parsed.message);
+      return parsed.data;
+    },
+  });
 
   if (isPending) return <DiscountsSkeleton />;
 
   if (isError) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Something went wrong fetching your discounts.";
     return (
-      <SectionError
-        title="Discounts"
-        message="Something went wrong fetching your discounts."
-        onRetry={() => {}}
-      />
+      <SectionError title="Discounts" message={message} onRetry={refetch} />
     );
   }
 
@@ -211,18 +204,18 @@ export function Discounts() {
         >
           Discounts
         </h2>
-        {discounts.length > 0 && (
+        {data.length > 0 && (
           <span className="text-xs font-semibold text-[#c28a4f] bg-[#c28a4f]/8 px-2.5 py-1 rounded-full border border-[#c28a4f]/15">
-            {formatNPR(discounts.reduce((s, d) => s + d.amount, 0))} saved
+            {formatNPR(data.reduce((s, d) => s + d.amount, 0))} saved
           </span>
         )}
       </div>
 
-      {discounts.length === 0 ? (
+      {data.length === 0 ? (
         <DiscountsEmpty />
       ) : (
         <div className="flex flex-col gap-2.5">
-          {discounts.map((d) => (
+          {data.map((d) => (
             <DiscountRow key={d.id} discount={d} />
           ))}
         </div>

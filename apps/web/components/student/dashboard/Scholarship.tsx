@@ -1,22 +1,16 @@
 "use client";
 
+import api from "@/lib/axios";
+import { GetStudentPortalScholarshipResponse } from "@repo/types";
+import { useQuery } from "@tanstack/react-query";
 import { Award, RefreshCw, AlertCircle } from "lucide-react";
 
 interface ScholarshipItem {
-  id: string;
   percent: number;
   amount: number;
   note: string | null;
   createdAt: string;
 }
-
-const MOCK_SCHOLARSHIP: ScholarshipItem | null = {
-  id: "s1",
-  percent: 15,
-  amount: 3750,
-  note: "Merit-based scholarship — top entrance score",
-  createdAt: "2024-10-02T10:00:00Z",
-};
 
 function formatNPR(amount: number): string {
   return `NPR ${amount.toLocaleString("en-NP")}`;
@@ -188,20 +182,27 @@ function ScholarshipCard({ scholarship }: { scholarship: ScholarshipItem }) {
 }
 
 export function Scholarship() {
-  // TODO: replace with useQuery when API is ready
-  const isPending = false;
-  const isError = false;
-  const scholarship = MOCK_SCHOLARSHIP;
+  const { data, isPending, refetch, isError, error } = useQuery({
+    queryKey: ["student-portal-scholarship"],
+    queryFn: async () => {
+      const res = await api.get<GetStudentPortalScholarshipResponse>(
+        "/portal/student/scholarship",
+      );
+      const parsed = res.data;
+      if (!parsed.success) throw new Error(parsed.message);
+      return parsed.data;
+    },
+  });
 
   if (isPending) return <ScholarshipSkeleton />;
 
   if (isError) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Something went wrong fetching your scholarship details.";
     return (
-      <SectionError
-        title="Scholarship"
-        message="Something went wrong fetching your scholarship details."
-        onRetry={() => {}}
-      />
+      <SectionError title="Scholarship" message={message} onRetry={refetch} />
     );
   }
 
@@ -214,11 +215,7 @@ export function Scholarship() {
         Scholarship
       </h2>
 
-      {scholarship ? (
-        <ScholarshipCard scholarship={scholarship} />
-      ) : (
-        <ScholarshipEmpty />
-      )}
+      {data ? <ScholarshipCard scholarship={data} /> : <ScholarshipEmpty />}
     </section>
   );
 }

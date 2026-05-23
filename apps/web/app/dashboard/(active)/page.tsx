@@ -3,8 +3,8 @@ import { FinancialSummary } from "@/components/student/dashboard/FinancialSummar
 import { EnrolledCourses } from "@/components/student/dashboard/EnrolledCourses";
 import { siteInfo } from "@/utils/site-info";
 import { PaymentHistory } from "@/components/student/dashboard/PaymentHistory";
-// import { Discounts } from "@/components/student/dashboard/Discounts";
-// import { Scholarship } from "@/components/student/dashboard/Scholarship";
+import { Discounts } from "@/components/student/dashboard/Discounts";
+import { Scholarship } from "@/components/student/dashboard/Scholarship";
 
 function DashboardContent() {
   return (
@@ -60,10 +60,10 @@ function DashboardContent() {
           </div>
         </aside>
       </div>
-      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-3">
         <Discounts />
         <Scholarship />
-      </div> */}
+      </div>
 
       {/* Full-width payment history */}
       <PaymentHistory />
