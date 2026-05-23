@@ -35,9 +35,9 @@ import { toast } from "sonner";
 import { mapFieldErrors } from "@/utils/api";
 import { FieldError } from "@/components/ui/field";
 import { useRouter } from "next/navigation";
+import "nepali-datepicker-reactjs/dist/index.css";
 import { NepaliDatePicker } from "nepali-datepicker-reactjs";
 import { BSToAD } from "bikram-sambat-js";
-import NepaliDate from "nepali-date-converter";
 import getMonth from "nepali-date-converter";
 
 type Student = Extract<StudentDetail, { success: true }>["data"];
