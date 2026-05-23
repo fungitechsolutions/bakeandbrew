@@ -24,3 +24,13 @@ RETURNING *;
 -- name: DeleteScholarship :exec
 DELETE FROM student_scholarships
 WHERE id = $1;
+
+
+-- name: GetStudentScholarship :one
+SELECT 
+note,
+percent,
+amount,
+created_at
+FROM student_scholarships
+WHERE student_id = $1;

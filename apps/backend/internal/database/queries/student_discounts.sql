@@ -30,3 +30,15 @@ WHERE id = $1;
 SELECT COALESCE(SUM(percent), 0)::NUMERIC AS total_discount_percent
 FROM student_discounts
 WHERE student_id = $1;
+
+
+-- name: GetStudentDiscounts :many
+SELECT 
+id,
+note,
+type,
+percent,
+amount,
+created_at
+FROM student_discounts
+WHERE student_id = $1;

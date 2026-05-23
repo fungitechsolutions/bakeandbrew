@@ -130,3 +130,5 @@ export {
 
 export { type GetStudentPendingOverviewResponse } from "./student_portal/pending-overview";
 export { type GetStudentRejectedOverviewResponse } from "./student_portal/rejected-overview";
+export { type GetStudentDiscountsResponse } from "./student_portal/discounts";
+export { type GetStudentPortalScholarshipResponse } from "./student_portal/scholarship";

@@ -80,6 +80,54 @@ func (q *Queries) GetDiscountByID(ctx context.Context, id pgtype.UUID) (StudentD
 	return i, err
 }
 
+const getStudentDiscounts = `-- name: GetStudentDiscounts :many
+SELECT 
+id,
+note,
+type,
+percent,
+amount,
+created_at
+FROM student_discounts
+WHERE student_id = $1
+`
+
+type GetStudentDiscountsRow struct {
+	ID        pgtype.UUID        `json:"id"`
+	Note      pgtype.Text        `json:"note"`
+	Type      string             `json:"type"`
+	Percent   pgtype.Numeric     `json:"percent"`
+	Amount    int64              `json:"amount"`
+	CreatedAt pgtype.Timestamptz `json:"createdAt"`
+}
+
+func (q *Queries) GetStudentDiscounts(ctx context.Context, studentID pgtype.UUID) ([]GetStudentDiscountsRow, error) {
+	rows, err := q.db.Query(ctx, getStudentDiscounts, studentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetStudentDiscountsRow
+	for rows.Next() {
+		var i GetStudentDiscountsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Note,
+			&i.Type,
+			&i.Percent,
+			&i.Amount,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getTotalDiscountPercentByStudent = `-- name: GetTotalDiscountPercentByStudent :one
 SELECT COALESCE(SUM(percent), 0)::NUMERIC AS total_discount_percent
 FROM student_discounts

@@ -17,4 +17,6 @@ type StudentPortal interface {
 	GetStudentStatusByUserID(ctx context.Context, id pgtype.UUID) (string, error)
 	GetStudentPendingOverview(ctx context.Context, id pgtype.UUID) (db.GetStudentPendingOverviewRow, error)
 	GetStudentRejectedOverview(ctx context.Context, id pgtype.UUID) (db.GetStudentRejectedOverviewRow, error)
+	GetStudentDiscounts(ctx context.Context, id pgtype.UUID) ([]db.GetStudentDiscountsRow, error)
+	GetStudentScholarship(ctx context.Context, id pgtype.UUID) (db.GetStudentScholarshipRow, error)
 }

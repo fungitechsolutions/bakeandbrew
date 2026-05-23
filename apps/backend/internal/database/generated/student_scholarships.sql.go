@@ -112,6 +112,35 @@ func (q *Queries) GetScholarshipByStudent(ctx context.Context, studentID pgtype.
 	return i, err
 }
 
+const getStudentScholarship = `-- name: GetStudentScholarship :one
+SELECT 
+note,
+percent,
+amount,
+created_at
+FROM student_scholarships
+WHERE student_id = $1
+`
+
+type GetStudentScholarshipRow struct {
+	Note      pgtype.Text        `json:"note"`
+	Percent   pgtype.Numeric     `json:"percent"`
+	Amount    int64              `json:"amount"`
+	CreatedAt pgtype.Timestamptz `json:"createdAt"`
+}
+
+func (q *Queries) GetStudentScholarship(ctx context.Context, studentID pgtype.UUID) (GetStudentScholarshipRow, error) {
+	row := q.db.QueryRow(ctx, getStudentScholarship, studentID)
+	var i GetStudentScholarshipRow
+	err := row.Scan(
+		&i.Note,
+		&i.Percent,
+		&i.Amount,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const updateScholarship = `-- name: UpdateScholarship :one
 UPDATE student_scholarships
 SET percent = $2, note = $3, amount = $4
