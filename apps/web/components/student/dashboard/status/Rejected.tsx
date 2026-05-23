@@ -1,15 +1,12 @@
 "use client";
 
+import api from "@/lib/axios";
+import { GetStudentRejectedOverviewResponse } from "@repo/types";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface RejectedStatusProps {
-  studentName: string;
-  decidedAt: string; // ISO date string
-  rejectionReason?: string;
-}
+import RejectedLoading from "./RejectedLoading";
+import RejectedError from "./RejectedError";
 
 interface ActionItem {
   index: number;
@@ -19,8 +16,6 @@ interface ActionItem {
   isExternal?: boolean;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", {
     month: "long",
@@ -28,8 +23,6 @@ function formatDate(iso: string): string {
     year: "numeric",
   });
 }
-
-// ─── Icons ────────────────────────────────────────────────────────────────────
 
 function ArrowRightIcon() {
   return (
@@ -66,8 +59,6 @@ function ArrowUpRightIcon() {
     </svg>
   );
 }
-
-// ─── Action Row ───────────────────────────────────────────────────────────────
 
 interface ActionRowProps extends ActionItem {
   delay: number;
@@ -139,21 +130,35 @@ function ActionRow({
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
-
-export default function RejectedStatus({
-  studentName,
-  decidedAt,
-  rejectionReason,
-}: RejectedStatusProps) {
+export default function RejectedStatus() {
   const [mounted, setMounted] = useState<boolean>(false);
+
+  const { data, isPending, isError, refetch, error } = useQuery({
+    queryKey: ["student-portal-pending"],
+    queryFn: async () => {
+      const res = await api.get<GetStudentRejectedOverviewResponse>(
+        "/portal/student/rejected-overview",
+      );
+      const parsed = res.data;
+      if (!parsed.success)
+        throw new Error(parsed.message ?? "Something went wrong");
+      return parsed.data;
+    },
+  });
 
   useEffect(() => {
     const timer = setTimeout(() => setMounted(true), 80);
     return () => clearTimeout(timer);
   }, []);
 
-  const firstName = studentName.split(" ")[0] ?? "Student";
+  if (isPending) return <RejectedLoading />;
+  if (isError) {
+    const message =
+      error instanceof Error ? error.message : "An unexpected error occurred.";
+    return <RejectedError message={message} reset={refetch} />;
+  }
+
+  const firstName = data.fullName.split(" ")[0] ?? "Student";
 
   const actions: ActionItem[] = [
     {
@@ -181,7 +186,7 @@ export default function RejectedStatus({
   ];
 
   return (
-    <div className="flex min-h-screen w-full items-start justify-center bg-[#fbfaf7] px-6 py-20 sm:px-10 lg:px-16">
+    <div className="flex min-h-screen w-full items-start justify-center px-6 py-20 sm:px-10 lg:px-16">
       {/* Grain */}
       <div
         aria-hidden="true"
@@ -250,12 +255,12 @@ export default function RejectedStatus({
           </span>
           <span className="h-px w-4 flex-shrink-0 bg-[#1a1a1a]/15" />
           <span className="font-dm-sans text-sm font-medium text-[#1a1a1a]/55">
-            {formatDate(decidedAt)}
+            {formatDate(data.decidedAt)}
           </span>
         </div>
 
         {/* ── Optional rejection reason ── */}
-        {rejectionReason && (
+        {data.rejectionReason && (
           <div
             className={`mt-5 transition-all duration-500 ${
               mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
@@ -266,7 +271,7 @@ export default function RejectedStatus({
               Reason provided
             </span>
             <p className="mt-1.5 max-w-md font-dm-sans text-sm leading-relaxed text-[#1a1a1a]/55">
-              {rejectionReason}
+              {data.rejectionReason}
             </p>
           </div>
         )}

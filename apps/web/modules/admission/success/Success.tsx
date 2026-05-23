@@ -390,7 +390,7 @@ export default function AdmissionSuccessPage() {
               <div className="px-5 py-2">
                 <InfoRow
                   label="Date of Birth"
-                  value={formatDate(student.dob)}
+                  value={student.dob}
                   icon={User}
                 />
                 <InfoRow label="Phone" value={student.phone} icon={User} />

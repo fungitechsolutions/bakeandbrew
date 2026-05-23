@@ -5,8 +5,6 @@ import { Printer, X, MapPin, Phone, Mail, Clock } from "lucide-react";
 import NextImage from "next/image";
 import "./PrintAdmissionForm.css";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-
 export interface PrintAdmissionData {
   fullName: string;
   dob: string;
@@ -28,8 +26,6 @@ interface Props {
   data: PrintAdmissionData;
   onClose: () => void;
 }
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatDate(raw: string) {
   if (!raw) return "";
@@ -54,8 +50,6 @@ function todayFormatted() {
   });
 }
 
-// ── Sub-components ────────────────────────────────────────────────────────────
-
 function Field({
   label,
   value,
@@ -76,19 +70,13 @@ function Field({
   );
 }
 
-// ── Main Component ────────────────────────────────────────────────────────────
-
 export default function PrintAdmissionForm({ data, onClose }: Props) {
   const printAreaRef = useRef<HTMLDivElement>(null);
 
-  const uid = useId().replace(/:/g, "");
+  // const uid = useId().replace(/:/g, "");
   // const formNo = `BB-${new Date().getFullYear()}-${uid.slice(-6).toUpperCase()}`;
   const today = todayFormatted();
 
-  // ── KEY FIX: use window.print() directly ──
-  // The @media print CSS already hides everything except .paf-printable-root.
-  // No iframe needed — iframes can't resolve Next.js image URLs or load
-  // CSS files, so they always print blank.
   const handlePrint = () => {
     window.print();
   };
@@ -220,7 +208,7 @@ export default function PrintAdmissionForm({ data, onClose }: Props) {
                 <Field label="Full Name" value={data.fullName} />
               </div>
               <Field label="Gender" value={capitalize(data.gender)} />
-              <Field label="Date of Birth" value={formatDate(data.dob)} />
+              <Field label="Date of Birth" value={data.dob} />
               <Field label="Phone Number" value={data.phone} />
               <Field
                 label="Email Address"

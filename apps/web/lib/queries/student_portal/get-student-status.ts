@@ -1,9 +1,14 @@
 import { getAllCookies } from "@/utils/get-all-cookies";
+import { redirect } from "next/navigation";
 
 type GetStudentStatusResponse =
   | {
       success: true;
-      data: { status: "active" | "rejected" | "completed" | "pending" };
+      data: {
+        status: "active" | "rejected" | "completed" | "pending" | "noStatus";
+      };
+      message?: string;
+      code?: string;
     }
   | { success: false; message: string; code: string };
 
@@ -25,6 +30,16 @@ export async function getStudentStatus() {
   const data = (await res.json()) as GetStudentStatusResponse;
 
   if (!data.success) throw new Error(data.message);
+
+  if (data.message && data.code && data.code === "STUDENT_NOT_REGISTERED") {
+    const noStdData = {
+      status: "noStatus" as Extract<
+        GetStudentStatusResponse,
+        { success: true }
+      >["data"]["status"],
+    };
+    return noStdData;
+  }
 
   return data.data;
 }

@@ -127,3 +127,6 @@ export {
   updateStudentPersonalInfoInputSchema,
   type UpdateStudentInfoResponse,
 } from "./admin/students/personal-info";
+
+export { type GetStudentPendingOverviewResponse } from "./student_portal/pending-overview";
+export { type GetStudentRejectedOverviewResponse } from "./student_portal/rejected-overview";

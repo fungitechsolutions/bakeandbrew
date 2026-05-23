@@ -52,7 +52,11 @@ export const createStudentAdmissionRequest = z.object({
   //   .trim()
   //   .min(1, "Email is required"),
 
-  dob: z
+  dobAD: z
+    .string()
+    .min(1, "Date of birth is required")
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Use format YYYY-MM-DD"),
+  dobBS: z
     .string()
     .min(1, "Date of birth is required")
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Use format YYYY-MM-DD"),

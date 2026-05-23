@@ -97,7 +97,8 @@ type Student struct {
 	FiscalYear      string             `json:"fiscalYear"`
 	SerialNo        int32              `json:"serialNo"`
 	FullName        string             `json:"fullName"`
-	Dob             pgtype.Date        `json:"dob"`
+	DobAd           pgtype.Date        `json:"dobAd"`
+	DobBs           string             `json:"dobBs"`
 	Gender          string             `json:"gender"`
 	Phone           string             `json:"phone"`
 	Address         string             `json:"address"`

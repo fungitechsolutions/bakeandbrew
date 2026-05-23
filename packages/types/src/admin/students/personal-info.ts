@@ -18,7 +18,13 @@ export const updateStudentPersonalInfoInputSchema = z.object({
   source: z.enum(["facebook", "instagram", "tiktok", "referral", "inperson"], {
     error: "Please select how you heard about us",
   }),
-  dob: z
+  dobAd: z
+    .string()
+    .trim()
+    .min(1, "Date of birth is required")
+
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Use format YYYY-MM-DD"),
+  dobBs: z
     .string()
     .trim()
     .min(1, "Date of birth is required")

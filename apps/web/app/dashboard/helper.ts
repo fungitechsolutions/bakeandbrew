@@ -1,7 +1,12 @@
 import { getStudentStatus } from "@/lib/queries/student_portal/get-student-status";
 import { redirect } from "next/navigation";
 
-type StudentStatus = "active" | "completed" | "pending" | "rejected";
+type StudentStatus =
+  | "active"
+  | "completed"
+  | "pending"
+  | "rejected"
+  | "noStatus";
 
 export function redirectByStudentStatus(status: StudentStatus) {
   switch (status) {
@@ -14,6 +19,8 @@ export function redirectByStudentStatus(status: StudentStatus) {
 
     case "rejected":
       redirect("/dashboard/rejected");
+    case "noStatus":
+      redirect("/dashboard/onboarding");
 
     default:
       redirect("/");

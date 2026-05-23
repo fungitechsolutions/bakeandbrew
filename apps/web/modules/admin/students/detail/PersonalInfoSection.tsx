@@ -35,12 +35,17 @@ import { toast } from "sonner";
 import { mapFieldErrors } from "@/utils/api";
 import { FieldError } from "@/components/ui/field";
 import { useRouter } from "next/navigation";
+import { NepaliDatePicker } from "nepali-datepicker-reactjs";
+import { BSToAD } from "bikram-sambat-js";
+import NepaliDate from "nepali-date-converter";
+import getMonth from "nepali-date-converter";
 
 type Student = Extract<StudentDetail, { success: true }>["data"];
 
 type PersonalInfoForm = {
   fullName: string;
-  dob: string;
+  dobAd: string;
+  dobBs: string;
   gender: "male" | "female" | "other";
   phone: string;
   source: "facebook" | "instagram" | "tiktok" | "referral" | "inperson";
@@ -83,7 +88,8 @@ export function PersonalInfoSection({ student }: { student: Student }) {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<PersonalInfoForm>({
     fullName: student.fullName,
-    dob: new Date(student.dob).toISOString().split("T")[0],
+    dobAd: new Date(student.dobAd).toISOString().split("T")[0],
+    dobBs: student.dobBs ?? "",
     gender: student.gender,
     phone: student.phone,
     source: student.source,
@@ -133,24 +139,25 @@ export function PersonalInfoSection({ student }: { student: Student }) {
     setSaving(true);
     console.log("batch: ", form.batch);
     const validateFields = updateStudentPersonalInfoInputSchema.safeParse(form);
-    // if (!validateFields.success) {
-    //   setSaving(false);
-    //   const tree = z.treeifyError(validateFields.error).properties;
-    //   console.log("error: ", tree);
-    //   setErrors({
-    //     fullName: tree?.fullName?.errors[0],
-    //     dob: tree?.dob?.errors[0],
-    //     gender: tree?.gender?.errors[0],
-    //     phone: tree?.phone?.errors[0],
-    //     shift: tree?.shift?.errors[0],
-    //     shiftTime: tree?.shiftTime?.errors[0],
-    //     address: tree?.address?.errors[0],
-    //     batch: tree?.batch?.errors[0],
-    //     source: tree?.source?.errors[0],
-    //   });
+    if (!validateFields.success) {
+      setSaving(false);
+      const tree = z.treeifyError(validateFields.error).properties;
+      console.log("error: ", tree);
+      setErrors({
+        fullName: tree?.fullName?.errors[0],
+        dobAd: tree?.dobAd?.errors[0],
+        dobBs: tree?.dobBs?.errors[0],
+        gender: tree?.gender?.errors[0],
+        phone: tree?.phone?.errors[0],
+        shift: tree?.shift?.errors[0],
+        shiftTime: tree?.shiftTime?.errors[0],
+        address: tree?.address?.errors[0],
+        batch: tree?.batch?.errors[0],
+        source: tree?.source?.errors[0],
+      });
 
-    //   return;
-    // }
+      return;
+    }
     try {
       await mutateAsync(form);
       setEditing(false);
@@ -162,7 +169,8 @@ export function PersonalInfoSection({ student }: { student: Student }) {
   const handleCancel = () => {
     setForm({
       fullName: student.fullName,
-      dob: new Date(student.dob).toISOString().split("T")[0],
+      dobAd: new Date(student.dobAd).toISOString().split("T")[0],
+      dobBs: student.dobBs ?? "",
       gender: student.gender,
       phone: student.phone,
       source: student.source,
@@ -204,17 +212,6 @@ export function PersonalInfoSection({ student }: { student: Student }) {
             {errors?.fullName && <FieldError>{errors.fullName}</FieldError>}
           </EditField>
 
-          <EditField label="Date of Birth">
-            <input
-              type="date"
-              className={inputCls}
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-              value={form.dob}
-              onChange={set("dob")}
-            />
-            {errors?.dob && <FieldError>{errors.dob}</FieldError>}
-          </EditField>
-
           <EditField label="Gender">
             <select
               className={selectCls}
@@ -227,6 +224,50 @@ export function PersonalInfoSection({ student }: { student: Student }) {
               <option value="other">Other</option>
             </select>
             {errors?.gender && <FieldError>{errors.gender}</FieldError>}
+          </EditField>
+
+          <EditField label="Date of Birth (BS)">
+            <div className="relative">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 z-10 text-[#2d4a3e]/40">
+                <CalendarDays className="h-4 w-4" strokeWidth={1.75} />
+              </span>
+              <NepaliDatePicker
+                inputClassName={cn(
+                  inputCls,
+                  "pl-9",
+                  errors?.dobBs && "border-red-400 ring-2 ring-red-100",
+                )}
+                value={form.dobBs}
+                onChange={(bsValue: string) => {
+                  setForm((prev) => ({ ...prev, dobBs: bsValue }));
+                  try {
+                    const adValue = BSToAD(bsValue);
+                    setForm((prev) => ({ ...prev, dobAd: adValue }));
+                  } catch {}
+                }}
+                options={{ calenderLocale: "en", valueLocale: "en" }}
+              />
+            </div>
+            {errors?.dobBs && <FieldError>{errors.dobBs}</FieldError>}
+          </EditField>
+
+          <EditField label="Date of Birth (AD)">
+            <input
+              type="date"
+              className={cn(
+                inputCls,
+                errors?.dobAd && "border-red-400 ring-2 ring-red-100",
+              )}
+              style={{ fontFamily: "var(--font-dm-sans)" }}
+              value={form.dobAd}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, dobAd: e.target.value }))
+              }
+            />
+            <span className="text-[0.70rem] text-[#2d4a3e]/40">
+              Auto filled from BS, edit only if conversion is off
+            </span>
+            {errors?.dobAd && <FieldError>{errors.dobAd}</FieldError>}
           </EditField>
 
           <EditField label="Phone">
@@ -325,7 +366,7 @@ export function PersonalInfoSection({ student }: { student: Student }) {
             {errors?.batch && <FieldError>{errors.batch}</FieldError>}
           </EditField>
 
-          {/* Address spans full width — typically longer text */}
+          {/* Address */}
           <EditField label="Address" className="lg:col-span-2">
             <input
               className={inputCls}
@@ -340,16 +381,25 @@ export function PersonalInfoSection({ student }: { student: Student }) {
       ) : (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <InfoRow label="Full Name" value={student.fullName} icon={User} />
+          <InfoRow label="Gender" value={student.gender} icon={User} />
           <InfoRow
-            label="Date of Birth"
-            value={new Date(student.dob).toLocaleDateString("en-NP", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
+            label="Date of Birth (BS)"
+            value={String(new getMonth(student.dobBs)) ?? "—"}
             icon={CalendarDays}
           />
-          <InfoRow label="Gender" value={student.gender} icon={User} />
+          <InfoRow
+            label="Date of Birth (AD)"
+            value={
+              student.dobAd
+                ? new Date(student.dobAd).toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })
+                : "—"
+            }
+            icon={CalendarDays}
+          />
           <InfoRow label="Phone" value={student.phone} icon={Phone} />
           {/* Email: pass a truncate/title prop if InfoRow supports it, or wrap it */}
           <InfoRow

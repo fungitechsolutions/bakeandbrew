@@ -41,10 +41,14 @@ import { siteInfo } from "@/utils/site-info";
 import { useAuthStore } from "@/store/auth";
 import { useAdmissionStore } from "@/store/useAdmissionStore";
 import { useRouter } from "next/navigation";
+import { NepaliDatePicker } from "nepali-datepicker-reactjs";
+import "nepali-datepicker-reactjs/dist/index.css";
+import { BSToAD } from "bikram-sambat-js";
 
 interface FieldError {
   fullName?: string;
-  dob?: string;
+  dobAD?: string;
+  dobBS?: string;
   gender?: string;
   phone?: string;
   // email?: string;
@@ -61,7 +65,8 @@ interface FieldError {
 
 const FIELD_STEP_MAP: Record<keyof FieldError, number> = {
   fullName: 0,
-  dob: 0,
+  dobAD: 0,
+  dobBS: 0,
   gender: 0,
   phone: 0,
   // email: 0,
@@ -94,14 +99,18 @@ const GENDERS = [
 
 const STEPS = ["Personal", "Guardian", "Course", "Review"] as const;
 
-type ValidateStepData = Omit<CreateStudentAdmission, "dob"> & { dob: string };
+type ValidateStepData = Omit<CreateStudentAdmission, "dobBS"> & {
+  dobBS: string;
+  dobAD: string;
+};
 
 function validateStep(step: number, data: ValidateStepData): FieldError {
   const errors: FieldError = {};
 
   if (step === 0) {
     if (!data.fullName.trim()) errors.fullName = "Full name is required";
-    if (!data.dob) errors.dob = "Date of birth is required";
+    if (!data.dobBS) errors.dobBS = "Date of birth is required";
+    if (!data.dobAD) errors.dobAD = "Date of birth is required";
     if (!data.gender) errors.gender = "Please select a gender";
     if (!data.phone.trim()) errors.phone = "Phone number is required";
     else if (!/^\+?[\d\s\-()]{7,15}$/.test(data.phone))
@@ -151,6 +160,7 @@ export default function AdmissionPage({ courses }: Props) {
     publicID: string;
     fileName: string;
   }>();
+  const [dobAD, setDobAD] = useState("");
   const setSubmittedStudent = useAdmissionStore((s) => s.setSubmittedStudent);
   const router = useRouter();
 
@@ -166,7 +176,7 @@ export default function AdmissionPage({ courses }: Props) {
       toast.success(result.message);
       setSubmittedStudent({
         fullName: getFieldValue("fullName"),
-        dob: getFieldValue("dob"),
+        dob: getFieldValue("dobBS"),
         gender: getFieldValue("gender"),
         phone: getFieldValue("phone"),
         address: getFieldValue("address"),
@@ -227,7 +237,8 @@ export default function AdmissionPage({ courses }: Props) {
       phone: "",
       source: "" as CreateStudentAdmission["source"],
       // email: user?.email ?? "",
-      dob: "",
+      dobBS: "",
+      dobAD: "",
       gender: "" as CreateStudentAdmission["gender"],
       guardianName: "",
       guardianPhone: "",
@@ -244,7 +255,6 @@ export default function AdmissionPage({ courses }: Props) {
     onSubmit: ({ value }) => {
       mutate({
         ...value,
-        dob: value.dob,
         // claimedAmount: value.claimedAmount ?? 0,
       });
     },
@@ -316,7 +326,8 @@ export default function AdmissionPage({ courses }: Props) {
   const goNext = () => {
     const stepErrors = validateStep(currentStep, {
       fullName: getFieldValue("fullName"),
-      dob: getFieldValue("dob"),
+      dobBS: getFieldValue("dobBS"),
+      dobAD: getFieldValue("dobAD"),
       gender: getFieldValue("gender"),
       phone: getFieldValue("phone"),
       // email: getFieldValue("email"),
@@ -330,6 +341,7 @@ export default function AdmissionPage({ courses }: Props) {
       shift: getFieldValue("shift"),
       shiftTime: getFieldValue("shiftTime"),
     });
+    console.log("step errors: ", stepErrors);
 
     if (Object.keys(stepErrors).length > 0) {
       setErrors(stepErrors);
@@ -479,24 +491,106 @@ export default function AdmissionPage({ courses }: Props) {
                 }}
               </FormField>
 
-              <FormField name="dob">
-                {(field) => {
-                  const fieldError = field.state.meta.errors[0]?.message;
-                  const mergedError = fieldError ?? errors.dob;
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:col-span-2">
+                <FormField name="dobBS">
+                  {(field) => {
+                    const fieldError = field.state.meta.errors[0]?.message;
+                    const mergedError = fieldError ?? errors.dobBS;
 
-                  return (
-                    <InputField
-                      label="Date of Birth"
-                      icon={Calendar}
-                      required
-                      type="date"
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      error={mergedError}
-                    />
-                  );
-                }}
-              </FormField>
+                    return (
+                      <div className="flex flex-col gap-1.5">
+                        <label
+                          className="text-[0.8rem] font-semibold uppercase tracking-[0.07em] text-[#2d4a3e]"
+                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                        >
+                          Date of Birth (BS){" "}
+                          <span className="ml-1 text-[#e8552a]">*</span>
+                        </label>
+                        <div className="relative">
+                          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 z-10 text-[#2d4a3e]/40">
+                            <Calendar className="h-4 w-4" strokeWidth={1.75} />
+                          </span>
+                          <NepaliDatePicker
+                            inputClassName={`w-full border rounded-xl px-3 py-2.5 pl-9 text-[0.92rem] bg-white text-[#2d4a3e] outline-none transition-all duration-200 focus:border-[#e8552a] focus:ring-2 focus:ring-[#e8552a]/15 placeholder:text-[#2d4a3e]/30 ${
+                              mergedError
+                                ? "border-red-400 ring-2 ring-red-100"
+                                : "border-[#2d4a3e]/15"
+                            }`}
+                            value={field.state.value}
+                            onChange={(bsValue: string) => {
+                              field.handleChange(bsValue);
+                              try {
+                                const adValue = BSToAD(bsValue);
+                                setDobAD(adValue);
+                                setFieldValue("dobAD", adValue);
+                              } catch {
+                                setDobAD("");
+                                setFieldValue("dobAD", "");
+                              }
+                            }}
+                            options={{
+                              calenderLocale: "en",
+                              valueLocale: "en",
+                            }}
+                          />
+                        </div>
+                        {mergedError && (
+                          <p
+                            className="text-[0.78rem] text-red-500"
+                            style={{ fontFamily: "var(--font-dm-sans)" }}
+                          >
+                            {mergedError}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  }}
+                </FormField>
+
+                <FormField name="dobAD">
+                  {(field) => {
+                    const fieldError = field.state.meta.errors[0]?.message;
+                    const mergedError = fieldError ?? errors.dobBS;
+                    return (
+                      <div className="flex flex-col gap-1.5">
+                        <label
+                          className="text-[0.75rem] font-semibold uppercase tracking-[0.07em] text-[#2d4a3e]/60"
+                          style={{ fontFamily: "var(--font-dm-sans)" }}
+                        >
+                          Date of Birth (AD)
+                          <span className="ml-1 font-normal normal-case text-[#2d4a3e]/40">
+                            (auto-converted)
+                          </span>
+                        </label>
+                        <div className="relative">
+                          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#2d4a3e]/40">
+                            <Calendar className="h-4 w-4" strokeWidth={1.75} />
+                          </span>
+                          <input
+                            type="date"
+                            disabled
+                            value={dobAD}
+                            onChange={(e) => {
+                              setDobAD(e.target.value);
+                              field.handleChange(e.target.value);
+                            }}
+                            className="w-full rounded-xl border border-[#2d4a3e]/15 bg-white py-2.5 pl-10 pr-4 text-[0.92rem] text-[#2d4a3e] outline-none transition-all duration-200 focus:border-[#e8552a] focus:ring-2 focus:ring-[#e8552a]/15 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed disabled:opacity-70 disabled:border-[#2d4a3e]/10"
+                            style={{ fontFamily: "var(--font-dm-sans)" }}
+                          />
+                        </div>
+                        {mergedError && (
+                          <p
+                            className="text-[0.78rem] text-red-500"
+                            style={{ fontFamily: "var(--font-dm-sans)" }}
+                          >
+                            {mergedError}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  }}
+                </FormField>
+              </div>
 
               <FormField name="gender">
                 {(field) => {
@@ -834,7 +928,11 @@ export default function AdmissionPage({ courses }: Props) {
                   label="Full Name"
                   value={getFieldValue("fullName")}
                 />
-                <ReviewRow label="Date of Birth" value={getFieldValue("dob")} />
+                <ReviewRow
+                  label="Date of Birth (BS)"
+                  value={getFieldValue("dobBS")}
+                />
+                <ReviewRow label="Date of Birth (AD)" value={dobAD} />
                 <ReviewRow label="Gender" value={genderLabel} />
                 <ReviewRow label="Phone" value={getFieldValue("phone")} />
                 <ReviewRow label="Email" value={user?.email ?? ""} />

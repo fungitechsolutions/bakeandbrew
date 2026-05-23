@@ -2,7 +2,6 @@ package studentPortal
 
 import (
 	"errors"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +12,7 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
 
-func GetStudentStatusByUserID(queries repository.StudentPortal) gin.HandlerFunc {
+func GetStudentRejectedOverview(queries repository.StudentPortal) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 
@@ -28,18 +27,16 @@ func GetStudentStatusByUserID(queries repository.StudentPortal) gin.HandlerFunc 
 			return
 		}
 
-		status, err := queries.GetStudentStatusByUserID(ctx, studentID)
+		overview, err := queries.GetStudentRejectedOverview(ctx, studentID)
 		if err != nil {
-			log.Println("err: ", err)
 			if errors.Is(err, pgx.ErrNoRows) {
-				c.JSON(http.StatusOK, types.APIResponse{
-					Success: true,
-					Message: "Student profile not found",
-					Code:    constants.StudentNotRegistered,
+				c.JSON(http.StatusNotFound, types.APIResponse{
+					Success: false,
+					Message: "Student not found",
+					Code:    constants.StudentNotFound,
 				})
 				return
 			}
-
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -50,9 +47,7 @@ func GetStudentStatusByUserID(queries repository.StudentPortal) gin.HandlerFunc 
 
 		c.JSON(http.StatusOK, types.APIResponse{
 			Success: true,
-			Data: map[string]string{
-				"status": status,
-			},
+			Data:    overview,
 		})
 	}
 }

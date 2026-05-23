@@ -34,15 +34,15 @@ WHERE fiscal_year = $1;
 
 -- name: CreateStudent :one
 INSERT INTO students (
-    reference_no, fiscal_year, serial_no, full_name, dob, gender,
+    reference_no, fiscal_year, serial_no, full_name, dob_ad, gender,
     phone, address, guardian_name, guardian_phone,
     photo_url, source, status, student_id,
-    shift, shift_time,batch
+    shift, shift_time, batch, dob_bs
 ) VALUES (
     $1, $2, $3, $4, $5, $6,
     $7, $8, $9, $10,
     $11, $12, 'pending', $13,
-    $14, $15, $16
+    $14, $15, $16, $17
 ) RETURNING *;
 
 -- name: GetStudentByID :one
@@ -341,7 +341,7 @@ SELECT
  s.guardian_phone,
  s.address,
  s.fiscal_year,
- s.dob,
+ s.dob_ad,
  s.photo_url,
  s.status
 FROM students s WHERE s.student_id = $1;
@@ -355,7 +355,7 @@ FROM students WHERE student_id = $1;
 UPDATE students
 SET
   full_name = $2,
-  dob = $3,
+  dob_ad = $3,
   shift = $4,
   shift_time = $5,
   batch = $6,
@@ -363,6 +363,7 @@ SET
   address = $8,
   source = $9,
   gender = $10,
+  dob_bs = $11,
   updated_at = NOW()
 WHERE id = $1;
 
@@ -378,5 +379,23 @@ WHERE id = $1;
 SELECT status
 FROM students
 WHERE student_id = $1;
+
+-- name: GetStudentPendingOverview :one
+SELECT
+    full_name,
+    created_at AS submitted_at
+FROM students
+WHERE student_id = $1
+  AND status = 'pending';
+
+-- name: GetStudentRejectedOverview :one
+SELECT
+    full_name,
+    rejection_reason,
+    updated_at AS decided_at
+FROM students
+WHERE student_id = $1
+  AND status = 'rejected';
+
  
 
