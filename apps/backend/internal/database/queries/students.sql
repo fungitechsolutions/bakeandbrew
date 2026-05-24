@@ -341,7 +341,7 @@ SELECT
  s.guardian_phone,
  s.address,
  s.fiscal_year,
- s.dob_ad,
+ s.dob_bs,
  s.photo_url,
  s.status
 FROM students s WHERE s.student_id = $1;

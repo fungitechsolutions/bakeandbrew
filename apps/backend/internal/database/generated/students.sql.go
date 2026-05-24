@@ -543,7 +543,7 @@ SELECT
  s.guardian_phone,
  s.address,
  s.fiscal_year,
- s.dob_ad,
+ s.dob_bs,
  s.photo_url,
  s.status
 FROM students s WHERE s.student_id = $1
@@ -563,7 +563,7 @@ type GetStudentOverviewRow struct {
 	GuardianPhone string             `json:"guardianPhone"`
 	Address       string             `json:"address"`
 	FiscalYear    string             `json:"fiscalYear"`
-	DobAd         pgtype.Date        `json:"dobAd"`
+	DobBs         string             `json:"dobBs"`
 	PhotoUrl      pgtype.Text        `json:"photoUrl"`
 	Status        string             `json:"status"`
 }
@@ -585,7 +585,7 @@ func (q *Queries) GetStudentOverview(ctx context.Context, studentID pgtype.UUID)
 		&i.GuardianPhone,
 		&i.Address,
 		&i.FiscalYear,
-		&i.DobAd,
+		&i.DobBs,
 		&i.PhotoUrl,
 		&i.Status,
 	)

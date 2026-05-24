@@ -1,7 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import { siteInfo } from "@/utils/site-info";
+import { useAuthStore } from "@/store/auth";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function Hero() {
+  const user = useAuthStore((state) => state.user);
   return (
     <section
       id="home"
@@ -112,7 +118,7 @@ export default function Hero() {
             className="relative flex flex-col"
             style={{ pointerEvents: "auto" }}
           >
-            <MainContent className="w-full" />
+            <MainContent className="w-full" role={user?.role} />
             <div className="w-full px-4 pb-8">
               <VideoPanel />
             </div>
@@ -204,7 +210,7 @@ export default function Hero() {
             className="relative grid aspect-[1.618/1] grid-cols-[1.618fr_minmax(0,1fr)] grid-rows-[1fr_1.618fr]"
             style={{ pointerEvents: "auto" }}
           >
-            <MainContent className="col-1 row-[1/span_2]" />
+            <MainContent className="col-1 row-[1/span_2]" role={user?.role} />
             <div className="col-2 row-1" />
             <div className="col-2 row-2 flex items-center justify-center overflow-hidden p-4 lg:p-8">
               <VideoPanel />
@@ -216,7 +222,21 @@ export default function Hero() {
   );
 }
 
-function MainContent({ className }: { className?: string }) {
+function MainContent({
+  className,
+  role,
+}: {
+  className?: string;
+  role?: "admin" | "superadmin" | "student" | "instructor";
+}) {
+  const router = useRouter();
+  const handleAdmissionClick = () => {
+    if (role === "student") {
+      router.push("/admission");
+    } else {
+      toast.info("Only student accounts can submit admission forms.");
+    }
+  };
   return (
     <div
       className={`flex flex-col justify-center overflow-hidden p-6 lg:p-10 ${className ?? ""}`}
@@ -278,8 +298,8 @@ function MainContent({ className }: { className?: string }) {
 
       {/* CTAs */}
       <div className="mb-8 flex flex-wrap gap-3 sm:gap-4">
-        <Link
-          href="/admission"
+        <button
+          onClick={handleAdmissionClick}
           className="inline-block rounded-[10px] px-7 py-3 text-[0.92rem] font-semibold tracking-[0.02em] text-white transition-all duration-200 hover:-translate-y-0.5"
           style={{
             background: "var(--brand-brown)",
@@ -288,7 +308,7 @@ function MainContent({ className }: { className?: string }) {
           }}
         >
           Apply for Admission
-        </Link>
+        </button>
         <Link
           href="#inquiry"
           className="inline-block rounded-[10px] px-7 py-3 text-[0.92rem] font-medium transition-all duration-200"
