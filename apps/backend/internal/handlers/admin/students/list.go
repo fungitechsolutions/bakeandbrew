@@ -1,7 +1,6 @@
 package students
 
 import (
-	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -13,7 +12,7 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/types"
 )
 
-const PAGE_LIMIT = 20
+const PAGE_LIMIT = 21
 
 func ListStudents(queries repository.AdminRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -84,8 +83,6 @@ func ListStudents(queries repository.AdminRepository) gin.HandlerFunc {
 			})
 			return
 		}
-
-		slog.Debug("length of students: ", "len", len(students))
 
 		var studentList []types.ListStudent
 		for _, v := range students {

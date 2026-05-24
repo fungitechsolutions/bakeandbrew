@@ -121,7 +121,7 @@ function DiscountRow({ discount }: { discount: DiscountItem }) {
           className="text-sm font-bold text-[#c28a4f]"
           style={{ fontFamily: "var(--font-lora)" }}
         >
-          {formatNPR(discount.amount)}
+          {formatNPR(discount.amount / 100)}
         </p>
         <span className="inline-block text-xs font-semibold text-[#c28a4f] bg-[#c28a4f]/8 px-2 py-0.5 rounded-full border border-[#c28a4f]/15">
           {discount.percent}% off
@@ -206,7 +206,7 @@ export function Discounts() {
         </h2>
         {data.length > 0 && (
           <span className="text-xs font-semibold text-[#c28a4f] bg-[#c28a4f]/8 px-2.5 py-1 rounded-full border border-[#c28a4f]/15">
-            {formatNPR(data.reduce((s, d) => s + d.amount, 0))} saved
+            {formatNPR(data.reduce((s, d) => s + d.amount, 0) / 100)} saved
           </span>
         )}
       </div>

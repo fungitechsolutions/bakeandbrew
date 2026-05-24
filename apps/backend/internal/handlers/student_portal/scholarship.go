@@ -16,14 +16,32 @@ func GetStudentScholarship(queries repository.StudentPortal) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 
-		studentIDFromContext := c.MustGet("userID").(string)
+		userIDFromContext := c.MustGet("userID").(string)
 
-		studentID, err := utils.ConvertToUUID(studentIDFromContext)
+		userID, err := utils.ConvertToUUID(userIDFromContext)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid ID format",
 				Code:    constants.InvalidIDFormat,
+			})
+			return
+		}
+
+		studentID, err := queries.GetStudentID(ctx, userID)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				c.JSON(http.StatusNotFound, types.APIResponse{
+					Success: false,
+					Message: "Student not found",
+					Code:    constants.StudentNotFound,
+				})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, types.APIResponse{
+				Success: false,
+				Message: "Failed to process request",
+				Code:    constants.InternalServerError,
 			})
 			return
 		}
