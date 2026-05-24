@@ -452,7 +452,7 @@ export function StudentHero() {
           <InfoCard
             icon={<Calendar size={13} />}
             label="Date of Birth"
-            value={formatDate(student.dob)}
+            value={student.dobBs}
           />
           <InfoCard
             icon={<User size={13} />}

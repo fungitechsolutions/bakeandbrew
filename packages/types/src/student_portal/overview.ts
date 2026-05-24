@@ -19,7 +19,7 @@ export const getStudentOverviewResponseSchema = z.discriminatedUnion(
         guardianPhone: z.string(),
         address: z.string(),
         fiscalYear: z.string(),
-        dob: z.string(),
+        dobBs: z.string(),
         photoUrl: z.string().optional(),
         status: z.enum(["active", "completed"]),
       }),

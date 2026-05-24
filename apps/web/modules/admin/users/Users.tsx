@@ -108,7 +108,6 @@ export function UsersPageClient() {
   const end = (data?.meta.offset ?? 0) + (users?.length ?? 0);
 
   const currentRoleLabel = ROLES.find((r) => r.value === role)?.label ?? "All";
-  console.log("current role label: ", currentRoleLabel);
   const hasActiveFilters = search || role !== "all";
 
   if (isError || error) return <UsersErrorState />;
