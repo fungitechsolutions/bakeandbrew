@@ -170,7 +170,7 @@ function ScholarshipCard({ scholarship }: { scholarship: ScholarshipItem }) {
             className="text-base font-bold text-[#2f4e40]"
             style={{ fontFamily: "var(--font-lora)" }}
           >
-            {formatNPR(scholarship.amount)}
+            {formatNPR(scholarship.amount / 100)}
           </p>
           <span className="inline-block text-xs font-bold text-[#2f4e40] bg-[#2f4e40]/10 px-2.5 py-0.5 rounded-full border border-[#2f4e40]/20">
             {scholarship.percent}% awarded
