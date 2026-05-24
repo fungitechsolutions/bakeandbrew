@@ -231,6 +231,11 @@ function MainContent({
 }) {
   const router = useRouter();
   const handleAdmissionClick = () => {
+    if (!role) {
+      toast.info("Please log in to access the admission form.");
+      return;
+    }
+
     if (role === "student") {
       router.push("/admission");
     } else {
