@@ -14,7 +14,14 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { QuestionIcon, StudentIcon } from "@phosphor-icons/react";
-import { Book, Package, Settings, TrendingUp, User } from "lucide-react";
+import {
+  Book,
+  BookOpenCheck,
+  Package,
+  Settings,
+  TrendingUp,
+  User,
+} from "lucide-react";
 import { siteInfo } from "@/utils/site-info";
 
 const data = {
@@ -78,6 +85,19 @@ const data = {
         { title: "Stock Out", url: "/inventory/stock-out" },
         { title: "Wastage", url: "/inventory/wastage" },
         { title: "Summary", url: "/inventory/summary" },
+      ],
+    },
+    {
+      title: "Accounting",
+      url: "#",
+      icon: <BookOpenCheck />,
+      items: [
+        { title: "Banks", url: "/banks" },
+        { title: "Bank Account", url: "/banks/accounts" },
+        { title: "Suppliers", url: "/suppliers" },
+        { title: "Bank Ledger", url: "/bank-ledger" },
+        { title: "Cash ledger", url: "/cash-ledger" },
+        { title: "Supplier ledger", url: "/supplier-ledger" },
       ],
     },
   ],

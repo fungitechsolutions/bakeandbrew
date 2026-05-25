@@ -1,7 +1,4 @@
 -- name: GetInventorySummary :many
--- Full summary per product:
--- stock_in_qty, stock_out_qty, wastage_qty, closing_qty
--- stock_in_amount, stock_out_amount, wastage_amount, closing_amount
 SELECT
     p.id AS product_id,
     p.name AS product_name,
@@ -35,7 +32,6 @@ GROUP BY p.id, p.name, p.unit
 ORDER BY p.name ASC;
 
 -- name: GetInventorySummaryByDateRange :many
--- Same summary but filtered to a BS date range across all three tables
 SELECT
     p.id AS product_id,
     p.name AS product_name,
@@ -69,7 +65,6 @@ GROUP BY p.id, p.name, p.unit
 ORDER BY p.name ASC;
 
 -- name: GetInventorySummaryByProduct :one
--- Single product summary, all time
 SELECT
     p.id AS product_id,
     p.name AS product_name,

@@ -6,10 +6,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/suprimkhatri77/sms/backend/internal/config"
+	accountingRepository "github.com/suprimkhatri77/sms/backend/internal/repository/accounting"
 	"github.com/suprimkhatri77/sms/backend/internal/types"
 
 	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
 
+	"github.com/suprimkhatri77/sms/backend/internal/handlers/admin/accounting/banks"
 	adminAnalytics "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/analytics"
 	adminCourses "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/courses"
 	adminInquiries "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/inquiries"
@@ -156,6 +158,13 @@ func Setup(r *gin.Engine, cfg Config) {
 
 	// admin/inventory/summary
 	adminInventoryRouter.GET("/summary", adminInventorySummary.GetInventorySummary(cfg.Queries))
+
+	adminAccountingRouter := adminRouter.Group("/accounting")
+	adminAccountingRouter.POST("/banks", banks.CreateBank(cfg.Queries))
+	adminAccountingRouter.PUT("/banks/:bankID", banks.UpdateBank(cfg.Queries))
+	adminAccountingRouter.DELETE("/banks/:bankID", banks.DeleteBank(cfg.Queries))
+	adminAccountingRouter.GET("/banks", banks.ListBanks(cfg.Queries))
+	adminAccountingRouter.PUT("/banks/set-default/:bankID", banks.SetDefaultBank(accountingRepository.NewBankTxRepository(cfg.Queries), cfg.PgxPool))
 
 	// public student routes
 	studentRouter := router.Group("/students")

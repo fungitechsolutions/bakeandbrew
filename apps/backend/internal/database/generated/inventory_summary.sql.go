@@ -59,9 +59,6 @@ type GetInventorySummaryRow struct {
 	ClosingAmount  pgtype.Numeric `json:"closingAmount"`
 }
 
-// Full summary per product:
-// stock_in_qty, stock_out_qty, wastage_qty, closing_qty
-// stock_in_amount, stock_out_amount, wastage_amount, closing_amount
 func (q *Queries) GetInventorySummary(ctx context.Context) ([]GetInventorySummaryRow, error) {
 	rows, err := q.db.Query(ctx, getInventorySummary)
 	if err != nil {
@@ -147,7 +144,6 @@ type GetInventorySummaryByDateRangeRow struct {
 	ClosingAmount  pgtype.Numeric `json:"closingAmount"`
 }
 
-// Same summary but filtered to a BS date range across all three tables
 func (q *Queries) GetInventorySummaryByDateRange(ctx context.Context, arg GetInventorySummaryByDateRangeParams) ([]GetInventorySummaryByDateRangeRow, error) {
 	rows, err := q.db.Query(ctx, getInventorySummaryByDateRange, arg.FromDate, arg.ToDate)
 	if err != nil {
@@ -228,7 +224,6 @@ type GetInventorySummaryByProductRow struct {
 	ClosingAmount  pgtype.Numeric `json:"closingAmount"`
 }
 
-// Single product summary, all time
 func (q *Queries) GetInventorySummaryByProduct(ctx context.Context, id pgtype.UUID) (GetInventorySummaryByProductRow, error) {
 	row := q.db.QueryRow(ctx, getInventorySummaryByProduct, id)
 	var i GetInventorySummaryByProductRow
