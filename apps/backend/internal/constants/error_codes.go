@@ -62,4 +62,10 @@ const (
 	// student scholarships
 	MissingStudentScholarshipID = "MISSING_STUDENT_SCHOLARSHIP_ID"
 	ScholarshipNotFound         = "SCHOLARSHIP_NOT_FOUND"
+
+	// Banks
+	BankAlreadyExists        = "BANK_ALREADY_EXISTS"
+	DefaultBankAlreadyExists = "DEFAULT_BANK_ALREADY_EXISTS"
+	MissingBankID            = "MISSING_BANK_ID"
+	BankNotFound             = "BANK_NOT_FOUND"
 )

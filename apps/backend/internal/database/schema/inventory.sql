@@ -17,6 +17,7 @@ CREATE TABLE stock_in (
     qty INTEGER NOT NULL CHECK (qty > 0),
     rate INTEGER NOT NULL CHECK (rate > 0),
     note TEXT,
+    supplier_id UUID NOT NULL REFERENCES suppliers(id) ON DELETE RESTRICT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
