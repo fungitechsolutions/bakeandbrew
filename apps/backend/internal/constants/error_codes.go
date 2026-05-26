@@ -63,9 +63,15 @@ const (
 	MissingStudentScholarshipID = "MISSING_STUDENT_SCHOLARSHIP_ID"
 	ScholarshipNotFound         = "SCHOLARSHIP_NOT_FOUND"
 
-	// Banks
+	// banks
 	BankAlreadyExists        = "BANK_ALREADY_EXISTS"
 	DefaultBankAlreadyExists = "DEFAULT_BANK_ALREADY_EXISTS"
 	MissingBankID            = "MISSING_BANK_ID"
 	BankNotFound             = "BANK_NOT_FOUND"
+
+	// bank accounts
+	BankAccountAlreadyExists        = "BANK_ACCOUNT_ALREADY_EXISTS"
+	DefaultBankAccountAlreadyExists = "DEFAULT_BANK_ACCOUNT_ALREADY_EXISTS"
+	BankAccountNotFound             = "BANK_ACCOUNT_NOT_FOUND"
+	BankAccountHasLedgerEntries     = "BANK_ACCOUNT_HAS_LEDGER_ENTRIES"
 )

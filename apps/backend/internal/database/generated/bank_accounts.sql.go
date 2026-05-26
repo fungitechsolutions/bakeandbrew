@@ -8,12 +8,13 @@ package db
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createBankAccount = `-- name: CreateBankAccount :one
-INSERT INTO bank_accounts (bank_id, account_name, account_number, is_default)
-VALUES ($1, $2, $3, $4)
+INSERT INTO bank_accounts (bank_id, account_name, account_number)
+VALUES ($1, $2, $3)
 RETURNING id, bank_id, account_name, account_number, is_default, created_at
 `
 
@@ -21,16 +22,10 @@ type CreateBankAccountParams struct {
 	BankID        pgtype.UUID `json:"bankId"`
 	AccountName   string      `json:"accountName"`
 	AccountNumber pgtype.Text `json:"accountNumber"`
-	IsDefault     bool        `json:"isDefault"`
 }
 
 func (q *Queries) CreateBankAccount(ctx context.Context, arg CreateBankAccountParams) (BankAccount, error) {
-	row := q.db.QueryRow(ctx, createBankAccount,
-		arg.BankID,
-		arg.AccountName,
-		arg.AccountNumber,
-		arg.IsDefault,
-	)
+	row := q.db.QueryRow(ctx, createBankAccount, arg.BankID, arg.AccountName, arg.AccountNumber)
 	var i BankAccount
 	err := row.Scan(
 		&i.ID,
@@ -43,13 +38,12 @@ func (q *Queries) CreateBankAccount(ctx context.Context, arg CreateBankAccountPa
 	return i, err
 }
 
-const deleteBankAccount = `-- name: DeleteBankAccount :exec
+const deleteBankAccount = `-- name: DeleteBankAccount :execresult
 DELETE FROM bank_accounts WHERE id = $1
 `
 
-func (q *Queries) DeleteBankAccount(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, deleteBankAccount, id)
-	return err
+func (q *Queries) DeleteBankAccount(ctx context.Context, id pgtype.UUID) (pgconn.CommandTag, error) {
+	return q.db.Exec(ctx, deleteBankAccount, id)
 }
 
 const getBankAccountByID = `-- name: GetBankAccountByID :one
@@ -87,6 +81,17 @@ func (q *Queries) GetBankAccountByID(ctx context.Context, id pgtype.UUID) (GetBa
 		&i.BankIsDefault,
 	)
 	return i, err
+}
+
+const getBankAccountsCount = `-- name: GetBankAccountsCount :one
+SELECT COUNT(*) FROM bank_accounts
+`
+
+func (q *Queries) GetBankAccountsCount(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, getBankAccountsCount)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const getDefaultBankAccount = `-- name: GetDefaultBankAccount :one
@@ -134,8 +139,13 @@ SELECT
     b.is_default AS bank_is_default
 FROM bank_accounts ba
 JOIN banks b ON b.id = ba.bank_id
-ORDER BY ba.created_at DESC
+ORDER BY ba.created_at DESC LIMIT $1 OFFSET $2
 `
+
+type ListBankAccountsParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
 
 type ListBankAccountsRow struct {
 	ID            pgtype.UUID        `json:"id"`
@@ -148,8 +158,8 @@ type ListBankAccountsRow struct {
 	BankIsDefault bool               `json:"bankIsDefault"`
 }
 
-func (q *Queries) ListBankAccounts(ctx context.Context) ([]ListBankAccountsRow, error) {
-	rows, err := q.db.Query(ctx, listBankAccounts)
+func (q *Queries) ListBankAccounts(ctx context.Context, arg ListBankAccountsParams) ([]ListBankAccountsRow, error) {
+	rows, err := q.db.Query(ctx, listBankAccounts, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -228,23 +238,12 @@ func (q *Queries) ListBankAccountsByBank(ctx context.Context, bankID pgtype.UUID
 	return items, nil
 }
 
-const setBankAccountAsDefault = `-- name: SetBankAccountAsDefault :one
+const setBankAccountAsDefault = `-- name: SetBankAccountAsDefault :execresult
 UPDATE bank_accounts SET is_default = TRUE WHERE id = $1
-RETURNING id, bank_id, account_name, account_number, is_default, created_at
 `
 
-func (q *Queries) SetBankAccountAsDefault(ctx context.Context, id pgtype.UUID) (BankAccount, error) {
-	row := q.db.QueryRow(ctx, setBankAccountAsDefault, id)
-	var i BankAccount
-	err := row.Scan(
-		&i.ID,
-		&i.BankID,
-		&i.AccountName,
-		&i.AccountNumber,
-		&i.IsDefault,
-		&i.CreatedAt,
-	)
-	return i, err
+func (q *Queries) SetBankAccountAsDefault(ctx context.Context, id pgtype.UUID) (pgconn.CommandTag, error) {
+	return q.db.Exec(ctx, setBankAccountAsDefault, id)
 }
 
 const unsetDefaultBankAccount = `-- name: UnsetDefaultBankAccount :exec
@@ -256,35 +255,18 @@ func (q *Queries) UnsetDefaultBankAccount(ctx context.Context) error {
 	return err
 }
 
-const updateBankAccount = `-- name: UpdateBankAccount :one
+const updateBankAccount = `-- name: UpdateBankAccount :execresult
 UPDATE bank_accounts
-SET bank_id = $2, account_name = $3, account_number = $4
+SET account_name = $2, account_number = $3
 WHERE id = $1
-RETURNING id, bank_id, account_name, account_number, is_default, created_at
 `
 
 type UpdateBankAccountParams struct {
 	ID            pgtype.UUID `json:"id"`
-	BankID        pgtype.UUID `json:"bankId"`
 	AccountName   string      `json:"accountName"`
 	AccountNumber pgtype.Text `json:"accountNumber"`
 }
 
-func (q *Queries) UpdateBankAccount(ctx context.Context, arg UpdateBankAccountParams) (BankAccount, error) {
-	row := q.db.QueryRow(ctx, updateBankAccount,
-		arg.ID,
-		arg.BankID,
-		arg.AccountName,
-		arg.AccountNumber,
-	)
-	var i BankAccount
-	err := row.Scan(
-		&i.ID,
-		&i.BankID,
-		&i.AccountName,
-		&i.AccountNumber,
-		&i.IsDefault,
-		&i.CreatedAt,
-	)
-	return i, err
+func (q *Queries) UpdateBankAccount(ctx context.Context, arg UpdateBankAccountParams) (pgconn.CommandTag, error) {
+	return q.db.Exec(ctx, updateBankAccount, arg.ID, arg.AccountName, arg.AccountNumber)
 }
