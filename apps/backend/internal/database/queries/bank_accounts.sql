@@ -1,6 +1,6 @@
 -- name: CreateBankAccount :one
-INSERT INTO bank_accounts (bank_id, account_name, account_number, is_default)
-VALUES ($1, $2, $3, $4)
+INSERT INTO bank_accounts (bank_id, account_name, account_number)
+VALUES ($1, $2, $3)
 RETURNING *;
 
 -- name: GetBankAccountByID :one
@@ -19,7 +19,7 @@ SELECT
     b.is_default AS bank_is_default
 FROM bank_accounts ba
 JOIN banks b ON b.id = ba.bank_id
-ORDER BY ba.created_at DESC;
+ORDER BY ba.created_at DESC LIMIT $1 OFFSET $2;
 
 -- name: ListBankAccountsByBank :many
 SELECT
@@ -41,18 +41,19 @@ JOIN banks b ON b.id = ba.bank_id
 WHERE b.is_default = TRUE
 LIMIT 1;
 
--- name: UpdateBankAccount :one
+-- name: UpdateBankAccount :execresult
 UPDATE bank_accounts
-SET bank_id = $2, account_name = $3, account_number = $4
-WHERE id = $1
-RETURNING *;
+SET account_name = $2, account_number = $3
+WHERE id = $1;
 
--- name: DeleteBankAccount :exec
+-- name: DeleteBankAccount :execresult
 DELETE FROM bank_accounts WHERE id = $1;
 
 -- name: UnsetDefaultBankAccount :exec
 UPDATE bank_accounts SET is_default = FALSE WHERE is_default = TRUE;
 
--- name: SetBankAccountAsDefault :one
-UPDATE bank_accounts SET is_default = TRUE WHERE id = $1
-RETURNING *;
+-- name: SetBankAccountAsDefault :execresult
+UPDATE bank_accounts SET is_default = TRUE WHERE id = $1;
+
+-- name: GetBankAccountsCount :one
+SELECT COUNT(*) FROM bank_accounts;

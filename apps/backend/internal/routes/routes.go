@@ -11,6 +11,7 @@ import (
 
 	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
 
+	bankaccounts "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/accounting/bank_accounts"
 	"github.com/suprimkhatri77/sms/backend/internal/handlers/admin/accounting/banks"
 	adminAnalytics "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/analytics"
 	adminCourses "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/courses"
@@ -160,11 +161,19 @@ func Setup(r *gin.Engine, cfg Config) {
 	adminInventoryRouter.GET("/summary", adminInventorySummary.GetInventorySummary(cfg.Queries))
 
 	adminAccountingRouter := adminRouter.Group("/accounting")
-	adminAccountingRouter.POST("/banks", banks.CreateBank(cfg.Queries))
-	adminAccountingRouter.PUT("/banks/:bankID", banks.UpdateBank(cfg.Queries))
-	adminAccountingRouter.DELETE("/banks/:bankID", banks.DeleteBank(cfg.Queries))
-	adminAccountingRouter.GET("/banks", banks.ListBanks(cfg.Queries))
-	adminAccountingRouter.PUT("/banks/set-default/:bankID", banks.SetDefaultBank(accountingRepository.NewBankTxRepository(cfg.Queries), cfg.PgxPool))
+	adminBankRouter := adminAccountingRouter.Group("/banks")
+	adminBankRouter.POST("", banks.CreateBank(cfg.Queries))
+	adminBankRouter.PUT("/:bankID", banks.UpdateBank(cfg.Queries))
+	adminBankRouter.DELETE("/:bankID", banks.DeleteBank(cfg.Queries))
+	adminBankRouter.GET("", banks.ListBanks(cfg.Queries))
+	adminBankRouter.PUT("/set-default/:bankID", banks.SetDefaultBank(accountingRepository.NewBankTxRepository(cfg.Queries), cfg.PgxPool))
+
+	adminBankAccountRouter := adminBankRouter.Group("/accounts")
+	adminBankAccountRouter.GET("", bankaccounts.ListBankAccounts(cfg.Queries))
+	adminBankAccountRouter.POST("/:bankID", bankaccounts.CreateBankAccount(cfg.Queries))
+	adminBankAccountRouter.PUT("/:bankID/accounts/:accountID", bankaccounts.UpdateBankAccount(cfg.Queries))
+	adminBankAccountRouter.DELETE("/:bankID/accounts/:accountID", bankaccounts.DeleteBankAccount(cfg.Queries))
+	adminBankAccountRouter.PUT("/:bankID/accounts/:accountID/set-default", bankaccounts.SetDefaultBankAccount(accountingRepository.NewBankAccountTxRepository(cfg.Queries), cfg.PgxPool))
 
 	// public student routes
 	studentRouter := router.Group("/students")
