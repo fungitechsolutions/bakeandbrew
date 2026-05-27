@@ -630,38 +630,6 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// function generateMockEntries(): LedgerEntry[] {
-//   const entries: LedgerEntry[] = [];
-//   const accountIds = MOCK_BANK_ACCOUNTS.map((a) => a.id);
-//   const baseDate = new Date("2024-01-01");
-
-//   for (let i = 0; i < 120; i++) {
-//     const date = new Date(baseDate);
-//     date.setDate(baseDate.getDate() + i);
-//     const isoDate = date.toISOString().split("T")[0];
-//     const bsDate = `${2080 + Math.floor(i / 365)}-${String(((date.getMonth() + 9) % 12) + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-
-//     entries.push({
-//       id: `le-${i + 1}`,
-//       bankAccountId: accountIds[i % accountIds.length],
-//       date: isoDate,
-//       bsDate,
-//       entryType: i % 3 === 0 ? "cr" : "dr",
-//       amount: Math.floor((Math.random() * 500000 + 10000) * 100), // paisa
-//       description: NARRATIONS[i % NARRATIONS.length],
-//       paymentId: i % 5 === 0 ? `pay-${i}` : null,
-//       createdAt: date.toISOString(),
-//     });
-//   }
-
-//   // Sort by date desc (matches backend ORDER BY bl.date DESC)
-//   return entries.sort(
-//     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-//   );
-// }
-
-// ─── Enrichment ──────────────────────────────────────────────────────────────
-
 export function enrichEntry(entry: LedgerEntry): LedgerEntryWithAccount {
   const account = MOCK_BANK_ACCOUNTS.find((a) => a.id === entry.bankAccountId);
   if (!account) {
@@ -679,8 +647,6 @@ export function computeSummary(entries: LedgerEntry[]): LedgerSummary {
   }
   return { totalCr, totalDr, netBalance: totalCr - totalDr };
 }
-
-// ─── Paginated Fetch (mirrors ListBankLedger + GetBankLedgerSummary) ─────────
 
 export const PAGE_SIZE = 20;
 
