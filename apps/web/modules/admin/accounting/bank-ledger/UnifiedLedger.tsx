@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useMemo, Suspense } from "react";
+import { useCallback, useRef, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { AlertCircle, RefreshCw } from "lucide-react";
@@ -38,8 +38,8 @@ function LedgerPageInner() {
 
   const filters: FilterState = { bankId, accountId };
 
-  // Sentinel ref for IntersectionObserver
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  // Ref for the scrollable table container — used for scroll-based infinite load
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   // ── Helper: update search params ─────────────────────────────────────────
 
@@ -116,25 +116,21 @@ function LedgerPageInner() {
   const totalCount = data?.pages[0]?.totalCount ?? 0;
   const hasReachedEnd = !hasNextPage && !isEntriesLoading;
 
-  // ── IntersectionObserver for infinite scroll ──────────────────────────────
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const first = entries[0];
-        if (first.isIntersecting && hasNextPage && !isFetchingNextPage) {
-          void fetchNextPage();
-        }
-      },
-      { threshold: 0.1, rootMargin: "80px" },
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+  // ── Scroll-based infinite load ───────────────────────────────────────────
+  // Attach to the scroll container's onScroll. When the user is within
+  // 200px of the bottom, fetch the next page.
+  const handleScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      if (!hasNextPage || isFetchingNextPage) return;
+      const el = e.currentTarget;
+      const distanceFromBottom =
+        el.scrollHeight - el.scrollTop - el.clientHeight;
+      if (distanceFromBottom < 200) {
+        void fetchNextPage();
+      }
+    },
+    [hasNextPage, isFetchingNextPage, fetchNextPage],
+  );
 
   // ── Derived state ─────────────────────────────────────────────────────────
 
@@ -195,7 +191,8 @@ function LedgerPageInner() {
           isFetchingNextPage={isFetchingNextPage}
           hasReachedEnd={hasReachedEnd}
           totalCount={totalCount}
-          sentinelRef={sentinelRef}
+          scrollContainerRef={scrollContainerRef}
+          onScroll={handleScroll}
           onCreateEntry={() => setFormOpen(true)}
           showBankColumns={true}
         />
@@ -212,8 +209,6 @@ function LedgerPageInner() {
     </div>
   );
 }
-
-// ─── Page export (Suspense boundary required for useSearchParams) ─────────────
 
 export default function UnifiedLedgerPage() {
   return (
