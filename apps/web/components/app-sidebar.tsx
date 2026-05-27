@@ -95,7 +95,7 @@ const data = {
         { title: "Banks", url: "/banks" },
         { title: "Bank Account", url: "/banks/accounts" },
         { title: "Suppliers", url: "/suppliers" },
-        { title: "Bank Ledger", url: "/bank-ledger" },
+        { title: "Bank Ledger", url: "/banks/ledger" },
         { title: "Cash ledger", url: "/cash-ledger" },
         { title: "Supplier ledger", url: "/supplier-ledger" },
       ],

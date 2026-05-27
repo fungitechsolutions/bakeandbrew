@@ -22,7 +22,7 @@ type CreateSupplierLedgerEntryParams struct {
 	Date        pgtype.Timestamptz `json:"date"`
 	BsDate      string             `json:"bsDate"`
 	EntryType   string             `json:"entryType"`
-	Amount      int32              `json:"amount"`
+	Amount      int64              `json:"amount"`
 	Description pgtype.Text        `json:"description"`
 	StockInID   pgtype.UUID        `json:"stockInId"`
 }
@@ -87,7 +87,7 @@ type GetSupplierLedgerEntryByIDRow struct {
 	Date         pgtype.Timestamptz `json:"date"`
 	BsDate       string             `json:"bsDate"`
 	EntryType    string             `json:"entryType"`
-	Amount       int32              `json:"amount"`
+	Amount       int64              `json:"amount"`
 	Description  pgtype.Text        `json:"description"`
 	StockInID    pgtype.UUID        `json:"stockInId"`
 	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
@@ -156,7 +156,7 @@ type ListSupplierLedgerRow struct {
 	Date         pgtype.Timestamptz `json:"date"`
 	BsDate       string             `json:"bsDate"`
 	EntryType    string             `json:"entryType"`
-	Amount       int32              `json:"amount"`
+	Amount       int64              `json:"amount"`
 	Description  pgtype.Text        `json:"description"`
 	StockInID    pgtype.UUID        `json:"stockInId"`
 	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
@@ -215,7 +215,7 @@ type ListSupplierLedgerByDateRangeRow struct {
 	Date         pgtype.Timestamptz `json:"date"`
 	BsDate       string             `json:"bsDate"`
 	EntryType    string             `json:"entryType"`
-	Amount       int32              `json:"amount"`
+	Amount       int64              `json:"amount"`
 	Description  pgtype.Text        `json:"description"`
 	StockInID    pgtype.UUID        `json:"stockInId"`
 	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
@@ -276,7 +276,7 @@ type ListSupplierLedgerBySupplierRow struct {
 	Date         pgtype.Timestamptz `json:"date"`
 	BsDate       string             `json:"bsDate"`
 	EntryType    string             `json:"entryType"`
-	Amount       int32              `json:"amount"`
+	Amount       int64              `json:"amount"`
 	Description  pgtype.Text        `json:"description"`
 	StockInID    pgtype.UUID        `json:"stockInId"`
 	CreatedAt    pgtype.Timestamptz `json:"createdAt"`

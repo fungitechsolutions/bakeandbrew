@@ -30,7 +30,7 @@ type BankLedger struct {
 	Date          pgtype.Timestamptz `json:"date"`
 	BsDate        string             `json:"bsDate"`
 	EntryType     string             `json:"entryType"`
-	Amount        int32              `json:"amount"`
+	Amount        int64              `json:"amount"`
 	Description   pgtype.Text        `json:"description"`
 	PaymentID     pgtype.UUID        `json:"paymentId"`
 	CreatedAt     pgtype.Timestamptz `json:"createdAt"`
@@ -41,7 +41,7 @@ type CashLedger struct {
 	Date        pgtype.Timestamptz `json:"date"`
 	BsDate      string             `json:"bsDate"`
 	EntryType   string             `json:"entryType"`
-	Amount      int32              `json:"amount"`
+	Amount      int64              `json:"amount"`
 	Description pgtype.Text        `json:"description"`
 	PaymentID   pgtype.UUID        `json:"paymentId"`
 	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
@@ -198,7 +198,7 @@ type SupplierLedger struct {
 	Date        pgtype.Timestamptz `json:"date"`
 	BsDate      string             `json:"bsDate"`
 	EntryType   string             `json:"entryType"`
-	Amount      int32              `json:"amount"`
+	Amount      int64              `json:"amount"`
 	Description pgtype.Text        `json:"description"`
 	StockInID   pgtype.UUID        `json:"stockInId"`
 	CreatedAt   pgtype.Timestamptz `json:"createdAt"`

@@ -22,7 +22,7 @@ type CreateBankLedgerEntryParams struct {
 	Date          pgtype.Timestamptz `json:"date"`
 	BsDate        string             `json:"bsDate"`
 	EntryType     string             `json:"entryType"`
-	Amount        int32              `json:"amount"`
+	Amount        int64              `json:"amount"`
 	Description   pgtype.Text        `json:"description"`
 	PaymentID     pgtype.UUID        `json:"paymentId"`
 }
@@ -90,7 +90,7 @@ type GetBankLedgerEntryByIDRow struct {
 	Date          pgtype.Timestamptz `json:"date"`
 	BsDate        string             `json:"bsDate"`
 	EntryType     string             `json:"entryType"`
-	Amount        int32              `json:"amount"`
+	Amount        int64              `json:"amount"`
 	Description   pgtype.Text        `json:"description"`
 	PaymentID     pgtype.UUID        `json:"paymentId"`
 	CreatedAt     pgtype.Timestamptz `json:"createdAt"`
@@ -116,6 +116,37 @@ func (q *Queries) GetBankLedgerEntryByID(ctx context.Context, id pgtype.UUID) (G
 		&i.AccountNumber,
 		&i.BankName,
 	)
+	return i, err
+}
+
+const getBankLedgerSummary = `-- name: GetBankLedgerSummary :one
+SELECT
+    COALESCE(SUM(amount) FILTER (WHERE entry_type = 'cr'), 0) AS total_cr,
+    COALESCE(SUM(amount) FILTER (WHERE entry_type = 'dr'), 0) AS total_dr,
+    COALESCE(SUM(amount) FILTER (WHERE entry_type = 'cr'), 0) -
+    COALESCE(SUM(amount) FILTER (WHERE entry_type = 'dr'), 0) AS balance
+FROM bank_ledger bl
+JOIN bank_accounts ba ON ba.id = bl.bank_account_id
+WHERE
+    ($1::uuid IS NULL OR bl.bank_account_id = $1::uuid)
+    AND ($2::uuid IS NULL OR ba.bank_id = $2::uuid)
+`
+
+type GetBankLedgerSummaryParams struct {
+	BankAccountID pgtype.UUID `json:"bankAccountId"`
+	BankID        pgtype.UUID `json:"bankId"`
+}
+
+type GetBankLedgerSummaryRow struct {
+	TotalCr interface{} `json:"totalCr"`
+	TotalDr interface{} `json:"totalDr"`
+	Balance int32       `json:"balance"`
+}
+
+func (q *Queries) GetBankLedgerSummary(ctx context.Context, arg GetBankLedgerSummaryParams) (GetBankLedgerSummaryRow, error) {
+	row := q.db.QueryRow(ctx, getBankLedgerSummary, arg.BankAccountID, arg.BankID)
+	var i GetBankLedgerSummaryRow
+	err := row.Scan(&i.TotalCr, &i.TotalDr, &i.Balance)
 	return i, err
 }
 
@@ -169,17 +200,23 @@ SELECT
     bl.id, bl.bank_account_id, bl.date, bl.bs_date, bl.entry_type, bl.amount, bl.description, bl.payment_id, bl.created_at,
     ba.account_name,
     ba.account_number,
-    b.name AS bank_name
+    b.name AS bank_name,
+    COUNT(*) OVER() AS total_count
 FROM bank_ledger bl
 JOIN bank_accounts ba ON ba.id = bl.bank_account_id
 JOIN banks b ON b.id = ba.bank_id
+WHERE
+    ($3::uuid IS NULL OR bl.bank_account_id = $3::uuid)
+    AND ($4::uuid IS NULL OR ba.bank_id = $4::uuid)
 ORDER BY bl.date DESC
 LIMIT $1 OFFSET $2
 `
 
 type ListBankLedgerParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+	Limit         int32       `json:"limit"`
+	Offset        int32       `json:"offset"`
+	BankAccountID pgtype.UUID `json:"bankAccountId"`
+	BankID        pgtype.UUID `json:"bankId"`
 }
 
 type ListBankLedgerRow struct {
@@ -188,17 +225,23 @@ type ListBankLedgerRow struct {
 	Date          pgtype.Timestamptz `json:"date"`
 	BsDate        string             `json:"bsDate"`
 	EntryType     string             `json:"entryType"`
-	Amount        int32              `json:"amount"`
+	Amount        int64              `json:"amount"`
 	Description   pgtype.Text        `json:"description"`
 	PaymentID     pgtype.UUID        `json:"paymentId"`
 	CreatedAt     pgtype.Timestamptz `json:"createdAt"`
 	AccountName   string             `json:"accountName"`
 	AccountNumber pgtype.Text        `json:"accountNumber"`
 	BankName      string             `json:"bankName"`
+	TotalCount    int64              `json:"totalCount"`
 }
 
 func (q *Queries) ListBankLedger(ctx context.Context, arg ListBankLedgerParams) ([]ListBankLedgerRow, error) {
-	rows, err := q.db.Query(ctx, listBankLedger, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listBankLedger,
+		arg.Limit,
+		arg.Offset,
+		arg.BankAccountID,
+		arg.BankID,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -219,6 +262,7 @@ func (q *Queries) ListBankLedger(ctx context.Context, arg ListBankLedgerParams) 
 			&i.AccountName,
 			&i.AccountNumber,
 			&i.BankName,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -235,7 +279,8 @@ SELECT
     bl.id, bl.bank_account_id, bl.date, bl.bs_date, bl.entry_type, bl.amount, bl.description, bl.payment_id, bl.created_at,
     ba.account_name,
     ba.account_number,
-    b.name AS bank_name
+    b.name AS bank_name,
+    COUNT(*) OVER() AS total_count
 FROM bank_ledger bl
 JOIN bank_accounts ba ON ba.id = bl.bank_account_id
 JOIN banks b ON b.id = ba.bank_id
@@ -256,13 +301,14 @@ type ListBankLedgerByAccountRow struct {
 	Date          pgtype.Timestamptz `json:"date"`
 	BsDate        string             `json:"bsDate"`
 	EntryType     string             `json:"entryType"`
-	Amount        int32              `json:"amount"`
+	Amount        int64              `json:"amount"`
 	Description   pgtype.Text        `json:"description"`
 	PaymentID     pgtype.UUID        `json:"paymentId"`
 	CreatedAt     pgtype.Timestamptz `json:"createdAt"`
 	AccountName   string             `json:"accountName"`
 	AccountNumber pgtype.Text        `json:"accountNumber"`
 	BankName      string             `json:"bankName"`
+	TotalCount    int64              `json:"totalCount"`
 }
 
 func (q *Queries) ListBankLedgerByAccount(ctx context.Context, arg ListBankLedgerByAccountParams) ([]ListBankLedgerByAccountRow, error) {
@@ -287,6 +333,7 @@ func (q *Queries) ListBankLedgerByAccount(ctx context.Context, arg ListBankLedge
 			&i.AccountName,
 			&i.AccountNumber,
 			&i.BankName,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -322,7 +369,7 @@ type ListBankLedgerByDateRangeRow struct {
 	Date          pgtype.Timestamptz `json:"date"`
 	BsDate        string             `json:"bsDate"`
 	EntryType     string             `json:"entryType"`
-	Amount        int32              `json:"amount"`
+	Amount        int64              `json:"amount"`
 	Description   pgtype.Text        `json:"description"`
 	PaymentID     pgtype.UUID        `json:"paymentId"`
 	CreatedAt     pgtype.Timestamptz `json:"createdAt"`

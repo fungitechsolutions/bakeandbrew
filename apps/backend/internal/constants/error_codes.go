@@ -32,6 +32,9 @@ const (
 	InvalidStudentStatus = "INVALID_STUDENT_STATUS"
 	StudentNotRegistered = "STUDENT_NOT_REGISTERED"
 
+	// student payments
+	PaymentNotFound = "PAYMENT_NOT_FOUND"
+
 	// course
 	CourseNotFound      = "COURSE_NOT_FOUND"
 	MissingCourseID     = "MISSING_COURSE_ID"
