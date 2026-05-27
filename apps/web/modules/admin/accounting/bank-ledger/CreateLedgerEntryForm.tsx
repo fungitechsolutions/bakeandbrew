@@ -115,9 +115,8 @@ export function CreateLedgerEntryForm({
         date: new Date(parsed.data.date).toISOString(),
         bsDate: parsed.data.bsDate,
         entryType: parsed.data.entryType,
-        amount: Math.round(parsed.data.amountRs * 100),
-        description: parsed.data.description ?? null,
-        paymentId: null,
+        amountRs: Math.round(parsed.data.amountRs * 100),
+        description: parsed.data.description ?? undefined,
       });
       toast.success("Entry created", {
         description: "The ledger entry has been recorded successfully.",
