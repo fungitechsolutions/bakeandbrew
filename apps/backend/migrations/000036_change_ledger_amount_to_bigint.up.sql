@@ -1,0 +1,3 @@
+ALTER TABLE cash_ledger ALTER COLUMN amount TYPE BIGINT;
+ALTER TABLE bank_ledger ALTER COLUMN amount TYPE BIGINT;
+ALTER TABLE supplier_ledger ALTER COLUMN amount TYPE BIGINT;

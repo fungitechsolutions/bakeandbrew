@@ -13,7 +13,7 @@ import { InquiryStatsSkeleton } from "./InquiryStats";
 export function AnalyticsSkeleton() {
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-8xl">
         {/* Header skeleton */}
         <div className="mb-8">
           <div className="h-7 w-48 animate-pulse rounded bg-slate-100" />

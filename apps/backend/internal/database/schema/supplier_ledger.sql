@@ -4,7 +4,7 @@ CREATE TABLE supplier_ledger (
     date TIMESTAMPTZ NOT NULL,
     bs_date TEXT NOT NULL,
     entry_type TEXT NOT NULL CHECK (entry_type IN ('dr', 'cr')),
-    amount INTEGER NOT NULL CHECK (amount > 0),
+    amount BIGINT NOT NULL CHECK (amount > 0),
     description TEXT,
     stock_in_id UUID REFERENCES stock_in(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
