@@ -15,8 +15,7 @@ import (
 )
 
 type UpdateBankRequest struct {
-	Name      string `json:"name" binding:"required,notblank,min=2,max=100"`
-	IsDefault *bool  `json:"isDefault" binding:"required"`
+	Name string `json:"name" binding:"required,notblank,min=2,max=100"`
 }
 
 func UpdateBank(queries accountingRepository.BankRepository) gin.HandlerFunc {
@@ -57,9 +56,8 @@ func UpdateBank(queries accountingRepository.BankRepository) gin.HandlerFunc {
 		utils.TrimStruct(&req)
 
 		bank, err := queries.UpdateBank(ctx, db.UpdateBankParams{
-			Name:      req.Name,
-			IsDefault: *req.IsDefault,
-			ID:        bankID,
+			Name: req.Name,
+			ID:   bankID,
 		})
 
 		if err != nil {
