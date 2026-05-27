@@ -1,6 +1,6 @@
 -- name: CreateBank :one
-INSERT INTO banks (name, is_default)
-VALUES ($1, $2)
+INSERT INTO banks (name)
+VALUES ($1)
 RETURNING *;
 
 -- name: GetBankByID :one
@@ -14,7 +14,7 @@ SELECT * FROM banks ORDER BY created_at DESC LIMIT $1 OFFSET $2;
 
 -- name: UpdateBank :one
 UPDATE banks
-SET name = $2, is_default = $3
+SET name = $2
 WHERE id = $1
 RETURNING *;
 

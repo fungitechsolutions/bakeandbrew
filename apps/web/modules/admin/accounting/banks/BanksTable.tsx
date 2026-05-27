@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { BankRow } from "./BanksRow";
-import type { Bank, PaginationMeta } from "./types";
+import { Bank, PaginationMeta } from "@repo/types";
 
 interface BanksTableProps {
   banks: Bank[];
@@ -23,9 +23,9 @@ export function BanksTable({
   onToggleDefault,
   onPageChange,
 }: BanksTableProps) {
-  const { page, total_pages, total, per_page } = meta;
-  const startItem = (page - 1) * per_page + 1;
-  const endItem = Math.min(page * per_page, total);
+  const { page, totalPages, total, limit } = meta;
+  const startItem = (page - 1) * limit + 1;
+  const endItem = Math.min(page * limit, total);
 
   return (
     <div className="rounded-xl border border-stone-200 overflow-hidden bg-white shadow-sm">
@@ -65,12 +65,12 @@ export function BanksTable({
       {/* Pagination */}
       <div className="flex items-center justify-between flex-wrap gap-3 px-5 py-3 border-t border-stone-100 bg-stone-50">
         <span className="text-xs text-stone-400 font-[family-name:var(--font-dm-sans)]">
-          {total_pages > 1
+          {totalPages > 1
             ? `${startItem}–${endItem} of ${total} banks`
             : `${total} ${total === 1 ? "bank" : "banks"} total`}
         </span>
 
-        {total_pages > 1 && (
+        {totalPages > 1 && (
           <div className="flex items-center gap-1">
             <PageBtn
               onClick={() => onPageChange(page - 1)}
@@ -80,7 +80,7 @@ export function BanksTable({
               <ChevronLeft size={14} />
             </PageBtn>
 
-            {Array.from({ length: total_pages }, (_, i) => i + 1).map((p) => (
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
               <PageBtn
                 key={p}
                 onClick={() => onPageChange(p)}
@@ -94,7 +94,7 @@ export function BanksTable({
 
             <PageBtn
               onClick={() => onPageChange(page + 1)}
-              disabled={page >= total_pages}
+              disabled={page >= totalPages}
               aria-label="Next page"
             >
               <ChevronRight size={14} />

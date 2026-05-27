@@ -11,7 +11,7 @@ import (
 )
 
 type BankRepository interface {
-	CreateBank(ctx context.Context, params db.CreateBankParams) (db.Bank, error)
+	CreateBank(ctx context.Context, name string) (db.Bank, error)
 	UpdateBank(ctx context.Context, params db.UpdateBankParams) (db.Bank, error)
 	DeleteBank(ctx context.Context, id pgtype.UUID) (pgconn.CommandTag, error)
 	ListBanks(ctx context.Context, params db.ListBanksParams) ([]db.Bank, error)

@@ -13,18 +13,13 @@ import (
 )
 
 const createBank = `-- name: CreateBank :one
-INSERT INTO banks (name, is_default)
-VALUES ($1, $2)
+INSERT INTO banks (name)
+VALUES ($1)
 RETURNING id, name, is_default, created_at
 `
 
-type CreateBankParams struct {
-	Name      string `json:"name"`
-	IsDefault bool   `json:"isDefault"`
-}
-
-func (q *Queries) CreateBank(ctx context.Context, arg CreateBankParams) (Bank, error) {
-	row := q.db.QueryRow(ctx, createBank, arg.Name, arg.IsDefault)
+func (q *Queries) CreateBank(ctx context.Context, name string) (Bank, error) {
+	row := q.db.QueryRow(ctx, createBank, name)
 	var i Bank
 	err := row.Scan(
 		&i.ID,
@@ -139,19 +134,18 @@ func (q *Queries) UnsetDefaultBank(ctx context.Context) error {
 
 const updateBank = `-- name: UpdateBank :one
 UPDATE banks
-SET name = $2, is_default = $3
+SET name = $2
 WHERE id = $1
 RETURNING id, name, is_default, created_at
 `
 
 type UpdateBankParams struct {
-	ID        pgtype.UUID `json:"id"`
-	Name      string      `json:"name"`
-	IsDefault bool        `json:"isDefault"`
+	ID   pgtype.UUID `json:"id"`
+	Name string      `json:"name"`
 }
 
 func (q *Queries) UpdateBank(ctx context.Context, arg UpdateBankParams) (Bank, error) {
-	row := q.db.QueryRow(ctx, updateBank, arg.ID, arg.Name, arg.IsDefault)
+	row := q.db.QueryRow(ctx, updateBank, arg.ID, arg.Name)
 	var i Bank
 	err := row.Scan(
 		&i.ID,

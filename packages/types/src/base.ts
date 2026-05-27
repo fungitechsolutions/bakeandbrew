@@ -42,3 +42,12 @@ const baseErrorResponse = z.object({
 });
 
 export type BaseErrorResponse = z.infer<typeof baseErrorResponse>;
+
+export const paginationMetaSchema = z.object({
+  total: z.number(),
+  page: z.number(),
+  totalPages: z.number(),
+  limit: z.number(),
+});
+
+export type PaginationMeta = z.infer<typeof paginationMetaSchema>;

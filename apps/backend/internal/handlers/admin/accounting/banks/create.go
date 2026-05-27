@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
-	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
 	accountingRepository "github.com/suprimkhatri77/sms/backend/internal/repository/accounting"
 	"github.com/suprimkhatri77/sms/backend/internal/types"
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
@@ -15,8 +14,7 @@ import (
 )
 
 type CreateBankRequest struct {
-	Name      string `json:"name" binding:"required,notblank,min=2,max=100"`
-	IsDefault *bool  `json:"isDefault" binding:"required"`
+	Name string `json:"name" binding:"required,notblank,min=2,max=100"`
 }
 
 func CreateBank(queries accountingRepository.BankRepository) gin.HandlerFunc {
@@ -36,10 +34,7 @@ func CreateBank(queries accountingRepository.BankRepository) gin.HandlerFunc {
 
 		utils.TrimStruct(&req)
 
-		bank, err := queries.CreateBank(ctx, db.CreateBankParams{
-			Name:      req.Name,
-			IsDefault: *req.IsDefault,
-		})
+		bank, err := queries.CreateBank(ctx, req.Name)
 
 		if err != nil {
 			var pgErr *pgconn.PgError

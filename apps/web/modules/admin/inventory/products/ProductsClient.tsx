@@ -95,6 +95,7 @@ export function ProductsClient() {
       });
       const previousProducts = queryClient.getQueryData<GetProductResponse>([
         "admin-inventory-products",
+        page,
       ]);
       const optimisticProduct = {
         id: crypto.randomUUID(),
@@ -104,7 +105,7 @@ export function ProductsClient() {
       };
 
       queryClient.setQueryData<GetProductResponse>(
-        ["admin-inventory-products"],
+        ["admin-inventory-products", page],
         (old) => {
           if (!old || !old.success) return old;
           return {
@@ -168,6 +169,7 @@ export function ProductsClient() {
       });
       const previousProducts = queryClient.getQueryData<GetProductResponse>([
         "admin-inventory-products",
+        page,
       ]);
       const optimisticProduct = {
         id: data.id,
@@ -177,7 +179,7 @@ export function ProductsClient() {
       };
 
       queryClient.setQueryData<GetProductResponse>(
-        ["admin-inventory-products"],
+        ["admin-inventory-products", page],
         (old) => {
           if (!old || !old.success) return old;
           return {

@@ -16,6 +16,7 @@ export {
   type APIResponse,
   type APIError,
   type BaseErrorResponse,
+  type PaginationMeta,
 } from "./base";
 
 export {
@@ -132,3 +133,16 @@ export { type GetStudentPendingOverviewResponse } from "./student_portal/pending
 export { type GetStudentRejectedOverviewResponse } from "./student_portal/rejected-overview";
 export { type GetStudentDiscountsResponse } from "./student_portal/discounts";
 export { type GetStudentPortalScholarshipResponse } from "./student_portal/scholarship";
+
+export {
+  createBankInputSchema,
+  updateBankInputSchema,
+  type CreateBankInput,
+  type UpdateBankInput,
+  type CreateBankResponse,
+  type UpdateBankResponse,
+  type GetBanksResponse,
+  type DeleteBankResponse,
+  type SetDefaultBankResponse,
+  type Bank,
+} from "./admin/accounting/bank";

@@ -9,6 +9,14 @@ import {
   GhostButton,
   PrimaryButton,
 } from "./DialogPrimitives";
+import {
+  CreateBankInput,
+  createBankInputSchema,
+} from "@repo/types/admin/accounting/bank";
+import { useForm } from "@tanstack/react-form-nextjs";
+import { AxiosError } from "axios";
+import { ApiError } from "@/lib/axios";
+import { mapFieldErrors } from "@/utils/api";
 
 interface BankCreateDialogProps {
   open: boolean;
@@ -23,41 +31,43 @@ export function BankCreateDialog({
   onClose,
   onCreate,
 }: BankCreateDialogProps) {
-  const [name, setName] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<keyof CreateBankInput, string>>
+  >({});
 
   useEffect(() => {
     if (!open) return;
 
-    const id = requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
       inputRef.current?.focus();
     });
   }, [open]);
 
   const handleClose = () => {
-    setName("");
-    setError(null);
     onClose();
   };
 
-  const handleSubmit = async () => {
-    const trimmed = name.trim();
-    if (!trimmed) {
-      setError("Bank name is required.");
-      return;
-    }
-    setError(null);
-    try {
-      await onCreate(trimmed);
-      setName("");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
-    }
-  };
-
+  const form = useForm({
+    defaultValues: { name: "" },
+    validators: { onSubmit: createBankInputSchema },
+    onSubmit: async ({ value, formApi }) => {
+      setFieldErrors({});
+      try {
+        await onCreate(value.name);
+        formApi.reset();
+        onClose();
+      } catch (err) {
+        const error = err as AxiosError<ApiError>;
+        const data = error.response?.data;
+        if (data?.errors?.length) {
+          setFieldErrors(mapFieldErrors(data));
+        }
+      }
+    },
+  });
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleSubmit();
+    if (e.key === "Enter") form.handleSubmit();
     if (e.key === "Escape") onClose();
   };
 
@@ -72,30 +82,32 @@ export function BankCreateDialog({
         title="Add Bank"
         onClose={handleClose}
       />
-      <div className="px-6 py-5">
-        <DialogField
-          id="create-bank-name"
-          label="Bank Name"
-          value={name}
-          onChange={(v) => {
-            setName(v);
-            if (error) setError(null);
-          }}
-          onKeyDown={handleKeyDown}
-          placeholder="e.g. Nepal Investment Mega Bank"
-          disabled={loading}
-          error={error}
-          inputRef={inputRef}
-        />
-      </div>
+      <form.Field name="name">
+        {(field) => {
+          const fieldError = field.state.meta.errors[0]?.message;
+          const mergedError = fieldError ?? fieldErrors.name;
+          return (
+            <div className="px-6 py-5">
+              <DialogField
+                id="create-bank-name"
+                label="Bank Name"
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e)}
+                onKeyDown={handleKeyDown}
+                placeholder="e.g. Nepal Investment Mega Bank"
+                disabled={loading}
+                error={mergedError}
+                inputRef={inputRef}
+              />
+            </div>
+          );
+        }}
+      </form.Field>
       <DialogFooter>
         <GhostButton onClick={handleClose} disabled={loading}>
           Cancel
         </GhostButton>
-        <PrimaryButton
-          onClick={handleSubmit}
-          disabled={loading || !name.trim()}
-        >
+        <PrimaryButton onClick={form.handleSubmit} disabled={loading}>
           {loading ? "Adding…" : "Add Bank"}
         </PrimaryButton>
       </DialogFooter>

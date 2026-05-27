@@ -7,7 +7,7 @@ import {
   DialogFooter,
   GhostButton,
 } from "./DialogPrimitives";
-import { Bank } from "./types";
+import { Bank } from "@repo/types";
 
 interface BankDeleteDialogProps {
   bank: Bank | null;
@@ -54,7 +54,12 @@ export function BankDeleteDialog({
           Cancel
         </GhostButton>
         <button
-          onClick={() => bank && onConfirm(bank.id)}
+          onClick={async () => {
+            if (!bank) return;
+
+            await onConfirm(bank.id);
+            onClose();
+          }}
           disabled={loading}
           className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium font-[family-name:var(--font-dm-sans)] hover:bg-red-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >

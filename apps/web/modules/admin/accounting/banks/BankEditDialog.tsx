@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   DialogWrapper,
   DialogHeader,
@@ -9,7 +9,15 @@ import {
   GhostButton,
   PrimaryButton,
 } from "./DialogPrimitives";
-import { Bank } from "./types";
+import { Bank } from "@repo/types";
+import {
+  UpdateBankInput,
+  updateBankInputSchema,
+} from "@repo/types/admin/accounting/bank";
+import { useForm } from "@tanstack/react-form-nextjs";
+import { ApiError } from "@/lib/axios";
+import { AxiosError } from "axios";
+import { mapFieldErrors } from "@/utils/api";
 
 interface BankEditDialogProps {
   bank: Bank | null;
@@ -24,39 +32,49 @@ export function BankEditDialog({
   onClose,
   onSave,
 }: BankEditDialogProps) {
-  const [name, setName] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<
+    Partial<Record<keyof UpdateBankInput, string>>
+  >({});
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const form = useForm({
+    defaultValues: {
+      name: bank?.name ?? "",
+    },
+    validators: {
+      onSubmit: updateBankInputSchema,
+    },
+    onSubmit: async ({ value, formApi }) => {
+      if (!bank) return;
+      try {
+        await onSave(bank.id, value.name);
+        formApi.reset();
+        onClose();
+      } catch (err) {
+        const error = err as AxiosError<ApiError>;
+        const data = error.response?.data;
+        if (data?.errors?.length) {
+          setError(mapFieldErrors(data));
+        }
+      }
+    },
+  });
 
   useEffect(() => {
     if (bank) {
-      setName(bank.name);
-      setError(null);
-      setTimeout(() => inputRef.current?.focus(), 60);
+      form.reset({
+        name: bank.name,
+      });
+      setTimeout(() => {
+        setError({});
+      }, 0);
     }
   }, [bank]);
 
-  const handleSubmit = async () => {
-    if (!bank) return;
-    const trimmed = name.trim();
-    if (!trimmed) {
-      setError("Bank name is required.");
-      return;
-    }
-    setError(null);
-    try {
-      await onSave(bank.id, trimmed);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
-    }
-  };
-
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleSubmit();
+    if (e.key === "Enter") form.handleSubmit();
     if (e.key === "Escape") onClose();
   };
-
-  const unchanged = name.trim() === bank?.name;
 
   return (
     <DialogWrapper
@@ -69,32 +87,42 @@ export function BankEditDialog({
         title="Edit Bank"
         onClose={onClose}
       />
-      <div className="px-6 py-5">
-        <DialogField
-          id="edit-bank-name"
-          label="Bank Name"
-          value={name}
-          onChange={(v) => {
-            setName(v);
-            if (error) setError(null);
-          }}
-          onKeyDown={handleKeyDown}
-          disabled={loading}
-          error={error}
-          inputRef={inputRef}
-        />
-      </div>
-      <DialogFooter>
-        <GhostButton onClick={onClose} disabled={loading}>
-          Cancel
-        </GhostButton>
-        <PrimaryButton
-          onClick={handleSubmit}
-          disabled={loading || !name.trim() || unchanged}
-        >
-          {loading ? "Saving…" : "Save Changes"}
-        </PrimaryButton>
-      </DialogFooter>
+      <form.Field name="name">
+        {(field) => {
+          const fieldError = field.state.meta.errors[0]?.message;
+          const mergedError = fieldError ?? error.name;
+          const unchanged = field.state.value.trim() === bank?.name;
+          return (
+            <>
+              <div className="px-6 py-5">
+                <DialogField
+                  id="edit-bank-name"
+                  label="Bank Name"
+                  value={field.state.value}
+                  onChange={(v) => {
+                    field.handleChange(v);
+                  }}
+                  onKeyDown={handleKeyDown}
+                  disabled={loading}
+                  error={mergedError}
+                  inputRef={inputRef}
+                />
+              </div>
+              <DialogFooter>
+                <GhostButton onClick={onClose} disabled={loading}>
+                  Cancel
+                </GhostButton>
+                <PrimaryButton
+                  onClick={form.handleSubmit}
+                  disabled={loading || unchanged || !field.state.value.trim()}
+                >
+                  {loading ? "Saving…" : "Save Changes"}
+                </PrimaryButton>
+              </DialogFooter>
+            </>
+          );
+        }}
+      </form.Field>
     </DialogWrapper>
   );
 }

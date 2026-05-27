@@ -1,8 +1,8 @@
 "use client";
 
 import { Pencil, Trash2 } from "lucide-react";
-import { Bank } from "./types";
 import { BankDefaultToggle } from "./BankDefaultToggle";
+import { Bank } from "@repo/types";
 
 interface BankRowProps {
   bank: Bank;
@@ -32,7 +32,7 @@ export function BankRow({
       className={[
         "grid grid-cols-[1fr_90px_160px_80px] gap-4 items-center px-5 py-3.5",
         "border-b border-stone-100 last:border-0 transition-colors",
-        bank.is_default
+        bank.isDefault
           ? "bg-emerald-50/60 hover:bg-emerald-50"
           : "hover:bg-stone-50",
       ].join(" ")}
@@ -43,7 +43,7 @@ export function BankRow({
         <span className="text-sm font-medium text-[#1a1a1a] font-[family-name:var(--font-dm-sans)] truncate">
           {bank.name}
         </span>
-        {bank.is_default && (
+        {bank.isDefault && (
           <span className="shrink-0 text-[0.65rem] font-semibold uppercase tracking-wider text-[#2f4e40] bg-[#2f4e40]/10 border border-[#2f4e40]/20 px-2 py-0.5 rounded-full">
             Default
           </span>
@@ -54,7 +54,7 @@ export function BankRow({
       <div role="cell">
         <BankDefaultToggle
           bankId={bank.id}
-          isDefault={bank.is_default}
+          isDefault={bank.isDefault}
           loading={toggleLoadingId === bank.id}
           onToggle={onToggleDefault}
         />
@@ -63,7 +63,7 @@ export function BankRow({
       {/* Date */}
       <div role="cell">
         <span className="text-[0.8125rem] text-stone-400 font-[family-name:var(--font-dm-sans)]">
-          {formatDate(bank.created_at)}
+          {formatDate(bank.createdAt)}
         </span>
       </div>
 

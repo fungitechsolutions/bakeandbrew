@@ -1,6 +1,23 @@
 import axios from "axios";
 import type { AxiosInstance, InternalAxiosRequestConfig } from "axios";
 
+export type ApiError = {
+  success: false;
+  message: string;
+  code: string;
+  errors?: {
+    code: string;
+    field: string;
+    message: string;
+  }[];
+};
+
+export type ApiSuccess<T> = {
+  success: true;
+  message: string;
+  data: T;
+};
+
 const AUTH_ENDPOINTS = ["/auth/refresh", "/auth/login", "/auth/logout"];
 const CookieDomain = process.env.NEXT_PUBLIC_COOKIE_DOMAIN || "";
 const api: AxiosInstance = axios.create({

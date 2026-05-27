@@ -11,7 +11,7 @@ export type ApiError = {
   }[];
 };
 
-export type ApiSuccess<T = undefined> = {
+export type ApiSuccess<T> = {
   success: true;
   message: string;
   data?: T;
