@@ -8,4 +8,7 @@ import (
 
 type BankLedgerRepository interface {
 	CreateBankLedgerEntry(ctx context.Context, params db.CreateBankLedgerEntryParams) (db.BankLedger, error)
+	GetBankLedgerSummary(ctx context.Context, params db.GetBankLedgerSummaryParams) (db.GetBankLedgerSummaryRow, error)
+	ListBankLedger(ctx context.Context, params db.ListBankLedgerParams) ([]db.ListBankLedgerRow, error)
+	GetBankLedgerCount(ctx context.Context) (int64, error)
 }

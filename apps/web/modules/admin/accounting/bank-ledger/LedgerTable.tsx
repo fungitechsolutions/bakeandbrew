@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LedgerEntryRow } from "./LedgerEntryRow";
 import { EmptyLedgerState } from "./EmptyLedgerState";
@@ -8,16 +10,12 @@ import type { LedgerEntryWithAccount } from "./ledger";
 
 interface LedgerTableProps {
   entries: LedgerEntryWithAccount[];
-  /** True only on the very first load (no data yet) */
   initialLoading: boolean;
-  /** True when fetching the next page */
   isFetchingNextPage: boolean;
-  /** No more pages to fetch */
   hasReachedEnd: boolean;
-  /** Total count from server */
   totalCount: number;
-  /** Ref to attach to the sentinel div at the bottom of the scroll area */
-  sentinelRef: React.RefObject<HTMLDivElement | null>;
+  scrollContainerRef: React.RefObject<HTMLDivElement | null>;
+  onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   onCreateEntry: () => void;
   showBankColumns?: boolean;
 }
@@ -28,7 +26,8 @@ export function LedgerTable({
   isFetchingNextPage,
   hasReachedEnd,
   totalCount,
-  sentinelRef,
+  scrollContainerRef,
+  onScroll,
   onCreateEntry,
   showBankColumns = true,
 }: LedgerTableProps) {
@@ -48,18 +47,27 @@ export function LedgerTable({
       maximumFractionDigits: 2,
     });
 
+  useEffect(() => {
+    if (hasReachedEnd && entries.length > 0) {
+      toast.info(`All ${totalCount} entries loaded`);
+    }
+  }, [hasReachedEnd, entries.length, totalCount]);
+
   return (
     <div
-      className="rounded-xl border flex flex-col"
+      className="rounded-xl border flex flex-col overflow-hidden"
       style={{
         borderColor: "#e5e0d6",
-        // Fill remaining viewport height; adjust the offset to match your page chrome
         height: "calc(100vh - 360px)",
         minHeight: "320px",
       }}
     >
-      {/* Single scrollable region — thead is sticky inside it */}
-      <div className="flex-1 overflow-auto">
+      {/* Scrollable region — thead + tfoot sticky inside it */}
+      <div
+        ref={scrollContainerRef}
+        onScroll={onScroll}
+        className="flex-1 overflow-auto"
+      >
         <table className="w-full text-left text-sm border-collapse">
           <thead>
             <tr
@@ -67,7 +75,6 @@ export function LedgerTable({
               style={{
                 backgroundColor: "var(--brand-green)",
                 color: "var(--brand-cream)",
-                // Stick to the top of the scroll container
                 position: "sticky",
                 top: 0,
                 zIndex: 1,
@@ -82,10 +89,10 @@ export function LedgerTable({
                 </>
               )}
               <th className="px-4 py-3 w-10 text-center">D/C</th>
-              <th className="px-4 py-3 text-right whitespace-nowrap w-36">
+              <th className="px-4 py-3 text-right whitespace-nowrap">
                 Debit (Rs.)
               </th>
-              <th className="px-4 py-3 text-right whitespace-nowrap w-36">
+              <th className="px-4 py-3 text-right whitespace-nowrap">
                 Credit (Rs.)
               </th>
               <th className="px-4 py-3">Narration</th>
@@ -128,43 +135,28 @@ export function LedgerTable({
               ))
             )}
           </tbody>
-        </table>
 
-        {/* Infinite scroll sentinel */}
-        <div
-          ref={sentinelRef}
-          className="flex items-center justify-center py-3"
-        >
-          {isFetchingNextPage && (
-            <span
-              className="flex items-center gap-2 text-xs"
-              style={{ color: "#9ca3af" }}
-            >
-              <Loader2 size={14} className="animate-spin" />
-              Loading more entries...
-            </span>
-          )}
-          {hasReachedEnd && entries.length > 0 && (
-            <span className="text-xs" style={{ color: "#9ca3af" }}>
-              All {totalCount} entries loaded
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* ── Footer totals — outside scroll area so it stays pinned ── */}
-      {!initialLoading && entries.length > 0 && (
-        <div
-          className="flex-shrink-0 border-t overflow-auto"
-          style={{ borderColor: "#e5e0d6" }}
-        >
-          <table className="w-full text-left text-sm border-collapse">
-            <tfoot>
+          {/* tfoot inside same table so columns align with thead */}
+          {!initialLoading && entries.length > 0 && (
+            <tfoot style={{ position: "sticky", bottom: 0, zIndex: 1 }}>
+              {isFetchingNextPage && (
+                <tr style={{ backgroundColor: "#faf9f6" }}>
+                  <td colSpan={colSpan} className="px-4 py-2 text-center">
+                    <span
+                      className="flex items-center justify-center gap-2 text-xs"
+                      style={{ color: "#9ca3af" }}
+                    >
+                      <Loader2 size={13} className="animate-spin" />
+                      Loading more entries...
+                    </span>
+                  </td>
+                </tr>
+              )}
               <tr
-                className="text-xs font-semibold"
+                className="text-xs font-semibold border-t"
                 style={{
                   backgroundColor: "#f5f3ef",
-                  color: "var(--brand-ink)",
+                  borderColor: "#e5e0d6",
                 }}
               >
                 <td
@@ -175,13 +167,13 @@ export function LedgerTable({
                   Loaded Total ({entries.length} of {totalCount})
                 </td>
                 <td
-                  className="px-4 py-2 text-right font-mono w-36"
+                  className="px-4 py-2 text-right font-mono"
                   style={{ color: "#dc2626" }}
                 >
                   {fmt(totalDebit)}
                 </td>
                 <td
-                  className="px-4 py-2 text-right font-mono w-36"
+                  className="px-4 py-2 text-right font-mono"
                   style={{ color: "#16a34a" }}
                 >
                   {fmt(totalCredit)}
@@ -189,9 +181,9 @@ export function LedgerTable({
                 <td />
               </tr>
             </tfoot>
-          </table>
-        </div>
-      )}
+          )}
+        </table>
+      </div>
     </div>
   );
 }

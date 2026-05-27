@@ -40,13 +40,12 @@ export function LedgerFilters({
       ? accounts
       : accounts.filter((a) => a.bankId === filters.bankId);
 
-  function handleBankChange(value: string) {
-    // shadcn Select always provides a string when a value is selected
-    onChange({ bankId: value, accountId: "all" });
+  function handleBankChange(value: string | null) {
+    onChange({ bankId: value ?? "all", accountId: "all" });
   }
 
-  function handleAccountChange(value: string) {
-    onChange({ ...filters, accountId: value });
+  function handleAccountChange(value: string | null) {
+    onChange({ ...filters, accountId: value ?? "all" });
   }
 
   return (
