@@ -38,5 +38,13 @@ func Init() {
 		v.RegisterValidation("notblank", func(fl validator.FieldLevel) bool {
 			return strings.TrimSpace(fl.Field().String()) != ""
 		})
+
+		v.RegisterValidation("bs_date", func(fl validator.FieldLevel) bool {
+			matched, _ := regexp.MatchString(
+				`^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[012])$`,
+				fl.Field().String(),
+			)
+			return matched
+		})
 	})
 }
