@@ -2,7 +2,7 @@ const SKELETON_ROWS = 5;
 
 export function CoursesLoading() {
   return (
-    <div className="max-w-240 mx-auto p-8 px-4">
+    <div className="mx-auto p-8 px-4">
       {/* Toolbar skeleton */}
       <div className="mb-4 h-9 w-64 animate-pulse rounded-lg bg-gray-200" />
 

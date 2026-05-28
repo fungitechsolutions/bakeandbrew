@@ -29,3 +29,6 @@ DELETE FROM banks WHERE id = $1;
 
 -- name: GetBanksCount :one
 SELECT COUNT(*) FROM banks;
+
+-- name: IsBankDefault :one
+SELECT is_default FROM banks WHERE id = $1;

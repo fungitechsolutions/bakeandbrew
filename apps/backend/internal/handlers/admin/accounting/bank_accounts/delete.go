@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
 	accountingRepository "github.com/suprimkhatri77/sms/backend/internal/repository/accounting"
@@ -23,6 +24,33 @@ func DeleteBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 				Success: false,
 				Message: "Invalid ID format",
 				Code:    constants.InvalidIDFormat,
+			})
+			return
+		}
+
+		isDefault, err := queries.IsBankAccountDefault(ctx, accountID)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				c.JSON(http.StatusNotFound, types.APIResponse{
+					Success: false,
+					Message: "Bank account not found",
+					Code:    constants.BankAccountNotFound,
+				})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, types.APIResponse{
+				Success: false,
+				Message: "Failed to process request",
+				Code:    constants.InternalServerError,
+			})
+			return
+		}
+
+		if isDefault {
+			c.JSON(http.StatusConflict, types.APIResponse{
+				Success: false,
+				Message: "Cannot delete default bank account. Set another account as default first.",
+				Code:    constants.CannotDeleteDefaultBankAccount,
 			})
 			return
 		}

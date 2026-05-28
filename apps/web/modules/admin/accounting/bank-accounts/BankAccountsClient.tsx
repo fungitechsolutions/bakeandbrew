@@ -1,20 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { Plus } from "lucide-react";
 
-import {
-  fetchBankAccounts,
-  fetchBankOptions,
-  createBankAccount,
-  updateBankAccount,
-  toggleAccountDefault,
-  deleteBankAccount,
-  type CreateBankAccountPayload,
-  type UpdateBankAccountPayload,
-} from "./mock-api";
-
-import type { BankAccount, BankAccountsResponse, BankOption } from "./types";
 import { BankAccountSkeleton } from "./BankAccountSkeleton";
 import { BankAccountsError } from "./BankAccountsError";
 import { BankAccountsEmpty } from "./BankAccountEmpty";
@@ -22,100 +10,64 @@ import { BankAccountsTable } from "./BankAccountsTable";
 import { BankAccountCreateDialog } from "./BankAccountCreateDialog";
 import { BankAccountEditDialog } from "./BankAccountEditDialog";
 import { BankAccountDeleteDialog } from "./BankAccountDeleteDialog";
-import { MOCK_BANK_OPTIONS } from "./mock-data";
-
-type LoadState = "loading" | "idle" | "error";
+import { useBankAccounts } from "@/hooks/queries/bank_accounts/useBankAccounts";
+import {
+  BankAccount,
+  CreateBankAccountInput,
+  UpdateBankAccountInput,
+} from "@repo/types";
+import { useBanks } from "@/hooks/queries/bank_accounts/useBanks";
+import { useCreateBankAccount } from "@/hooks/mutations/admin/bank_accounts/useCreateBankAccount";
+import { useUpdateBankAccount } from "@/hooks/mutations/admin/bank_accounts/useUpdateBankAccount";
+import { useDeleteBankAccount } from "@/hooks/mutations/admin/bank_accounts/useDeleteBankAccount";
+import { useSetDefaultBankAccount } from "@/hooks/mutations/admin/bank_accounts/useSetDefaultBankAccount";
 
 export function BankAccountsClient() {
-  const [loadState, setLoadState] = useState<LoadState>("loading");
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [response, setResponse] = useState<BankAccountsResponse | null>(null);
   const [page, setPage] = useState(1);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editAccount, setEditAccount] = useState<BankAccount | null>(null);
   const [deleteAccount, setDeleteAccount] = useState<BankAccount | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
-  const [createLoading, setCreateLoading] = useState(false);
-  const [editLoading, setEditLoading] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-  const [toggleLoadingId, setToggleLoadingId] = useState<string | null>(null);
+  const { isPending, isError, error, refetch, data } = useBankAccounts(page);
+  const {
+    // isPending: isFetchingBanks,
+    // isError: isBanksError,
+    // error: banksError,
+    // refetch: refetchBanks,
+    data: banksData,
+  } = useBanks();
 
-  const load = useCallback(async (targetPage = 1) => {
-    setLoadState("loading");
-    setErrorMsg(null);
-    try {
-      const data = await fetchBankAccounts(targetPage);
-      setResponse(data);
-      setPage(data.meta.page);
-      setLoadState("idle");
-    } catch {
-      setErrorMsg("Could not reach the server. Please try again.");
-      setLoadState("error");
-    }
-  }, []);
+  const createBankAccount = useCreateBankAccount();
+  const updateBankAccount = useUpdateBankAccount();
+  const deleteBankAccount = useDeleteBankAccount();
+  const setDefaultBankAccount = useSetDefaultBankAccount();
 
-  useEffect(() => {
-    const run = async () => {
-      setLoadState("loading");
-      setErrorMsg(null);
-
-      try {
-        const data = await fetchBankAccounts(1);
-
-        setResponse(data);
-        setPage(data.meta.page);
-        setLoadState("idle");
-      } catch {
-        setErrorMsg("Could not reach the server. Please try again.");
-        setLoadState("error");
-      }
-    };
-
-    void run();
-  }, []);
-
-  const handleCreate = async (payload: CreateBankAccountPayload) => {
-    setCreateLoading(true);
-    try {
-      await createBankAccount(payload);
-      setCreateOpen(false);
-      await load(1);
-    } finally {
-      setCreateLoading(false);
-    }
+  const handleCreate = async (
+    data: CreateBankAccountInput & { bankID: string },
+  ) => {
+    await createBankAccount.mutateAsync({ ...data });
   };
 
-  const handleEdit = async (id: string, payload: UpdateBankAccountPayload) => {
-    setEditLoading(true);
-    try {
-      await updateBankAccount(id, payload);
-      setEditAccount(null);
-      await load(page);
-    } finally {
-      setEditLoading(false);
-    }
+  const handleEdit = async (
+    data: UpdateBankAccountInput & { accountID: string },
+  ) => {
+    await updateBankAccount.mutateAsync({ ...data });
+    setEditAccount(null);
   };
 
-  const handleDelete = async (id: string) => {
-    setDeleteLoading(true);
-    try {
-      await deleteBankAccount(id);
-      setDeleteAccount(null);
-      const newPage = response?.data.length === 1 && page > 1 ? page - 1 : page;
-      await load(newPage);
-    } finally {
-      setDeleteLoading(false);
-    }
+  const handleDelete = async (accountID: string) => {
+    await deleteBankAccount.mutateAsync({ accountID });
+    setDeleteAccount(null);
   };
 
-  const handleToggleDefault = async (id: string) => {
-    setToggleLoadingId(id);
+  const handleToggleDefault = async (accountID: string) => {
+    setTogglingId(accountID);
     try {
-      await toggleAccountDefault(id);
-      await load(page);
+      await setDefaultBankAccount.mutateAsync({ accountID });
     } finally {
-      setToggleLoadingId(null);
+      setTogglingId(null);
     }
   };
 
@@ -142,25 +94,25 @@ export function BankAccountsClient() {
 
       {/* Content */}
       <div className="min-h-80">
-        {loadState === "loading" && <BankAccountSkeleton />}
-        {loadState === "error" && (
+        {isPending && <BankAccountSkeleton />}
+        {(isError || error) && (
           <BankAccountsError
-            message={errorMsg ?? undefined}
-            onRetry={() => load(1)}
+            message={error.message ?? "Something went wrong"}
+            onRetry={refetch}
           />
         )}
-        {loadState === "idle" && response?.meta.total === 0 && (
+        {!isPending && !isError && data.meta.total === 0 && (
           <BankAccountsEmpty onAdd={() => setCreateOpen(true)} />
         )}
-        {loadState === "idle" && response && response.meta.total > 0 && (
+        {!isPending && !isError && data && data.meta.total > 0 && (
           <BankAccountsTable
-            accounts={response.data}
-            meta={response.meta}
-            toggleLoadingId={toggleLoadingId}
+            accounts={data.bankAccounts}
+            meta={data.meta}
+            togglingId={togglingId}
             onEdit={setEditAccount}
             onDelete={setDeleteAccount}
             onToggleDefault={handleToggleDefault}
-            onPageChange={load}
+            onPageChange={setPage}
           />
         )}
       </div>
@@ -168,21 +120,21 @@ export function BankAccountsClient() {
       {/* Dialogs */}
       <BankAccountCreateDialog
         open={createOpen}
-        loading={createLoading}
-        bankOptions={MOCK_BANK_OPTIONS}
+        loading={createBankAccount.isPending}
+        bankOptions={banksData ?? []}
         loadingOptions={false}
         onClose={() => setCreateOpen(false)}
         onCreate={handleCreate}
       />
       <BankAccountEditDialog
         account={editAccount}
-        loading={editLoading}
+        loading={updateBankAccount.isPending}
         onClose={() => setEditAccount(null)}
         onSave={handleEdit}
       />
       <BankAccountDeleteDialog
         account={deleteAccount}
-        loading={deleteLoading}
+        loading={deleteBankAccount.isPending}
         onClose={() => setDeleteAccount(null)}
         onConfirm={handleDelete}
       />

@@ -189,8 +189,6 @@ export function DialogField({
   );
 }
 
-// ─── Bank select ─────────────────────────────────────────────────────────────
-
 interface BankSelectProps {
   id: string;
   label: string;

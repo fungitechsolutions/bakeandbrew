@@ -132,6 +132,17 @@ func (q *Queries) GetDefaultBankAccount(ctx context.Context) (GetDefaultBankAcco
 	return i, err
 }
 
+const isBankAccountDefault = `-- name: IsBankAccountDefault :one
+SELECT is_default FROM bank_accounts WHERE id = $1
+`
+
+func (q *Queries) IsBankAccountDefault(ctx context.Context, id pgtype.UUID) (bool, error) {
+	row := q.db.QueryRow(ctx, isBankAccountDefault, id)
+	var is_default bool
+	err := row.Scan(&is_default)
+	return is_default, err
+}
+
 const listBankAccounts = `-- name: ListBankAccounts :many
 SELECT
     ba.id, ba.bank_id, ba.account_name, ba.account_number, ba.is_default, ba.created_at,

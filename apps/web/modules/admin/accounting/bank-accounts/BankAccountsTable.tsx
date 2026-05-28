@@ -1,13 +1,13 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { BankAccount, BankAccountsResponse } from "./types";
 import { BankAccountRow } from "./BankAccountRow";
+import { BankAccount, PaginationMeta } from "@repo/types";
 
 interface BankAccountsTableProps {
   accounts: BankAccount[];
-  meta: BankAccountsResponse["meta"];
-  toggleLoadingId: string | null;
+  meta: PaginationMeta;
+  togglingId: string | null;
   onEdit: (account: BankAccount) => void;
   onDelete: (account: BankAccount) => void;
   onToggleDefault: (id: string) => void;
@@ -17,21 +17,21 @@ interface BankAccountsTableProps {
 export function BankAccountsTable({
   accounts,
   meta,
-  toggleLoadingId,
+  togglingId,
   onEdit,
   onDelete,
   onToggleDefault,
   onPageChange,
 }: BankAccountsTableProps) {
-  const { page, total_pages, total, per_page } = meta;
-  const startItem = (page - 1) * per_page + 1;
-  const endItem = Math.min(page * per_page, total);
+  const { page, totalPages, total, limit } = meta;
+  const startItem = (page - 1) * limit + 1;
+  const endItem = Math.min(page * limit, total);
 
   return (
     <div className="rounded-xl border border-stone-200 overflow-hidden bg-white shadow-sm">
       {/* Header */}
       <div
-        className="grid grid-cols-[1fr_160px_140px_90px_80px] gap-4 px-5 py-3 bg-stone-50 border-b border-stone-200"
+        className="grid grid-cols-[1fr_220px_140px_90px_80px] gap-4 px-5 py-3 bg-stone-50 border-b border-stone-200"
         role="row"
       >
         {[
@@ -57,7 +57,7 @@ export function BankAccountsTable({
           <BankAccountRow
             key={account.id}
             account={account}
-            toggleLoadingId={toggleLoadingId}
+            togglingId={togglingId}
             onEdit={onEdit}
             onDelete={onDelete}
             onToggleDefault={onToggleDefault}
@@ -68,12 +68,12 @@ export function BankAccountsTable({
       {/* Pagination footer */}
       <div className="flex items-center justify-between flex-wrap gap-3 px-5 py-3 border-t border-stone-100 bg-stone-50">
         <span className="text-xs text-stone-400 font-[family-name:var(--font-dm-sans)]">
-          {total_pages > 1
+          {totalPages > 1
             ? `${startItem}–${endItem} of ${total} accounts`
             : `${total} ${total === 1 ? "account" : "accounts"} total`}
         </span>
 
-        {total_pages > 1 && (
+        {totalPages > 1 && (
           <div className="flex items-center gap-1">
             <PageBtn
               onClick={() => onPageChange(page - 1)}
@@ -83,7 +83,7 @@ export function BankAccountsTable({
               <ChevronLeft size={14} />
             </PageBtn>
 
-            {Array.from({ length: total_pages }, (_, i) => i + 1).map((p) => (
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
               <PageBtn
                 key={p}
                 onClick={() => onPageChange(p)}
@@ -97,7 +97,7 @@ export function BankAccountsTable({
 
             <PageBtn
               onClick={() => onPageChange(page + 1)}
-              disabled={page >= total_pages}
+              disabled={page >= totalPages}
               aria-label="Next page"
             >
               <ChevronRight size={14} />

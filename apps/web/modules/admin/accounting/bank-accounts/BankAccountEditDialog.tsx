@@ -9,15 +9,22 @@ import {
   GhostButton,
   PrimaryButton,
 } from "./DialogPrimitives";
-import type { BankAccount } from "./types";
+import {
+  BankAccount,
+  UpdateBankAccountInput,
+  updateBankAccountInputSchema,
+} from "@repo/types";
+import { useForm } from "@tanstack/react-form-nextjs";
+import { AxiosError } from "axios";
+import { ApiError } from "@/lib/axios";
+import { mapFieldErrors } from "@/utils/api";
 
 interface BankAccountEditDialogProps {
   account: BankAccount | null;
   loading: boolean;
   onClose: () => void;
   onSave: (
-    id: string,
-    payload: { account_name: string; account_number: string | null },
+    payload: UpdateBankAccountInput & { accountID: string },
   ) => Promise<void>;
 }
 
@@ -29,32 +36,31 @@ interface EditFormProps {
 }
 
 function EditForm({ account, loading, onClose, onSave }: EditFormProps) {
-  const [accountName, setAccountName] = useState(account.account_name);
-  const [accountNumber, setAccountNumber] = useState(
-    account.account_number ?? "",
-  );
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof UpdateBankAccountInput, string>>
+  >({});
 
-  const handleSubmit = async () => {
-    const trimmedName = accountName.trim();
-    if (!trimmedName) {
-      setError("Account name is required.");
-      return;
-    }
-    setError(null);
-    try {
-      await onSave(account.id, {
-        account_name: trimmedName,
-        account_number: accountNumber.trim() || null,
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
-    }
-  };
-
-  const unchanged =
-    accountName.trim() === account.account_name &&
-    (accountNumber.trim() || null) === account.account_number;
+  const form = useForm({
+    defaultValues: {
+      accountName: account.accountName,
+      accountNumber: account.accountNumber,
+    } as UpdateBankAccountInput,
+    validators: {
+      onSubmit: updateBankAccountInputSchema,
+    },
+    onSubmit: async ({ value }) => {
+      try {
+        await onSave({ accountID: account.id, ...value });
+        onClose();
+      } catch (err) {
+        const error = err as AxiosError<ApiError>;
+        const data = error.response?.data;
+        if (data?.errors?.length) {
+          setErrors(mapFieldErrors(data));
+        }
+      }
+    },
+  });
 
   return (
     <>
@@ -71,42 +77,54 @@ function EditForm({ account, loading, onClose, onSave }: EditFormProps) {
         </p>
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-stone-100 border border-stone-200">
           <span className="text-sm text-stone-600 font-[family-name:var(--font-dm-sans)]">
-            {account.bank_name}
+            {account.bankName}
           </span>
         </div>
       </div>
 
       <div className="px-6 py-5 flex flex-col gap-4">
-        <DialogField
-          id="edit-account-name"
-          label="Account Name"
-          value={accountName}
-          onChange={(v) => {
-            setAccountName(v);
-            setError(null);
+        <form.Field name="accountName">
+          {(field) => {
+            const fieldError = field.state.meta.errors[0]?.message;
+            const mergedError = fieldError ?? errors.accountName;
+            return (
+              <DialogField
+                id="edit-account-name"
+                label="Account Name"
+                value={field.state.value}
+                onChange={field.handleChange}
+                disabled={loading}
+                error={mergedError}
+                autoFocus
+              />
+            );
           }}
-          disabled={loading}
-          error={error}
-          autoFocus
-        />
-        <DialogField
-          id="edit-account-number"
-          label="Account Number (optional)"
-          value={accountNumber}
-          onChange={setAccountNumber}
-          placeholder="e.g. 0012345678901"
-          disabled={loading}
-        />
+        </form.Field>
+
+        <form.Field name="accountNumber">
+          {(field) => {
+            const fieldError = field.state.meta.errors[0]?.message;
+            const mergedError = fieldError ?? errors.accountNumber;
+            return (
+              <DialogField
+                id="edit-account-number"
+                label="Account Number (optional)"
+                value={field.state.value ?? ""}
+                onChange={field.handleChange}
+                placeholder="e.g. 0012345678901"
+                disabled={loading}
+                error={mergedError}
+              />
+            );
+          }}
+        </form.Field>
       </div>
 
       <DialogFooter>
         <GhostButton onClick={onClose} disabled={loading}>
           Cancel
         </GhostButton>
-        <PrimaryButton
-          onClick={handleSubmit}
-          disabled={loading || !accountName.trim() || unchanged}
-        >
+        <PrimaryButton onClick={form.handleSubmit} disabled={loading}>
           {loading ? "Saving…" : "Save Changes"}
         </PrimaryButton>
       </DialogFooter>

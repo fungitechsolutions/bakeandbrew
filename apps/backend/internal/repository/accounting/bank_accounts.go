@@ -16,12 +16,14 @@ type BankAccountRepository interface {
 	DeleteBankAccount(ctx context.Context, id pgtype.UUID) (pgconn.CommandTag, error)
 	ListBankAccounts(ctx context.Context, params db.ListBankAccountsParams) ([]db.ListBankAccountsRow, error)
 	GetBankAccountsCount(ctx context.Context) (int64, error)
+	IsBankAccountDefault(ctx context.Context, id pgtype.UUID) (bool, error)
 }
 
 type BankAccountTxRepository interface {
 	WithTx(tx pgx.Tx) BankAccountTxRepository
 	UnsetDefaultBankAccount(ctx context.Context) error
 	SetBankAccountAsDefault(ctx context.Context, id pgtype.UUID) (pgconn.CommandTag, error)
+	IsBankAccountDefault(ctx context.Context, id pgtype.UUID) (bool, error)
 }
 
 type bankAccountTxRepository struct {
@@ -42,4 +44,8 @@ func (b *bankAccountTxRepository) UnsetDefaultBankAccount(ctx context.Context) e
 }
 func (b *bankAccountTxRepository) SetBankAccountAsDefault(ctx context.Context, id pgtype.UUID) (pgconn.CommandTag, error) {
 	return b.queries.SetBankAccountAsDefault(ctx, id)
+}
+
+func (b *bankAccountTxRepository) IsBankAccountDefault(ctx context.Context, id pgtype.UUID) (bool, error) {
+	return b.queries.IsBankAccountDefault(ctx, id)
 }

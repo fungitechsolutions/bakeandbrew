@@ -7,7 +7,7 @@ import {
   DialogFooter,
   GhostButton,
 } from "./DialogPrimitives";
-import type { BankAccount } from "./types";
+import { BankAccount } from "@repo/types";
 
 interface BankAccountDeleteDialogProps {
   account: BankAccount | null;
@@ -43,11 +43,11 @@ export function BankAccountDeleteDialog({
           <p className="text-sm text-stone-500 leading-relaxed font-[family-name:var(--font-dm-sans)]">
             Are you sure you want to delete{" "}
             <span className="font-semibold text-[#1a1a1a]">
-              {account?.account_name}
+              {account?.accountName}
             </span>{" "}
             from{" "}
             <span className="font-semibold text-[#1a1a1a]">
-              {account?.bank_name}
+              {account?.bankName}
             </span>
             ? This action cannot be undone.
           </p>

@@ -46,5 +46,14 @@ func Init() {
 			)
 			return matched
 		})
+
+		v.RegisterValidation("bank_account_no", func(fl validator.FieldLevel) bool {
+			val := fl.Field().String()
+			if val == "" {
+				return true
+			}
+			matched, _ := regexp.MatchString(`^\d{9,20}$`, val)
+			return matched
+		})
 	})
 }

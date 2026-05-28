@@ -1,9 +1,11 @@
 package banks
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
 	accountingRepository "github.com/suprimkhatri77/sms/backend/internal/repository/accounting"
 	"github.com/suprimkhatri77/sms/backend/internal/types"
@@ -33,6 +35,33 @@ func DeleteBank(queries accountingRepository.BankRepository) gin.HandlerFunc {
 			})
 			return
 
+		}
+
+		bank, err := queries.GetBankByID(ctx, bankID)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				c.JSON(http.StatusNotFound, types.APIResponse{
+					Success: false,
+					Message: "Bank not found",
+					Code:    constants.BankNotFound,
+				})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, types.APIResponse{
+				Success: false,
+				Message: "Failed to process request",
+				Code:    constants.InternalServerError,
+			})
+			return
+		}
+
+		if bank.IsDefault {
+			c.JSON(http.StatusConflict, types.APIResponse{
+				Success: false,
+				Message: "Cannot delete default bank. Set another bank as default first.",
+				Code:    constants.CannotDeleteDefaultBank,
+			})
+			return
 		}
 
 		result, err := queries.DeleteBank(ctx, bankID)
