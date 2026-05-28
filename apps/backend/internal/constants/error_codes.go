@@ -71,10 +71,14 @@ const (
 	DefaultBankAlreadyExists = "DEFAULT_BANK_ALREADY_EXISTS"
 	MissingBankID            = "MISSING_BANK_ID"
 	BankNotFound             = "BANK_NOT_FOUND"
+	CannotDeleteDefaultBank  = "CANNOT_DELETE_DEFAULT_BANK"
+	CannotUnsetDefaultBank   = "CANNOT_UNSET_DEFAULT_BANK"
 
 	// bank accounts
 	BankAccountAlreadyExists        = "BANK_ACCOUNT_ALREADY_EXISTS"
 	DefaultBankAccountAlreadyExists = "DEFAULT_BANK_ACCOUNT_ALREADY_EXISTS"
 	BankAccountNotFound             = "BANK_ACCOUNT_NOT_FOUND"
 	BankAccountHasLedgerEntries     = "BANK_ACCOUNT_HAS_LEDGER_ENTRIES"
+	CannotDeleteDefaultBankAccount  = "CANNOT_DELETE_DEFAULT_BANK_ACCOUNT"
+	CannotUnsetDefaultBankAccount   = "CANNOT_UNSET_DEFAULT_BANK_ACCOUNT"
 )

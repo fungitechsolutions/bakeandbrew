@@ -15,8 +15,8 @@ import (
 )
 
 type UpdateBankAccountRequest struct {
-	AccountName   string `json:"accountName" binding:"required,notblank,min=2,max=100"`
-	AccountNumber string `json:"accountNumber" binding:"omitempty,notblank,min=1,max=100"`
+	AccountName   string `json:"accountName" binding:"required,notblank,min=10,max=100"`
+	AccountNumber string `json:"accountNumber" binding:"omitempty,bank_account_no"`
 }
 
 func UpdateBankAccount(queries accountingRepository.BankAccountRepository) gin.HandlerFunc {

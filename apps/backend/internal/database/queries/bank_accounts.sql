@@ -57,3 +57,6 @@ UPDATE bank_accounts SET is_default = TRUE WHERE id = $1;
 
 -- name: GetBankAccountsCount :one
 SELECT COUNT(*) FROM bank_accounts;
+
+-- name: IsBankAccountDefault :one
+SELECT is_default FROM bank_accounts WHERE id = $1;

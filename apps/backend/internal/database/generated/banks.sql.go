@@ -81,6 +81,17 @@ func (q *Queries) GetDefaultBank(ctx context.Context) (Bank, error) {
 	return i, err
 }
 
+const isBankDefault = `-- name: IsBankDefault :one
+SELECT is_default FROM banks WHERE id = $1
+`
+
+func (q *Queries) IsBankDefault(ctx context.Context, id pgtype.UUID) (bool, error) {
+	row := q.db.QueryRow(ctx, isBankDefault, id)
+	var is_default bool
+	err := row.Scan(&is_default)
+	return is_default, err
+}
+
 const listBanks = `-- name: ListBanks :many
 SELECT id, name, is_default, created_at FROM banks ORDER BY created_at DESC LIMIT $1 OFFSET $2
 `

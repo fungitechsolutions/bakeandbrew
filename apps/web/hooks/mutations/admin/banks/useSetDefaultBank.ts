@@ -1,6 +1,6 @@
 import { BanksData, setDefaultBank } from "@/lib/api/banks";
 import { ApiError } from "@/lib/axios";
-import { GetBanksResponse, SetDefaultBankResponse } from "@repo/types";
+import { SetDefaultBankResponse } from "@repo/types";
 import { QueryKey, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { toast } from "sonner";

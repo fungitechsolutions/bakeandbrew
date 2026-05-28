@@ -40,7 +40,7 @@ export function SalesRevenueView() {
     !isPending && !isError && meta !== undefined && meta.total === 0;
 
   return (
-    <div className="max-w-[1600px] mx-auto px-6 pt-8 pb-16 max-[768px]:px-4 max-[768px]:pt-5 max-[768px]:pb-12">
+    <div className=" mx-auto px-6 pt-8 pb-16 max-[768px]:px-4 max-[768px]:pt-5 max-[768px]:pb-12">
       {/* Header */}
       <header className="flex items-start justify-between mb-7 gap-4 flex-wrap">
         <div>

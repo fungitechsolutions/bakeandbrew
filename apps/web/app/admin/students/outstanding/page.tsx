@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { OutstandingStudentsView } from "@/modules/admin/students/outstanding/OutstandingStudentsView";
@@ -7,12 +8,8 @@ export const metadata: Metadata = {
   description: "Students with pending fee balances",
 };
 
-// This page uses searchParams — opt out of static generation
-export const dynamic = "force-dynamic";
-
 export default function OutstandingStudentsPage() {
   return (
-    // Suspense is required because OutstandingStudentsView uses useSearchParams()
     <Suspense fallback={<OutstandingPageFallback />}>
       <OutstandingStudentsView />
     </Suspense>

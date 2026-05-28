@@ -10,33 +10,28 @@ import {
   GhostButton,
   PrimaryButton,
 } from "./DialogPrimitives";
-import type { BankOption } from "./types";
+import { BanksData } from "@/lib/api/banks";
+import {
+  CreateBankAccountInput,
+  createBankAccountInputSchema,
+} from "@repo/types";
+import { useForm } from "@tanstack/react-form-nextjs";
+import { AxiosError } from "axios";
+import { ApiError } from "@/lib/axios";
+import { mapFieldErrors } from "@/utils/api";
+import { toast } from "sonner";
 
 interface BankAccountCreateDialogProps {
   open: boolean;
   loading: boolean;
-  bankOptions: BankOption[];
+  bankOptions: BanksData["banks"];
   loadingOptions: boolean;
   onClose: () => void;
-  onCreate: (payload: {
-    bank_id: string;
-    account_name: string;
-    account_number: string | null;
-  }) => Promise<void>;
+  onCreate: (
+    payload: CreateBankAccountInput & { bankID: string },
+  ) => Promise<void>;
 }
 
-interface FormState {
-  bank_id: string;
-  account_name: string;
-  account_number: string;
-}
-
-interface FormErrors {
-  bank_id?: string;
-  account_name?: string;
-}
-
-// Inner form — remounted via key={openCount} so state is always fresh
 function CreateForm({
   loading,
   bankOptions,
@@ -46,46 +41,36 @@ function CreateForm({
 }: Omit<BankAccountCreateDialogProps, "open" | "onClose"> & {
   onClose: () => void;
 }) {
-  const [form, setForm] = useState<FormState>({
-    bank_id: "",
-    account_name: "",
-    account_number: "",
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof CreateBankAccountInput, string>>
+  >({});
+  const [bankID, setBankID] = useState<string>("");
+
+  const form = useForm({
+    defaultValues: {
+      accountName: "",
+      accountNumber: "",
+    } as CreateBankAccountInput,
+    validators: {
+      onSubmit: createBankAccountInputSchema,
+    },
+    onSubmit: async ({ value }) => {
+      if (!bankID) {
+        toast.error("Please select a bank");
+        return;
+      }
+      try {
+        await onCreate({ bankID, ...value });
+        onClose();
+      } catch (err) {
+        const error = err as AxiosError<ApiError>;
+        const data = error.response?.data;
+        if (data?.errors?.length) {
+          setErrors(mapFieldErrors(data));
+        }
+      }
+    },
   });
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [submitError, setSubmitError] = useState<string | null>(null);
-
-  const set = (field: keyof FormState) => (value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-    setErrors((prev) => ({ ...prev, [field]: undefined }));
-    setSubmitError(null);
-  };
-
-  const validate = (): boolean => {
-    const next: FormErrors = {};
-    if (!form.bank_id) next.bank_id = "Please select a bank.";
-    if (!form.account_name.trim())
-      next.account_name = "Account name is required.";
-    setErrors(next);
-    return Object.keys(next).length === 0;
-  };
-
-  const handleSubmit = async () => {
-    if (!validate()) return;
-    setSubmitError(null);
-    try {
-      await onCreate({
-        bank_id: form.bank_id,
-        account_name: form.account_name.trim(),
-        account_number: form.account_number.trim() || null,
-      });
-    } catch (err) {
-      setSubmitError(
-        err instanceof Error ? err.message : "Something went wrong.",
-      );
-    }
-  };
-
-  const canSubmit = !!form.bank_id && !!form.account_name.trim() && !loading;
 
   return (
     <>
@@ -98,42 +83,54 @@ function CreateForm({
         <BankSelectField
           id="create-bank-select"
           label="Bank"
-          value={form.bank_id}
-          onChange={set("bank_id")}
+          value={bankID}
+          onChange={setBankID}
           options={bankOptions}
           disabled={loading}
-          error={errors.bank_id}
           loadingOptions={loadingOptions}
         />
-        <DialogField
-          id="create-account-name"
-          label="Account Name"
-          value={form.account_name}
-          onChange={set("account_name")}
-          placeholder="e.g. Main Operating Account"
-          disabled={loading}
-          error={errors.account_name}
-          autoFocus
-        />
-        <DialogField
-          id="create-account-number"
-          label="Account Number (optional)"
-          value={form.account_number}
-          onChange={set("account_number")}
-          placeholder="e.g. 0012345678901"
-          disabled={loading}
-        />
-        {submitError && (
-          <p className="text-xs text-red-500 font-[family-name:var(--font-dm-sans)]">
-            {submitError}
-          </p>
-        )}
+        <form.Field name="accountName">
+          {(field) => {
+            const fieldError = field.state.meta.errors[0]?.message;
+            const mergedError = fieldError ?? errors.accountName;
+            return (
+              <DialogField
+                id="create-account-name"
+                label="Account Name"
+                value={field.state.value}
+                onChange={field.handleChange}
+                placeholder="e.g. Main Operating Account"
+                disabled={loading}
+                error={mergedError}
+                autoFocus
+              />
+            );
+          }}
+        </form.Field>
+
+        <form.Field name="accountNumber">
+          {(field) => {
+            const fieldError = field.state.meta.errors[0]?.message;
+            const mergedError = fieldError ?? errors.accountNumber;
+            return (
+              <DialogField
+                id="create-account-number"
+                label="Account Number (optional)"
+                value={field.state.value ?? ""}
+                onChange={field.handleChange}
+                placeholder="e.g. 0012345678901"
+                disabled={loading}
+                error={mergedError}
+              />
+            );
+          }}
+        </form.Field>
       </div>
       <DialogFooter>
         <GhostButton onClick={onClose} disabled={loading}>
           Cancel
         </GhostButton>
-        <PrimaryButton onClick={handleSubmit} disabled={!canSubmit}>
+        <PrimaryButton onClick={form.handleSubmit} disabled={loading}>
           {loading ? "Adding…" : "Add Account"}
         </PrimaryButton>
       </DialogFooter>

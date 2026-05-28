@@ -1,9 +1,11 @@
 package banks
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
 	accountingRepository "github.com/suprimkhatri77/sms/backend/internal/repository/accounting"
@@ -48,6 +50,33 @@ func SetDefaultBank(queries accountingRepository.BankTxRepository, pool *pgxpool
 		defer tx.Rollback(ctx)
 
 		qtx := queries.WithTx(tx)
+
+		isDefault, err := qtx.IsBankDefault(ctx, bankID)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				c.JSON(http.StatusNotFound, types.APIResponse{
+					Success: false,
+					Message: "Bank not found",
+					Code:    constants.BankNotFound,
+				})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, types.APIResponse{
+				Success: false,
+				Message: "Failed to process requets",
+				Code:    constants.InternalServerError,
+			})
+			return
+		}
+
+		if isDefault {
+			c.JSON(http.StatusConflict, types.APIResponse{
+				Success: false,
+				Message: "Cannot unset default bank directly. Set another bank as default first.",
+				Code:    constants.CannotUnsetDefaultBank,
+			})
+			return
+		}
 
 		if err := qtx.UnsetDefaultBank(ctx); err != nil {
 			c.JSON(http.StatusInternalServerError, types.APIResponse{

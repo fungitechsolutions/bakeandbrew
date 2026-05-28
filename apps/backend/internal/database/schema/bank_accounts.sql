@@ -5,7 +5,7 @@ CREATE TABLE bank_accounts (
     account_number TEXT,
     is_default BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    UNIQUE(bank_id, account_name)
+    UNIQUE(bank_id, account_name) 
 );
 
 CREATE INDEX idx_bank_accounts_bank_id ON bank_accounts(bank_id);

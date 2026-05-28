@@ -450,7 +450,7 @@ export default function CoursesPage() {
                           }
                         />
                       </td>
-                      <td className="max-sm:hidden whitespace-nowrap px-4 py-3.5 text-[0.78rem] text-[rgba(47,78,64,0.45)]">
+                      <td className=" whitespace-nowrap px-4 py-3.5 text-[0.78rem] text-[rgba(47,78,64,0.45)]">
                         {formatDate(String(course.createdAt))}
                       </td>
                       <td className="px-4 py-3.5">
