@@ -67,75 +67,80 @@ export function LedgerFilters({
   }
   return (
     <div
-      className="flex flex-wrap items-end gap-4 rounded-lg border px-5 py-4"
+      className="rounded-lg border px-5 py-4"
       style={{ borderColor: "#e5e0d6", backgroundColor: "#fff" }}
     >
       <span
-        className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide self-center mr-1"
+        className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide mb-3"
         style={{ color: "#6b7280" }}
       >
         <SlidersHorizontal size={13} />
         Filters
       </span>
 
-      {/* Bank selector */}
-      <div className="flex flex-col gap-1 min-w-[200px]">
-        <Label
-          className="text-xs font-medium uppercase tracking-wide"
-          style={{ color: "#9ca3af" }}
-        >
-          Bank
-        </Label>
-        <Select value={filters.bankId} onValueChange={handleBankChange}>
-          <SelectTrigger className="h-9 text-sm w-full">
-            <SelectValue placeholder="All Banks">
-              {filters.bankId === "all"
-                ? "All Banks"
-                : (banks.find((b) => b.id === filters.bankId)?.name ??
-                  "All Banks")}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Banks</SelectItem>
-            {banks.map((b) => (
-              <SelectItem key={b.id} value={b.id}>
-                {b.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Account selector */}
-      {!hideAccountSelector && (
-        <div className="flex flex-col gap-1 min-w-[260px]">
+      <div className="flex flex-wrap gap-3">
+        {/* Bank selector */}
+        <div className="flex flex-col gap-1 flex-1 min-w-[160px]">
           <Label
             className="text-xs font-medium uppercase tracking-wide"
             style={{ color: "#9ca3af" }}
           >
-            Bank Account
+            Bank
           </Label>
-          <Select value={filters.accountId} onValueChange={handleAccountChange}>
+          <Select value={filters.bankId} onValueChange={handleBankChange}>
             <SelectTrigger className="h-9 text-sm w-full">
-              <SelectValue placeholder="All Accounts">
-                {filters.accountId === "all"
-                  ? "All Accounts"
-                  : (filteredAccounts.find((a) => a.id === filters.accountId)
-                      ?.accountName ?? "All Accounts")}
+              <SelectValue placeholder="All Banks">
+                {filters.bankId === "all"
+                  ? "All Banks"
+                  : (banks.find((b) => b.id === filters.bankId)?.name ??
+                    "All Banks")}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Accounts</SelectItem>
-              {filteredAccounts.map((a) => (
-                <SelectItem key={a.id} value={a.id}>
-                  {a.accountName}
-                  <span style={{ color: "#9ca3af" }}> — {a.bankName}</span>
+              <SelectItem value="all">All Banks</SelectItem>
+              {banks.map((b) => (
+                <SelectItem key={b.id} value={b.id}>
+                  {b.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
-      )}
+
+        {/* Account selector */}
+        {!hideAccountSelector && (
+          <div className="flex flex-col gap-1 flex-1 min-w-[160px]">
+            <Label
+              className="text-xs font-medium uppercase tracking-wide"
+              style={{ color: "#9ca3af" }}
+            >
+              Bank Account
+            </Label>
+            <Select
+              value={filters.accountId}
+              onValueChange={handleAccountChange}
+            >
+              <SelectTrigger className="h-9 text-sm w-full">
+                <SelectValue placeholder="All Accounts">
+                  {filters.accountId === "all"
+                    ? "All Accounts"
+                    : (filteredAccounts.find((a) => a.id === filters.accountId)
+                        ?.accountName ?? "All Accounts")}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Accounts</SelectItem>
+                {filteredAccounts.map((a) => (
+                  <SelectItem key={a.id} value={a.id}>
+                    {a.accountName}
+                    <span style={{ color: "#9ca3af" }}> — {a.bankName}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

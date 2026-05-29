@@ -28,44 +28,49 @@ export function BankAccountsTable({
   const endItem = Math.min(page * limit, total);
 
   return (
-    <div className="rounded-xl border border-stone-200 overflow-hidden bg-white shadow-sm">
-      {/* Header */}
-      <div
-        className="grid grid-cols-[1fr_220px_140px_90px_80px] gap-4 px-5 py-3 bg-stone-50 border-b border-stone-200"
-        role="row"
-      >
-        {[
-          { label: "Account", align: "" },
-          { label: "Account No.", align: "" },
-          { label: "Created", align: "" },
-          { label: "Default", align: "" },
-          { label: "", align: "text-right" },
-        ].map(({ label, align }, i) => (
-          <span
-            key={i}
-            className={`text-[0.7rem] font-semibold uppercase tracking-widest text-stone-400 font-[family-name:var(--font-dm-sans)] ${align}`}
-            role="columnheader"
+    <div className="rounded-xl border border-stone-200 bg-white shadow-sm">
+      {/* Scrollable table area */}
+      <div className="overflow-x-auto">
+        <div className="min-w-[820px] w-full">
+          {/* Header */}
+          <div
+            className="grid grid-cols-[minmax(200px,1fr)_220px_140px_90px_80px] gap-4 px-5 py-3 bg-stone-50 border-b border-stone-200  w-full"
+            role="row"
           >
-            {label}
-          </span>
-        ))}
+            {[
+              { label: "Account", align: "" },
+              { label: "Account No.", align: "" },
+              { label: "Created", align: "" },
+              { label: "Default", align: "" },
+              { label: "", align: "text-right" },
+            ].map(({ label, align }, i) => (
+              <span
+                key={i}
+                className={`text-[0.7rem] font-semibold uppercase tracking-widest text-stone-400 font-[family-name:var(--font-dm-sans)] ${align}`}
+                role="columnheader"
+              >
+                {label}
+              </span>
+            ))}
+          </div>
+
+          {/* Rows */}
+          <div role="rowgroup">
+            {accounts.map((account) => (
+              <BankAccountRow
+                key={account.id}
+                account={account}
+                togglingId={togglingId}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onToggleDefault={onToggleDefault}
+              />
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Rows */}
-      <div role="rowgroup">
-        {accounts.map((account) => (
-          <BankAccountRow
-            key={account.id}
-            account={account}
-            togglingId={togglingId}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            onToggleDefault={onToggleDefault}
-          />
-        ))}
-      </div>
-
-      {/* Pagination footer */}
+      {/* Pagination footer — outside scroll, always full width */}
       <div className="flex items-center justify-between flex-wrap gap-3 px-5 py-3 border-t border-stone-100 bg-stone-50">
         <span className="text-xs text-stone-400 font-[family-name:var(--font-dm-sans)]">
           {totalPages > 1

@@ -4,13 +4,15 @@ import { useEffect } from "react";
 import { AlertCircle, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LedgerEntryRow } from "./LedgerEntryRow";
-import { EmptyLedgerState } from "./EmptyLedgerState";
-import { BankLedger } from "@repo/types";
 import { Button } from "@/components/ui/button";
+import { CashLedgerEntryRow } from "./CashLedgerEntryRow";
+import { EmptyCashLedgerState } from "./EmptyCashLedgerState";
+import { CashLedger } from "@repo/types";
 
-interface LedgerTableProps {
-  entries: BankLedger[];
+const COL_SPAN = 6;
+
+interface CashLedgerTableProps {
+  entries: CashLedger[];
   initialLoading: boolean;
   isFetchingNextPage: boolean;
   hasReachedEnd: boolean;
@@ -18,12 +20,11 @@ interface LedgerTableProps {
   scrollContainerRef: React.RefObject<HTMLDivElement | null>;
   onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   onCreateEntry: () => void;
-  showBankColumns?: boolean;
   isError: boolean;
   refetch: () => void;
 }
 
-export function LedgerTable({
+export function CashLedgerTable({
   entries,
   initialLoading,
   isFetchingNextPage,
@@ -32,12 +33,9 @@ export function LedgerTable({
   scrollContainerRef,
   onScroll,
   onCreateEntry,
-  showBankColumns = true,
   isError,
   refetch,
-}: LedgerTableProps) {
-  const colSpan = showBankColumns ? 8 : 6;
-
+}: CashLedgerTableProps) {
   const totalDebit = entries
     .filter((e) => e.entryType === "dr")
     .reduce((sum, e) => sum + e.amount, 0);
@@ -75,7 +73,7 @@ export function LedgerTable({
       >
         <table
           className="w-full text-left text-sm border-collapse"
-          style={{ minWidth: "720px" }}
+          style={{ minWidth: "600px" }}
         >
           <thead>
             <tr
@@ -90,12 +88,6 @@ export function LedgerTable({
             >
               <th className="px-4 py-3 w-12 text-center">S.No</th>
               <th className="px-4 py-3 whitespace-nowrap">Date (BS)</th>
-              {showBankColumns && (
-                <>
-                  <th className="px-4 py-3">Bank</th>
-                  <th className="px-4 py-3">Account</th>
-                </>
-              )}
               <th className="px-4 py-3 w-10 text-center">D/C</th>
               <th className="px-4 py-3 text-right whitespace-nowrap">
                 Debit (Rs.)
@@ -118,7 +110,7 @@ export function LedgerTable({
                     backgroundColor: i % 2 === 0 ? "#fff" : "#faf9f6",
                   }}
                 >
-                  {Array.from({ length: colSpan }).map((_, j) => (
+                  {Array.from({ length: COL_SPAN }).map((_, j) => (
                     <td key={j} className="px-4 py-3">
                       <Skeleton className="h-4 w-full" />
                     </td>
@@ -127,30 +119,28 @@ export function LedgerTable({
               ))
             ) : !isError && entries.length === 0 ? (
               <tr>
-                <td colSpan={colSpan}>
-                  <EmptyLedgerState onCreateEntry={onCreateEntry} />
+                <td colSpan={COL_SPAN}>
+                  <EmptyCashLedgerState onCreateEntry={onCreateEntry} />
                 </td>
               </tr>
             ) : (
               entries.map((entry, idx) => (
-                <LedgerEntryRow
+                <CashLedgerEntryRow
                   key={entry.id}
                   entry={entry}
                   serialNo={idx + 1}
-                  showBankColumns={showBankColumns}
                   striped={idx % 2 !== 0}
                 />
               ))
             )}
           </tbody>
 
-          {/* tfoot inside same table so columns align with thead */}
           {isError ? (
             <tbody>
               <tr className="h-full">
-                <td colSpan={colSpan} className="h-full">
+                <td colSpan={COL_SPAN} className="h-full">
                   <div
-                    style={{ height: "calc(100vh - 460px)" }} // match your container height roughly
+                    style={{ height: "calc(100vh - 460px)" }}
                     className="flex flex-col items-center justify-center gap-4"
                   >
                     <AlertCircle size={32} style={{ color: "#dc2626" }} />
@@ -178,7 +168,7 @@ export function LedgerTable({
               <tfoot style={{ position: "sticky", bottom: 0, zIndex: 1 }}>
                 {isFetchingNextPage && (
                   <tr style={{ backgroundColor: "#faf9f6" }}>
-                    <td colSpan={colSpan} className="px-4 py-2 text-center">
+                    <td colSpan={COL_SPAN} className="px-4 py-2 text-center">
                       <span
                         className="flex items-center justify-center gap-2 text-xs"
                         style={{ color: "#9ca3af" }}
@@ -197,7 +187,7 @@ export function LedgerTable({
                   }}
                 >
                   <td
-                    colSpan={showBankColumns ? 5 : 3}
+                    colSpan={3}
                     className="px-4 py-2 text-right uppercase tracking-wide"
                     style={{ color: "#6b7280" }}
                   >

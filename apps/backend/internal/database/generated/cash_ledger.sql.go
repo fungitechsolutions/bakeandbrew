@@ -60,10 +60,18 @@ func (q *Queries) DeleteCashLedgerEntry(ctx context.Context, id pgtype.UUID) err
 
 const getCashLedgerCount = `-- name: GetCashLedgerCount :one
 SELECT COUNT(*) FROM cash_ledger
+WHERE
+    ($1::date IS NULL OR date >= $1::timestamptz)
+    AND ($2::date IS NULL OR date <= $2::timestamptz)
 `
 
-func (q *Queries) GetCashLedgerCount(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, getCashLedgerCount)
+type GetCashLedgerCountParams struct {
+	FromDate pgtype.Date `json:"fromDate"`
+	ToDate   pgtype.Date `json:"toDate"`
+}
+
+func (q *Queries) GetCashLedgerCount(ctx context.Context, arg GetCashLedgerCountParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getCashLedgerCount, arg.FromDate, arg.ToDate)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -96,7 +104,15 @@ SELECT
     COALESCE(SUM(amount) FILTER (WHERE entry_type = 'cr'), 0) -
     COALESCE(SUM(amount) FILTER (WHERE entry_type = 'dr'), 0) AS balance
 FROM cash_ledger
+WHERE
+    ($1::date IS NULL OR date >= $1::timestamptz)
+    AND ($2::date IS NULL OR date <= $2::timestamptz)
 `
+
+type GetCashLedgerSummaryParams struct {
+	FromDate pgtype.Date `json:"fromDate"`
+	ToDate   pgtype.Date `json:"toDate"`
+}
 
 type GetCashLedgerSummaryRow struct {
 	TotalCr interface{} `json:"totalCr"`
@@ -104,8 +120,8 @@ type GetCashLedgerSummaryRow struct {
 	Balance int32       `json:"balance"`
 }
 
-func (q *Queries) GetCashLedgerSummary(ctx context.Context) (GetCashLedgerSummaryRow, error) {
-	row := q.db.QueryRow(ctx, getCashLedgerSummary)
+func (q *Queries) GetCashLedgerSummary(ctx context.Context, arg GetCashLedgerSummaryParams) (GetCashLedgerSummaryRow, error) {
+	row := q.db.QueryRow(ctx, getCashLedgerSummary, arg.FromDate, arg.ToDate)
 	var i GetCashLedgerSummaryRow
 	err := row.Scan(&i.TotalCr, &i.TotalDr, &i.Balance)
 	return i, err
@@ -113,17 +129,27 @@ func (q *Queries) GetCashLedgerSummary(ctx context.Context) (GetCashLedgerSummar
 
 const listCashLedger = `-- name: ListCashLedger :many
 SELECT id, date, bs_date, entry_type, amount, description, payment_id, created_at FROM cash_ledger
+WHERE
+    ($3::date IS NULL OR date >= $3::timestamptz)
+    AND ($4::date IS NULL OR date <= $4::timestamptz)
 ORDER BY date DESC
 LIMIT $1 OFFSET $2
 `
 
 type ListCashLedgerParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+	Limit    int32       `json:"limit"`
+	Offset   int32       `json:"offset"`
+	FromDate pgtype.Date `json:"fromDate"`
+	ToDate   pgtype.Date `json:"toDate"`
 }
 
 func (q *Queries) ListCashLedger(ctx context.Context, arg ListCashLedgerParams) ([]CashLedger, error) {
-	rows, err := q.db.Query(ctx, listCashLedger, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listCashLedger,
+		arg.Limit,
+		arg.Offset,
+		arg.FromDate,
+		arg.ToDate,
+	)
 	if err != nil {
 		return nil, err
 	}

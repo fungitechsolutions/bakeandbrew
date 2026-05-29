@@ -11,4 +11,4 @@ CREATE TABLE cash_ledger (
 
 CREATE INDEX idx_cash_ledger_date ON cash_ledger(date);
 CREATE INDEX idx_cash_ledger_bs_date ON cash_ledger(bs_date);
-CREATE INDEX idx_cash_ledger_payment_id ON cash_ledger(payment_id);
+CREATE INDEX idx_cash_ledger_payment_id ON cash_ledger(payment_id); 
