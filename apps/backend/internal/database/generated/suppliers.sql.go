@@ -8,6 +8,7 @@ package db
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -36,13 +37,12 @@ func (q *Queries) CreateSupplier(ctx context.Context, arg CreateSupplierParams) 
 	return i, err
 }
 
-const deleteSupplier = `-- name: DeleteSupplier :exec
+const deleteSupplier = `-- name: DeleteSupplier :execresult
 DELETE FROM suppliers WHERE id = $1
 `
 
-func (q *Queries) DeleteSupplier(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, deleteSupplier, id)
-	return err
+func (q *Queries) DeleteSupplier(ctx context.Context, id pgtype.UUID) (pgconn.CommandTag, error) {
+	return q.db.Exec(ctx, deleteSupplier, id)
 }
 
 const getSupplierByID = `-- name: GetSupplierByID :one
@@ -62,12 +62,28 @@ func (q *Queries) GetSupplierByID(ctx context.Context, id pgtype.UUID) (Supplier
 	return i, err
 }
 
-const listSuppliers = `-- name: ListSuppliers :many
-SELECT id, company_name, vat_no, phone, created_at FROM suppliers ORDER BY company_name ASC
+const getSupplierCount = `-- name: GetSupplierCount :one
+SELECT COUNT(*) FROM suppliers
 `
 
-func (q *Queries) ListSuppliers(ctx context.Context) ([]Supplier, error) {
-	rows, err := q.db.Query(ctx, listSuppliers)
+func (q *Queries) GetSupplierCount(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, getSupplierCount)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const listSuppliers = `-- name: ListSuppliers :many
+SELECT id, company_name, vat_no, phone, created_at FROM suppliers ORDER BY company_name ASC LIMIT $1 OFFSET $2
+`
+
+type ListSuppliersParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListSuppliers(ctx context.Context, arg ListSuppliersParams) ([]Supplier, error) {
+	rows, err := q.db.Query(ctx, listSuppliers, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
