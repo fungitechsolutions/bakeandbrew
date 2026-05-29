@@ -41,7 +41,7 @@ export const getCashLedgerSummaryResponseSchema = z.object({
   data: cashLedgerSummaryData,
 });
 
-export type GetCashLedgerSummaryRepsonse = z.infer<
+export type GetCashLedgerSummaryResponse = z.infer<
   typeof getCashLedgerSummaryResponseSchema
 >;
 
@@ -68,7 +68,7 @@ export const createCashLedgerEntrySchema = z.object({
     .refine((val) => Number(val) > 0, {
       error: "Amount must be greater than 0",
     })
-    .refine((val) => Number(val) <= 10000000, {
+    .refine((val) => Number(val) <= 1000000000, {
       error: "Amount must not exceed Rs. 1,00,00,000",
     }),
   description: z
