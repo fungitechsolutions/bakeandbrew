@@ -249,6 +249,52 @@ func (q *Queries) ListBankAccountsByBank(ctx context.Context, bankID pgtype.UUID
 	return items, nil
 }
 
+const listBankAccountsForDropdown = `-- name: ListBankAccountsForDropdown :many
+SELECT 
+    ba.id,
+    ba.account_name,
+    ba.bank_id,
+    b.name AS bank_name,
+    b.id AS bank_id
+FROM bank_accounts ba
+JOIN banks b ON b.id = ba.bank_id
+ORDER BY ba.account_name ASC
+`
+
+type ListBankAccountsForDropdownRow struct {
+	ID          pgtype.UUID `json:"id"`
+	AccountName string      `json:"accountName"`
+	BankID      pgtype.UUID `json:"bankId"`
+	BankName    string      `json:"bankName"`
+	BankID_2    pgtype.UUID `json:"bankId2"`
+}
+
+func (q *Queries) ListBankAccountsForDropdown(ctx context.Context) ([]ListBankAccountsForDropdownRow, error) {
+	rows, err := q.db.Query(ctx, listBankAccountsForDropdown)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListBankAccountsForDropdownRow
+	for rows.Next() {
+		var i ListBankAccountsForDropdownRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.AccountName,
+			&i.BankID,
+			&i.BankName,
+			&i.BankID_2,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const setBankAccountAsDefault = `-- name: SetBankAccountAsDefault :execresult
 UPDATE bank_accounts SET is_default = TRUE WHERE id = $1
 `

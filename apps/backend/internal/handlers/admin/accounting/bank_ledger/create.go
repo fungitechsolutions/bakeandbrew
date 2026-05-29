@@ -2,6 +2,7 @@ package bankledger
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"time"
 
@@ -17,11 +18,11 @@ import (
 )
 
 type CreateBankLedgerEntryRequest struct {
-	Date        string  `json:"date" binding:"required,notblank,date_format"`
-	BsDate      string  `json:"bsDate" binding:"required,notblank,date_format"`
+	Date        string  `json:"date" binding:"required,date_format"`
+	BsDate      string  `json:"bsDate" binding:"required,bs_date"`
 	EntryType   string  `json:"entryType" binding:"required,oneof=cr dr"`
 	Amount      float64 `json:"amount" binding:"required,gt=0,lte=10000000"`
-	Description string  `json:"description" binding:"omitempty,notblank,min=5,max=100"`
+	Description string  `json:"description" binding:"omitempty,notblank,min=5,max=200"`
 	PaymentID   string  `json:"paymentID" binding:"omitempty,uuid"`
 }
 
@@ -43,6 +44,7 @@ func CreateBankLedgerEntry(queries accountingRepository.BankLedgerRepository) gi
 
 		var req CreateBankLedgerEntryRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
+			log.Println("error: ", err)
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid request data",

@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect } from "react";
-import { Loader2 } from "lucide-react";
+import { AlertCircle, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LedgerEntryRow } from "./LedgerEntryRow";
 import { EmptyLedgerState } from "./EmptyLedgerState";
-import type { LedgerEntryWithAccount } from "./ledger";
+import { BankLedger } from "@repo/types";
+import { Button } from "@/components/ui/button";
 
 interface LedgerTableProps {
-  entries: LedgerEntryWithAccount[];
+  entries: BankLedger[];
   initialLoading: boolean;
   isFetchingNextPage: boolean;
   hasReachedEnd: boolean;
@@ -18,6 +19,8 @@ interface LedgerTableProps {
   onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   onCreateEntry: () => void;
   showBankColumns?: boolean;
+  isError: boolean;
+  refetch: () => void;
 }
 
 export function LedgerTable({
@@ -30,6 +33,8 @@ export function LedgerTable({
   onScroll,
   onCreateEntry,
   showBankColumns = true,
+  isError,
+  refetch,
 }: LedgerTableProps) {
   const colSpan = showBankColumns ? 8 : 6;
 
@@ -101,7 +106,7 @@ export function LedgerTable({
 
           <tbody>
             {initialLoading ? (
-              Array.from({ length: 10 }).map((_, i) => (
+              Array.from({ length: 40 }).map((_, i) => (
                 <tr
                   key={i}
                   className="border-b"
@@ -117,7 +122,7 @@ export function LedgerTable({
                   ))}
                 </tr>
               ))
-            ) : entries.length === 0 ? (
+            ) : !isError && entries.length === 0 ? (
               <tr>
                 <td colSpan={colSpan}>
                   <EmptyLedgerState onCreateEntry={onCreateEntry} />
@@ -137,50 +142,80 @@ export function LedgerTable({
           </tbody>
 
           {/* tfoot inside same table so columns align with thead */}
-          {!initialLoading && entries.length > 0 && (
-            <tfoot style={{ position: "sticky", bottom: 0, zIndex: 1 }}>
-              {isFetchingNextPage && (
-                <tr style={{ backgroundColor: "#faf9f6" }}>
-                  <td colSpan={colSpan} className="px-4 py-2 text-center">
-                    <span
-                      className="flex items-center justify-center gap-2 text-xs"
-                      style={{ color: "#9ca3af" }}
+          {isError ? (
+            <tbody>
+              <tr className="h-full">
+                <td colSpan={colSpan} className="h-full">
+                  <div
+                    style={{ height: "calc(100vh - 460px)" }} // match your container height roughly
+                    className="flex flex-col items-center justify-center gap-4"
+                  >
+                    <AlertCircle size={32} style={{ color: "#dc2626" }} />
+                    <p
+                      className="text-sm font-medium"
+                      style={{ color: "var(--brand-ink)" }}
                     >
-                      <Loader2 size={13} className="animate-spin" />
-                      Loading more entries...
-                    </span>
-                  </td>
-                </tr>
-              )}
-              <tr
-                className="text-xs font-semibold border-t"
-                style={{
-                  backgroundColor: "#f5f3ef",
-                  borderColor: "#e5e0d6",
-                }}
-              >
-                <td
-                  colSpan={showBankColumns ? 5 : 3}
-                  className="px-4 py-2 text-right uppercase tracking-wide"
-                  style={{ color: "#6b7280" }}
-                >
-                  Loaded Total ({entries.length} of {totalCount})
+                      Failed to load ledger data. Please try again.
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={refetch}
+                      className="gap-2"
+                    >
+                      <RefreshCw size={14} />
+                      Retry
+                    </Button>
+                  </div>
                 </td>
-                <td
-                  className="px-4 py-2 text-right font-mono"
-                  style={{ color: "#dc2626" }}
-                >
-                  {fmt(totalDebit)}
-                </td>
-                <td
-                  className="px-4 py-2 text-right font-mono"
-                  style={{ color: "#16a34a" }}
-                >
-                  {fmt(totalCredit)}
-                </td>
-                <td />
               </tr>
-            </tfoot>
+            </tbody>
+          ) : (
+            !initialLoading &&
+            entries.length > 0 && (
+              <tfoot style={{ position: "sticky", bottom: 0, zIndex: 1 }}>
+                {isFetchingNextPage && (
+                  <tr style={{ backgroundColor: "#faf9f6" }}>
+                    <td colSpan={colSpan} className="px-4 py-2 text-center">
+                      <span
+                        className="flex items-center justify-center gap-2 text-xs"
+                        style={{ color: "#9ca3af" }}
+                      >
+                        <Loader2 size={13} className="animate-spin" />
+                        Loading more entries...
+                      </span>
+                    </td>
+                  </tr>
+                )}
+                <tr
+                  className="text-xs font-semibold border-t"
+                  style={{
+                    backgroundColor: "#f5f3ef",
+                    borderColor: "#e5e0d6",
+                  }}
+                >
+                  <td
+                    colSpan={showBankColumns ? 5 : 3}
+                    className="px-4 py-2 text-right uppercase tracking-wide"
+                    style={{ color: "#6b7280" }}
+                  >
+                    Loaded Total ({entries.length} of {totalCount})
+                  </td>
+                  <td
+                    className="px-4 py-2 text-right font-mono"
+                    style={{ color: "#dc2626" }}
+                  >
+                    {fmt(totalDebit)}
+                  </td>
+                  <td
+                    className="px-4 py-2 text-right font-mono"
+                    style={{ color: "#16a34a" }}
+                  >
+                    {fmt(totalCredit)}
+                  </td>
+                  <td />
+                </tr>
+              </tfoot>
+            )
           )}
         </table>
       </div>

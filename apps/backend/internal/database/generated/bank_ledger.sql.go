@@ -62,11 +62,20 @@ func (q *Queries) DeleteBankLedgerEntry(ctx context.Context, id pgtype.UUID) err
 }
 
 const getBankLedgerCount = `-- name: GetBankLedgerCount :one
-SELECT COUNT(*) FROM bank_ledger
+SELECT COUNT(*) FROM bank_ledger bl
+JOIN bank_accounts ba ON ba.id = bl.bank_account_id
+WHERE
+    ($1::uuid IS NULL OR bl.bank_account_id = $1::uuid)
+    AND ($2::uuid IS NULL OR ba.bank_id = $2::uuid)
 `
 
-func (q *Queries) GetBankLedgerCount(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, getBankLedgerCount)
+type GetBankLedgerCountParams struct {
+	BankAccountID pgtype.UUID `json:"bankAccountId"`
+	BankID        pgtype.UUID `json:"bankId"`
+}
+
+func (q *Queries) GetBankLedgerCount(ctx context.Context, arg GetBankLedgerCountParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getBankLedgerCount, arg.BankAccountID, arg.BankID)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -200,8 +209,7 @@ SELECT
     bl.id, bl.bank_account_id, bl.date, bl.bs_date, bl.entry_type, bl.amount, bl.description, bl.payment_id, bl.created_at,
     ba.account_name,
     ba.account_number,
-    b.name AS bank_name,
-    COUNT(*) OVER() AS total_count
+    b.name AS bank_name
 FROM bank_ledger bl
 JOIN bank_accounts ba ON ba.id = bl.bank_account_id
 JOIN banks b ON b.id = ba.bank_id
@@ -232,7 +240,6 @@ type ListBankLedgerRow struct {
 	AccountName   string             `json:"accountName"`
 	AccountNumber pgtype.Text        `json:"accountNumber"`
 	BankName      string             `json:"bankName"`
-	TotalCount    int64              `json:"totalCount"`
 }
 
 func (q *Queries) ListBankLedger(ctx context.Context, arg ListBankLedgerParams) ([]ListBankLedgerRow, error) {
@@ -262,7 +269,6 @@ func (q *Queries) ListBankLedger(ctx context.Context, arg ListBankLedgerParams) 
 			&i.AccountName,
 			&i.AccountNumber,
 			&i.BankName,
-			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}

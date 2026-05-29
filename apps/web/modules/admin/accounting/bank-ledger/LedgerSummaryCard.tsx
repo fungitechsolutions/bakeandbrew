@@ -3,10 +3,10 @@
 import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatRs } from "./format";
-import type { LedgerSummary } from "./ledger";
+import { BankLedgerSummary } from "@repo/types";
 
 interface LedgerSummaryCardsProps {
-  summary: LedgerSummary | null;
+  summary: BankLedgerSummary | null;
   loading?: boolean;
 }
 
@@ -50,13 +50,13 @@ export function LedgerSummaryCards({
     },
     {
       label: "Net Balance",
-      value: summary ? formatRs(summary.netBalance) : "Rs. 0.00",
+      value: summary ? formatRs(summary.balance) : "Rs. 0.00",
       icon: Wallet,
       accent: "var(--brand-brown)",
       bg: "#fdf6ec",
       border: "#f0d9b8",
       isNet: true,
-      positive: summary ? summary.netBalance >= 0 : true,
+      positive: summary ? summary.balance >= 0 : true,
     },
   ];
 

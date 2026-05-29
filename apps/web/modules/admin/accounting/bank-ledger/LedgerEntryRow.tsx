@@ -1,9 +1,7 @@
-// LedgerEntryRow.tsx
-import { ExternalLink } from "lucide-react";
-import type { LedgerEntryWithAccount } from "./ledger";
+import { BankLedger } from "@repo/types";
 
 interface LedgerEntryRowProps {
-  entry: LedgerEntryWithAccount;
+  entry: BankLedger;
   serialNo: number;
   showBankColumns?: boolean;
   striped?: boolean;
@@ -49,9 +47,9 @@ export function LedgerEntryRow({
       {/* Bank + Account */}
       {showBankColumns && (
         <>
-          <td className="px-4 py-3">{entry.bankAccount.bankName}</td>
+          <td className="px-4 py-3">{entry.bankName}</td>
           <td className="px-4 py-3" style={{ color: "#4b5563" }}>
-            {entry.bankAccount.accountName}
+            {entry.accountName}
           </td>
         </>
       )}
