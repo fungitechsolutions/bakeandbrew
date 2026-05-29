@@ -30,8 +30,8 @@ export function BankAccountRow({
   return (
     <div
       className={[
-        "grid grid-cols-[1fr_220px_140px_90px_80px] gap-4 items-center px-5 py-3.5",
-        "border-b border-stone-100 last:border-0 transition-colors",
+        "grid grid-cols-[minmax(200px,1fr)_220px_140px_90px_80px] gap-4 items-center px-5 py-3.5",
+        "border-b border-stone-100 last:border-0 transition-colors min-w-[730px] w-full",
         account.isDefault
           ? "bg-emerald-50/60 hover:bg-emerald-50"
           : "hover:bg-stone-50",
@@ -39,9 +39,9 @@ export function BankAccountRow({
       role="row"
     >
       {/* Account name + bank name + default badge */}
-      <div className="flex flex-col gap-0.5 min-w-0" role="cell">
+      <div className="flex flex-col gap-0.5 " role="cell">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-[#1a1a1a] font-[family-name:var(--font-dm-sans)] truncate">
+          <span className="text-sm font-medium text-[#1a1a1a] font-[family-name:var(--font-dm-sans)] ">
             {account.accountName}
           </span>
           {account.isDefault && (

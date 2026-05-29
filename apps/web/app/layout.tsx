@@ -9,6 +9,7 @@ import NavFooterWrapper from "@/components/wrapper/nav-footer-wrapper";
 import { siteInfo } from "@/utils/site-info";
 import { getCurrentUser } from "@/lib/queries/auth/get-current-user";
 import { AuthProvider } from "@/components/providers/auth-provider";
+import "nepali-datepicker-reactjs/dist/index.css";
 
 export const metadata: Metadata = {
   title: `${siteInfo.company.shortName} | Professional Training`,

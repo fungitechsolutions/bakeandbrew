@@ -1,9 +1,8 @@
-import { BankLedger } from "@repo/types";
+import { CashLedger } from "@repo/types";
 
-interface LedgerEntryRowProps {
-  entry: BankLedger;
+interface CashLedgerEntryRowProps {
+  entry: CashLedger;
   serialNo: number;
-  showBankColumns?: boolean;
   striped?: boolean;
 }
 
@@ -14,12 +13,11 @@ function formatRs(paisa: number) {
   });
 }
 
-export function LedgerEntryRow({
+export function CashLedgerEntryRow({
   entry,
   serialNo,
-  showBankColumns = true,
   striped = false,
-}: LedgerEntryRowProps) {
+}: CashLedgerEntryRowProps) {
   const isDebit = entry.entryType === "dr";
 
   return (
@@ -39,23 +37,10 @@ export function LedgerEntryRow({
         {serialNo}
       </td>
 
-      {/* Date */}
+      {/* BS Date */}
       <td className="px-4 py-3 tabular-nums whitespace-nowrap font-mono text-xs">
         {entry.bsDate}
       </td>
-
-      {/* Bank + Account */}
-      {showBankColumns && (
-        <>
-          <td className="px-4 py-3 whitespace-nowrap">{entry.bankName}</td>
-          <td
-            className="px-4 py-3 whitespace-nowrap"
-            style={{ color: "#4b5563" }}
-          >
-            {entry.accountName}
-          </td>
-        </>
-      )}
 
       {/* D/C badge */}
       <td className="px-4 py-3 text-center">
@@ -69,7 +54,7 @@ export function LedgerEntryRow({
 
       {/* Debit */}
       <td
-        className="px-4 py-3 text-right tabular-nums font-mono text-xs"
+        className="px-4 py-3 text-right tabular-nums font-mono text-xs whitespace-nowrap"
         style={{ color: isDebit ? "#dc2626" : "#d1d5db" }}
       >
         {isDebit ? formatRs(entry.amount) : "—"}
@@ -77,7 +62,7 @@ export function LedgerEntryRow({
 
       {/* Credit */}
       <td
-        className="px-4 py-3 text-right tabular-nums font-mono text-xs"
+        className="px-4 py-3 text-right tabular-nums font-mono text-xs whitespace-nowrap"
         style={{ color: !isDebit ? "#16a34a" : "#d1d5db" }}
       >
         {!isDebit ? formatRs(entry.amount) : "—"}
@@ -87,16 +72,6 @@ export function LedgerEntryRow({
       <td className="px-4 py-3 whitespace-nowrap" style={{ color: "#4b5563" }}>
         {entry.description ?? <span style={{ color: "#d1d5db" }}>—</span>}
       </td>
-
-      {/* Actions */}
-      {/* <td className="px-4 py-3 text-center">
-        <button
-          className="rounded p-1 transition-colors hover:bg-black/5"
-          style={{ color: "#9ca3af" }}
-        >
-          <ExternalLink size={14} />
-        </button>
-      </td> */}
     </tr>
   );
 }

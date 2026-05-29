@@ -29,40 +29,45 @@ export function BanksTable({
 
   return (
     <div className="rounded-xl border border-stone-200 overflow-hidden bg-white shadow-sm">
-      {/* Table header */}
-      <div
-        className="grid grid-cols-[1fr_90px_160px_80px] gap-4 px-5 py-3 bg-stone-50 border-b border-stone-200"
-        role="row"
-      >
-        {(["Bank Name", "Default", "Created", ""] as const).map((h, i) => (
-          <span
-            key={i}
-            className={[
-              "text-[0.7rem] font-semibold uppercase tracking-widest text-stone-400 font-[family-name:var(--font-dm-sans)]",
-              i === 3 ? "text-right" : "",
-            ].join(" ")}
-            role="columnheader"
+      {/* Scrollable table area */}
+      <div className="overflow-x-auto">
+        <div className="min-w-[520px]">
+          {/* Table header */}
+          <div
+            className="grid grid-cols-[1fr_90px_160px_80px] gap-4 px-5 py-3 bg-stone-50 border-b border-stone-200"
+            role="row"
           >
-            {h}
-          </span>
-        ))}
+            {(["Bank Name", "Default", "Created", ""] as const).map((h, i) => (
+              <span
+                key={i}
+                className={[
+                  "text-[0.7rem] font-semibold uppercase tracking-widest text-stone-400 font-[family-name:var(--font-dm-sans)]",
+                  i === 3 ? "text-right" : "",
+                ].join(" ")}
+                role="columnheader"
+              >
+                {h}
+              </span>
+            ))}
+          </div>
+
+          {/* Rows */}
+          <div role="rowgroup">
+            {banks.map((bank) => (
+              <BankRow
+                key={bank.id}
+                bank={bank}
+                toggleLoadingId={toggleLoadingId}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onToggleDefault={onToggleDefault}
+              />
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Rows */}
-      <div role="rowgroup">
-        {banks.map((bank) => (
-          <BankRow
-            key={bank.id}
-            bank={bank}
-            toggleLoadingId={toggleLoadingId}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            onToggleDefault={onToggleDefault}
-          />
-        ))}
-      </div>
-
-      {/* Pagination */}
+      {/* Pagination — outside scroll, always full width */}
       <div className="flex items-center justify-between flex-wrap gap-3 px-5 py-3 border-t border-stone-100 bg-stone-50">
         <span className="text-xs text-stone-400 font-[family-name:var(--font-dm-sans)]">
           {totalPages > 1
