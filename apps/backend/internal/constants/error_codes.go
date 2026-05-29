@@ -81,4 +81,9 @@ const (
 	BankAccountHasLedgerEntries     = "BANK_ACCOUNT_HAS_LEDGER_ENTRIES"
 	CannotDeleteDefaultBankAccount  = "CANNOT_DELETE_DEFAULT_BANK_ACCOUNT"
 	CannotUnsetDefaultBankAccount   = "CANNOT_UNSET_DEFAULT_BANK_ACCOUNT"
+
+	// suppliers
+	CompanyAlreadyExists = "COMPANY_ALREADY_EXISTS"
+	VatNoAlreadyExists   = "VAT_NO_ALREADY_EXISTS"
+	SupplierNotFound     = "SUPPLIER_NOT_FOUND"
 )

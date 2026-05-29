@@ -6,4 +6,4 @@ CREATE TABLE suppliers (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_suppliers_company_name ON suppliers(company_name);
+CREATE INDEX idx_suppliers_company_name ON suppliers(company_name); 
