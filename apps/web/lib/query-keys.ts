@@ -18,4 +18,11 @@ export const queryKeys = {
     summary: ({ accountID, bankID }: GetBankLedgerSummaryParams) =>
       ["admin-bank-ledger", "summary", accountID, bankID] as const,
   },
+  cashLedger: {
+    all: ["admin-cash-ledger"] as const,
+    list: (fromAD?: string | null, toAD?: string | null) =>
+      ["admin-cash-ledger", "list", fromAD, toAD] as const,
+    summary: (fromAD?: string | null, toAD?: string | null) =>
+      ["admin-cash-ledger", "summary", fromAD, toAD] as const,
+  },
 };

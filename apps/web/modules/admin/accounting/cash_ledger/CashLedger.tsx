@@ -9,15 +9,12 @@ import { CashLedgerSummaryCards } from "./CashLedgerSummaryCards";
 import { CreateCashLedgerEntryForm } from "./CreateCashLedgerEntryForm";
 import { LedgerPageHeader } from "../bank-ledger/LedgerPageHeader";
 import { CashLedgerData, CreateCashLedgerEntryInput } from "@repo/types";
-// TODO: replace with actual API + hooks
-// import { getCashLedger } from "@/lib/api/cash_ledger";
-// import { useCashLedgerSummary } from "@/hooks/queries/admin/cash/useCashLedgerSummary";
-// import { useCreateCashLedgerEntry } from "@/hooks/mutations/admin/cash/useCreateCashLedgerEntry";
-// import { queryKeys } from "@/lib/query-keys";
-import { mockCashLedgerEntries, mockCashLedgerSummary } from "./mock-data";
+import { getCashLedger } from "@/lib/api/cash_ledger";
+import { queryKeys } from "@/lib/query-keys";
 import { CashLedgerFilters } from "./CashLedgerFilter";
+import { useCreateCashLedgerEntry } from "@/hooks/mutations/admin/cash_ledger/useCreateCashLedgerEntry";
+import { useCashLedgerSummary } from "@/hooks/queries/admin/cash_ledger/useCashLedger";
 
-// ── URL search param keys ──────────────────────────────────────────────────────
 const PARAM_FROM_BS = "from_bs";
 const PARAM_TO_BS = "to_bs";
 
@@ -27,8 +24,6 @@ function CashLedgerPageInner() {
   const searchParams = useSearchParams();
   const [formOpen, setFormOpen] = useState(false);
 
-  // ── Filter state ─────────────────────────────────────────────────────────────
-  // AD dates live in local state (sent to backend); BS dates live in URL (display)
   const [fromDate, setFromDate] = useState<string | null>(null);
   const [toDate, setToDate] = useState<string | null>(null);
 
@@ -42,7 +37,6 @@ function CashLedgerPageInner() {
     toBsDate,
   };
 
-  // ── URL sync ──────────────────────────────────────────────────────────────────
   const setSearchParams = useCallback(
     (updates: Record<string, string | null>) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -68,57 +62,54 @@ function CashLedgerPageInner() {
     [setSearchParams],
   );
 
-  // ── Scroll / infinite query ───────────────────────────────────────────────────
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
-  // TODO: replace mock with real infinite query ↓
-  // const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, refetch } =
-  //   useInfiniteQuery<CashLedgerData>({
-  //     queryKey: queryKeys.cashLedger.list(fromDate, toDate),
-  //     queryFn: ({ pageParam = 1 }) =>
-  //       getCashLedger({ page: pageParam as number, fromDate, toDate }),
-  //     initialPageParam: 1,
-  //     getNextPageParam: (lastPage) => {
-  //       const { page, totalPages } = lastPage.meta;
-  //       return page < totalPages ? page + 1 : undefined;
-  //     },
-  //   });
-  // const entries    = useMemo(() => data?.pages.flatMap((p) => p.cashLedger) ?? [], [data]);
-  // const totalCount = data?.pages[0]?.meta.total ?? 0;
-  // const hasReachedEnd = !hasNextPage && !isLoading;
-
-  // ── MOCK (replace with real query above) ─────────────────────────────────────
-  const entries = mockCashLedgerEntries;
-  const totalCount = mockCashLedgerEntries.length;
-  const isLoading = false;
-  const isError = false;
-  const hasReachedEnd = true;
-  const isFetchingNextPage = false;
-  const refetch = () => {};
-  // ─────────────────────────────────────────────────────────────────────────────
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    refetch,
+  } = useInfiniteQuery<CashLedgerData>({
+    queryKey: queryKeys.cashLedger.list(fromDate, toDate),
+    queryFn: ({ pageParam = 1 }) =>
+      getCashLedger({
+        page: pageParam as number,
+        fromAD: fromDate,
+        toAD: toDate,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.meta;
+      return page < totalPages ? page + 1 : undefined;
+    },
+  });
+  const entries = useMemo(
+    () => data?.pages.flatMap((p) => p.cashLedger) ?? [],
+    [data],
+  );
+  const totalCount = data?.pages[0]?.meta.total ?? 0;
+  const hasReachedEnd = !hasNextPage && !isLoading;
 
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    // TODO: uncomment when using real infinite query
-    // if (!hasNextPage || isFetchingNextPage) return;
-    // const el = e.currentTarget;
-    // if (el.scrollHeight - el.scrollTop - el.clientHeight < 200) {
-    //   void fetchNextPage();
-    // }
+    if (!hasNextPage || isFetchingNextPage) return;
+    const el = e.currentTarget;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 200) {
+      void fetchNextPage();
+    }
   }, []);
 
-  // TODO: replace with real mutation ↓
-  // const createCashLedgerEntry = useCreateCashLedgerEntry();
+  const createCashLedgerEntry = useCreateCashLedgerEntry();
   const handleCreateEntry = async (data: CreateCashLedgerEntryInput) => {
-    // await createCashLedgerEntry.mutateAsync(data);
+    await createCashLedgerEntry.mutateAsync(data);
     console.log("Create cash ledger entry:", data);
   };
 
-  // TODO: replace with real summary query ↓
-  // const summaryQuery = useCashLedgerSummary({ fromDate, toDate });
-  // const summary = summaryQuery.data ?? null;
-  // const summaryLoading = summaryQuery.isPending;
-  const summary = mockCashLedgerSummary;
-  const summaryLoading = false;
+  const summaryQuery = useCashLedgerSummary({ fromDate, toDate });
+  const summary = summaryQuery.data ?? null;
+  const summaryLoading = summaryQuery.isPending;
 
   return (
     <div

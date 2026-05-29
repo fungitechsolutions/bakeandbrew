@@ -182,5 +182,5 @@ export {
   type GetCashLedgerResponse,
   type CashLedgerData,
   type CashLedgerSummary,
-  type GetCashLedgerSummaryRepsonse,
+  type GetCashLedgerSummaryResponse,
 } from "./admin/accounting/cash_ledger";
