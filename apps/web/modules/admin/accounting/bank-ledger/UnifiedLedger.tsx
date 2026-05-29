@@ -1,47 +1,36 @@
 "use client";
 
-import { useCallback, useRef, useMemo, Suspense } from "react";
+import { useCallback, useRef, useMemo, Suspense, useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { AlertCircle, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import type { BankAccount, LedgerSummary } from "./ledger";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { FilterState, LedgerFilters } from "./LedgerFilters";
-import {
-  fetchBankAccounts,
-  fetchLedgerPage,
-  fetchLedgerSummary,
-  type LedgerPage,
-} from "./mock-data";
 import { LedgerPageHeader } from "./LedgerPageHeader";
 import { LedgerSummaryCards } from "./LedgerSummaryCard";
 import { LedgerTable } from "./LedgerTable";
 import { CreateLedgerEntryForm } from "./CreateLedgerEntryForm";
 import { Toaster } from "sonner";
-
-// ─── Search param keys ────────────────────────────────────────────────────────
+import { getBankLedger } from "@/lib/api/bank_ledger";
+import { BankLedgerData, CreateBankLedgerEntryInput } from "@repo/types";
+import { useBankLedgerSummary } from "@/hooks/queries/admin/banks/bank_ledger/useBankLedgerSummary";
+import { useBankAccountsDropdown } from "@/hooks/queries/admin/banks/bank_ledger/useBankAccountsDropdown";
+import { useCreateBankLedgerEntry } from "@/hooks/mutations/admin/bank_ledger/useCreateBankLedgerEntry";
+import { queryKeys } from "@/lib/query-keys";
 
 const PARAM_BANK = "bankId";
 const PARAM_ACCOUNT = "accountId";
-const PARAM_FORM = "create";
-
-// ─── Inner component (needs useSearchParams) ──────────────────────────────────
 
 function LedgerPageInner() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [formOpen, setFormOpen] = useState<boolean>(false);
 
   const bankId = searchParams.get(PARAM_BANK) ?? "all";
   const accountId = searchParams.get(PARAM_ACCOUNT) ?? "all";
-  const formOpen = searchParams.get(PARAM_FORM) === "1";
 
   const filters: FilterState = { bankId, accountId };
 
-  // Ref for the scrollable table container — used for scroll-based infinite load
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-
-  // ── Helper: update search params ─────────────────────────────────────────
 
   const setSearchParams = useCallback(
     (updates: Record<string, string | null>) => {
@@ -69,24 +58,11 @@ function LedgerPageInner() {
     [setSearchParams],
   );
 
-  const setFormOpen = useCallback(
-    (open: boolean) => {
-      setSearchParams({ [PARAM_FORM]: open ? "1" : null });
-    },
-    [setSearchParams],
-  );
+  const accountsQuery = useBankAccountsDropdown();
 
-  // ── Queries ──────────────────────────────────────────────────────────────
-
-  const accountsQuery = useQuery<BankAccount[]>({
-    queryKey: ["bankAccounts"],
-    queryFn: fetchBankAccounts,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const summaryQuery = useQuery<LedgerSummary>({
-    queryKey: ["ledgerSummary", bankId, accountId],
-    queryFn: () => fetchLedgerSummary({ bankId, accountId }),
+  const summaryQuery = useBankLedgerSummary({
+    accountID: accountId,
+    bankID: bankId,
   });
 
   const {
@@ -97,28 +73,28 @@ function LedgerPageInner() {
     isLoading: isEntriesLoading,
     isError,
     refetch,
-  } = useInfiniteQuery<LedgerPage>({
-    queryKey: ["ledgerEntries", bankId, accountId],
+  } = useInfiniteQuery<BankLedgerData>({
+    queryKey: queryKeys.bankLedger.list(bankId, accountId),
     queryFn: ({ pageParam }) =>
-      fetchLedgerPage({
-        bankId,
-        accountId,
+      getBankLedger({
+        bankID: bankId,
+        accountID: accountId,
         page: (pageParam as number) ?? 0,
       }),
-    initialPageParam: 0,
-    getNextPageParam: (lastPage) => lastPage.nextPage ?? undefined,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.meta;
+      return page < totalPages ? page + 1 : undefined;
+    },
   });
 
   const entries = useMemo(
-    () => data?.pages.flatMap((p) => p.entries) ?? [],
+    () => data?.pages.flatMap((p) => p.bankLedger) ?? [],
     [data],
   );
-  const totalCount = data?.pages[0]?.totalCount ?? 0;
+  const totalCount = data?.pages[0]?.meta.total ?? 0;
   const hasReachedEnd = !hasNextPage && !isEntriesLoading;
 
-  // ── Scroll-based infinite load ───────────────────────────────────────────
-  // Attach to the scroll container's onScroll. When the user is within
-  // 200px of the bottom, fetch the next page.
   const handleScroll = useCallback(
     (e: React.UIEvent<HTMLDivElement>) => {
       if (!hasNextPage || isFetchingNextPage) return;
@@ -132,35 +108,17 @@ function LedgerPageInner() {
     [hasNextPage, isFetchingNextPage, fetchNextPage],
   );
 
-  // ── Derived state ─────────────────────────────────────────────────────────
+  const createBankLedgerEntry = useCreateBankLedgerEntry();
+
+  const handleCreateBankLedger = async (
+    data: CreateBankLedgerEntryInput & { accountID: string },
+  ) => {
+    await createBankLedgerEntry.mutateAsync(data);
+  };
 
   const accounts = accountsQuery.data ?? [];
   const summary = summaryQuery.data ?? null;
-  const summaryLoading = summaryQuery.isLoading;
-
-  // ── Error state ───────────────────────────────────────────────────────────
-
-  if (isError) {
-    return (
-      <div className="flex flex-col items-center justify-center py-24 gap-4">
-        <AlertCircle size={32} style={{ color: "#dc2626" }} />
-        <p
-          className="text-sm font-medium"
-          style={{ color: "var(--brand-ink)" }}
-        >
-          Failed to load ledger data. Please try again.
-        </p>
-        <Button
-          variant="outline"
-          onClick={() => void refetch()}
-          className="gap-2"
-        >
-          <RefreshCw size={14} />
-          Retry
-        </Button>
-      </div>
-    );
-  }
+  const summaryLoading = summaryQuery.isPending;
 
   return (
     <div
@@ -195,6 +153,8 @@ function LedgerPageInner() {
           onScroll={handleScroll}
           onCreateEntry={() => setFormOpen(true)}
           showBankColumns={true}
+          isError={isError}
+          refetch={refetch}
         />
       </div>
 
@@ -202,7 +162,7 @@ function LedgerPageInner() {
         open={formOpen}
         onOpenChange={setFormOpen}
         accounts={accounts}
-        onSuccess={() => void refetch()}
+        createLedgerEntry={(data) => handleCreateBankLedger(data)}
       />
 
       <Toaster />

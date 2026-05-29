@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
 	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
 	accountingRepository "github.com/suprimkhatri77/sms/backend/internal/repository/accounting"
@@ -30,24 +31,32 @@ func GetBankLedgerSummary(queries accountingRepository.BankLedgerRepository) gin
 			return
 		}
 
-		accountID, err := utils.ConvertToUUID(filter.BankAccountID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, types.APIResponse{
-				Success: false,
-				Message: "Invalid ID format",
-				Code:    constants.InvalidIDFormat,
-			})
-			return
+		var accountID pgtype.UUID
+		if filter.BankAccountID != "" {
+			id, err := utils.ConvertToUUID(filter.BankAccountID)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, types.APIResponse{
+					Success: false,
+					Message: "Invalid account ID format",
+					Code:    constants.InvalidIDFormat,
+				})
+				return
+			}
+			accountID = id
 		}
 
-		bankID, err := utils.ConvertToUUID(filter.BankID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, types.APIResponse{
-				Success: false,
-				Message: "Invalid ID format",
-				Code:    constants.InvalidIDFormat,
-			})
-			return
+		var bankID pgtype.UUID
+		if filter.BankID != "" {
+			id, err := utils.ConvertToUUID(filter.BankID)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, types.APIResponse{
+					Success: false,
+					Message: "Invalid bank ID format",
+					Code:    constants.InvalidIDFormat,
+				})
+				return
+			}
+			bankID = id
 		}
 
 		summary, err := queries.GetBankLedgerSummary(ctx, db.GetBankLedgerSummaryParams{

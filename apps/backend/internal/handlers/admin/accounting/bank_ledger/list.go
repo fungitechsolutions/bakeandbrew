@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
 	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
 	accountingRepository "github.com/suprimkhatri77/sms/backend/internal/repository/accounting"
@@ -32,24 +33,32 @@ func ListBankLedger(queries accountingRepository.BankLedgerRepository) gin.Handl
 			return
 		}
 
-		accountID, err := utils.ConvertToUUID(filter.BankAccountID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, types.APIResponse{
-				Success: false,
-				Message: "Invalid ID format",
-				Code:    constants.InvalidIDFormat,
-			})
-			return
+		var accountID pgtype.UUID
+		if filter.BankAccountID != "" {
+			id, err := utils.ConvertToUUID(filter.BankAccountID)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, types.APIResponse{
+					Success: false,
+					Message: "Invalid account ID format",
+					Code:    constants.InvalidIDFormat,
+				})
+				return
+			}
+			accountID = id
 		}
 
-		bankID, err := utils.ConvertToUUID(filter.BankID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, types.APIResponse{
-				Success: false,
-				Message: "Invalid ID format",
-				Code:    constants.InvalidIDFormat,
-			})
-			return
+		var bankID pgtype.UUID
+		if filter.BankID != "" {
+			id, err := utils.ConvertToUUID(filter.BankID)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, types.APIResponse{
+					Success: false,
+					Message: "Invalid bank ID format",
+					Code:    constants.InvalidIDFormat,
+				})
+				return
+			}
+			bankID = id
 		}
 
 		page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -63,7 +72,10 @@ func ListBankLedger(queries accountingRepository.BankLedgerRepository) gin.Handl
 
 		}
 
-		total, err := queries.GetBankLedgerCount(ctx)
+		total, err := queries.GetBankLedgerCount(ctx, db.GetBankLedgerCountParams{
+			BankAccountID: accountID,
+			BankID:        bankID,
+		})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,

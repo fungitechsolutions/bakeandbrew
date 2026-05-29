@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import type { BankAccount } from "./ledger";
+import { BankAccountForDropdown } from "@repo/types";
 
 export type FilterState = {
   bankId: string;
@@ -17,7 +17,7 @@ export type FilterState = {
 };
 
 interface LedgerFiltersProps {
-  accounts: BankAccount[];
+  accounts: BankAccountForDropdown[];
   filters: FilterState;
   onChange: (filters: FilterState) => void;
   hideAccountSelector?: boolean;
@@ -71,7 +71,12 @@ export function LedgerFilters({
         </Label>
         <Select value={filters.bankId} onValueChange={handleBankChange}>
           <SelectTrigger className="h-9 text-sm w-full">
-            <SelectValue placeholder="All Banks" />
+            <SelectValue placeholder="All Banks">
+              {filters.bankId === "all"
+                ? "All Banks"
+                : (banks.find((b) => b.id === filters.bankId)?.name ??
+                  "All Banks")}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Banks</SelectItem>
@@ -95,7 +100,12 @@ export function LedgerFilters({
           </Label>
           <Select value={filters.accountId} onValueChange={handleAccountChange}>
             <SelectTrigger className="h-9 text-sm w-full">
-              <SelectValue placeholder="All Accounts" />
+              <SelectValue placeholder="All Accounts">
+                {filters.accountId === "all"
+                  ? "All Accounts"
+                  : (filteredAccounts.find((a) => a.id === filters.accountId)
+                      ?.accountName ?? "All Accounts")}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Accounts</SelectItem>

@@ -12,6 +12,7 @@ import (
 	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
 
 	bankaccounts "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/accounting/bank_accounts"
+	bankledger "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/accounting/bank_ledger"
 	"github.com/suprimkhatri77/sms/backend/internal/handlers/admin/accounting/banks"
 	adminAnalytics "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/analytics"
 	adminCourses "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/courses"
@@ -168,8 +169,13 @@ func Setup(r *gin.Engine, cfg Config) {
 	adminBankRouter.GET("", banks.ListBanks(cfg.Queries))
 	adminBankRouter.PUT("/set-default/:bankID", banks.SetDefaultBank(accountingRepository.NewBankTxRepository(cfg.Queries), cfg.PgxPool))
 
+	adminBankRouter.GET("/ledger", bankledger.ListBankLedger(cfg.Queries))
+	adminBankRouter.POST("/ledger/:accountID", bankledger.CreateBankLedgerEntry(cfg.Queries))
+	adminBankRouter.GET("/ledger/summary", bankledger.GetBankLedgerSummary(cfg.Queries))
+
 	adminBankAccountRouter := adminBankRouter.Group("")
 	adminBankAccountRouter.GET("/accounts", bankaccounts.ListBankAccounts(cfg.Queries))
+	adminBankAccountRouter.GET("/accounts/dropdown", bankaccounts.ListBankAccountsForDropdown(cfg.Queries))
 	adminBankAccountRouter.POST("/:bankID/accounts", bankaccounts.CreateBankAccount(cfg.Queries))
 	adminBankAccountRouter.PUT("/accounts/:accountID", bankaccounts.UpdateBankAccount(cfg.Queries))
 	adminBankAccountRouter.DELETE("/accounts/:accountID", bankaccounts.DeleteBankAccount(cfg.Queries))

@@ -60,3 +60,14 @@ SELECT COUNT(*) FROM bank_accounts;
 
 -- name: IsBankAccountDefault :one
 SELECT is_default FROM bank_accounts WHERE id = $1;
+
+-- name: ListBankAccountsForDropdown :many
+SELECT 
+    ba.id,
+    ba.account_name,
+    ba.bank_id,
+    b.name AS bank_name,
+    b.id AS bank_id
+FROM bank_accounts ba
+JOIN banks b ON b.id = ba.bank_id
+ORDER BY ba.account_name ASC;

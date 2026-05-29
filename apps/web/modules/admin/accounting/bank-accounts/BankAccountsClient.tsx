@@ -10,13 +10,13 @@ import { BankAccountsTable } from "./BankAccountsTable";
 import { BankAccountCreateDialog } from "./BankAccountCreateDialog";
 import { BankAccountEditDialog } from "./BankAccountEditDialog";
 import { BankAccountDeleteDialog } from "./BankAccountDeleteDialog";
-import { useBankAccounts } from "@/hooks/queries/bank_accounts/useBankAccounts";
+import { useBankAccounts } from "@/hooks/queries/admin/banks/bank_accounts/useBankAccounts";
 import {
   BankAccount,
   CreateBankAccountInput,
   UpdateBankAccountInput,
 } from "@repo/types";
-import { useBanks } from "@/hooks/queries/bank_accounts/useBanks";
+import { useBanks } from "@/hooks/queries/admin/banks/bank_accounts/useBanks";
 import { useCreateBankAccount } from "@/hooks/mutations/admin/bank_accounts/useCreateBankAccount";
 import { useUpdateBankAccount } from "@/hooks/mutations/admin/bank_accounts/useUpdateBankAccount";
 import { useDeleteBankAccount } from "@/hooks/mutations/admin/bank_accounts/useDeleteBankAccount";
