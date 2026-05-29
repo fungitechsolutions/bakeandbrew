@@ -16,8 +16,8 @@ import { useBankAccountsDropdown } from "@/hooks/queries/admin/banks/bank_ledger
 import { useCreateBankLedgerEntry } from "@/hooks/mutations/admin/bank_ledger/useCreateBankLedgerEntry";
 import { queryKeys } from "@/lib/query-keys";
 
-const PARAM_BANK = "bankId";
-const PARAM_ACCOUNT = "accountId";
+const PARAM_BANK_NAME = "bank_name";
+const PARAM_ACCOUNT_NAME = "account_name";
 
 function LedgerPageInner() {
   const router = useRouter();
@@ -25,10 +25,13 @@ function LedgerPageInner() {
   const searchParams = useSearchParams();
   const [formOpen, setFormOpen] = useState<boolean>(false);
 
-  const bankId = searchParams.get(PARAM_BANK) ?? "all";
-  const accountId = searchParams.get(PARAM_ACCOUNT) ?? "all";
+  const [bankId, setBankId] = useState("all");
+  const [accountId, setAccountId] = useState("all");
 
-  const filters: FilterState = { bankId, accountId };
+  const bankName = searchParams.get(PARAM_BANK_NAME) ?? "all";
+  const accountName = searchParams.get(PARAM_ACCOUNT_NAME) ?? "all";
+
+  const filters: FilterState = { bankId, accountId, bankName, accountName };
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -50,9 +53,13 @@ function LedgerPageInner() {
 
   const handleFilterChange = useCallback(
     (next: FilterState) => {
+      setBankId(next.bankId);
+      setAccountId(next.accountId);
       setSearchParams({
-        [PARAM_BANK]: next.bankId,
-        [PARAM_ACCOUNT]: next.accountId,
+        // [PARAM_BANK]: next.bankId,
+        [PARAM_BANK_NAME]: next.bankName,
+        // [PARAM_ACCOUNT]: next.accountId,
+        [PARAM_ACCOUNT_NAME]: next.accountName,
       });
     },
     [setSearchParams],
@@ -75,11 +82,11 @@ function LedgerPageInner() {
     refetch,
   } = useInfiniteQuery<BankLedgerData>({
     queryKey: queryKeys.bankLedger.list(bankId, accountId),
-    queryFn: ({ pageParam }) =>
+    queryFn: ({ pageParam = 1 }) =>
       getBankLedger({
-        bankID: bankId,
-        accountID: accountId,
-        page: (pageParam as number) ?? 0,
+        page: pageParam as number,
+        bankID: bankId !== "all" ? bankId : undefined,
+        accountID: accountId !== "all" ? accountId : undefined,
       }),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {

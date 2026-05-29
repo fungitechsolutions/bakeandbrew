@@ -13,7 +13,9 @@ import { BankAccountForDropdown } from "@repo/types";
 
 export type FilterState = {
   bankId: string;
+  bankName: string;
   accountId: string;
+  accountName: string;
 };
 
 interface LedgerFiltersProps {
@@ -41,13 +43,28 @@ export function LedgerFilters({
       : accounts.filter((a) => a.bankId === filters.bankId);
 
   function handleBankChange(value: string | null) {
-    onChange({ bankId: value ?? "all", accountId: "all" });
+    const selectedBank = banks.find((b) => b.id === value);
+    const currentAccountStillValid = accounts.find(
+      (a) => a.id === filters.accountId && a.bankId === value,
+    );
+    onChange({
+      bankId: value ?? "all",
+      bankName: selectedBank?.name ?? "all",
+      accountId: currentAccountStillValid ? filters.accountId : "all",
+      accountName: currentAccountStillValid ? filters.accountName : "all",
+    });
   }
 
   function handleAccountChange(value: string | null) {
-    onChange({ ...filters, accountId: value ?? "all" });
+    const selectedAccount = accounts.find((a) => a.id === value);
+    onChange({
+      ...filters,
+      accountId: value ?? "all",
+      accountName: selectedAccount?.accountName ?? "all",
+      bankId: selectedAccount?.bankId ?? filters.bankId,
+      bankName: selectedAccount?.bankName ?? filters.bankName,
+    });
   }
-
   return (
     <div
       className="flex flex-wrap items-end gap-4 rounded-lg border px-5 py-4"

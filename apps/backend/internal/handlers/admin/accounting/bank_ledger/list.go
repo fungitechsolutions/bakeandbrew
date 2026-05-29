@@ -14,7 +14,7 @@ import (
 )
 
 type ListBankLedgerParams struct {
-	BankAccountID string `form:"bank_account_id"`
+	BankAccountID string `form:"account_id"`
 	BankID        string `form:"bank_id"`
 }
 
