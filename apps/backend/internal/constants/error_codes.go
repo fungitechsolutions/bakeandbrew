@@ -86,4 +86,6 @@ const (
 	CompanyAlreadyExists = "COMPANY_ALREADY_EXISTS"
 	VatNoAlreadyExists   = "VAT_NO_ALREADY_EXISTS"
 	SupplierNotFound     = "SUPPLIER_NOT_FOUND"
+	MissingSupplierID    = "MISSING_SUPPLIER_ID"
+	StockNotFound        = "STOCK_NOT_FOUND"
 )

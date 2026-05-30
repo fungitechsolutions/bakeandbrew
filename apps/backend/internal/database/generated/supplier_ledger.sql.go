@@ -62,11 +62,21 @@ func (q *Queries) DeleteSupplierLedgerEntry(ctx context.Context, id pgtype.UUID)
 }
 
 const getSupplierLedgerCount = `-- name: GetSupplierLedgerCount :one
-SELECT COUNT(*) FROM supplier_ledger
+SELECT COUNT(*) FROM supplier_ledger sl
+WHERE
+    ($1::uuid IS NULL OR sl.supplier_id = $1::uuid)
+    AND ($2::date IS NULL OR sl.date >= $2::timestamptz)
+    AND ($3::date IS NULL OR sl.date <= $3::timestamptz)
 `
 
-func (q *Queries) GetSupplierLedgerCount(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, getSupplierLedgerCount)
+type GetSupplierLedgerCountParams struct {
+	SupplierID pgtype.UUID `json:"supplierId"`
+	FromDate   pgtype.Date `json:"fromDate"`
+	ToDate     pgtype.Date `json:"toDate"`
+}
+
+func (q *Queries) GetSupplierLedgerCount(ctx context.Context, arg GetSupplierLedgerCountParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getSupplierLedgerCount, arg.SupplierID, arg.FromDate, arg.ToDate)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -112,6 +122,39 @@ func (q *Queries) GetSupplierLedgerEntryByID(ctx context.Context, id pgtype.UUID
 	return i, err
 }
 
+const getSupplierLedgerSummary = `-- name: GetSupplierLedgerSummary :one
+SELECT
+    COALESCE(SUM(amount) FILTER (WHERE entry_type = 'cr'), 0) AS total_cr,
+    COALESCE(SUM(amount) FILTER (WHERE entry_type = 'dr'), 0) AS total_dr,
+    COALESCE(SUM(amount) FILTER (WHERE entry_type = 'cr'), 0) -
+    COALESCE(SUM(amount) FILTER (WHERE entry_type = 'dr'), 0) AS outstanding
+FROM supplier_ledger sl
+JOIN suppliers s ON s.id = sl.supplier_id
+WHERE
+    ($1::uuid IS NULL OR sl.supplier_id = $1::uuid)
+    AND ($2::date IS NULL OR sl.date >= $2::timestamptz)
+    AND ($3::date IS NULL OR sl.date <= $3::timestamptz)
+`
+
+type GetSupplierLedgerSummaryParams struct {
+	SupplierID pgtype.UUID `json:"supplierId"`
+	FromDate   pgtype.Date `json:"fromDate"`
+	ToDate     pgtype.Date `json:"toDate"`
+}
+
+type GetSupplierLedgerSummaryRow struct {
+	TotalCr     interface{} `json:"totalCr"`
+	TotalDr     interface{} `json:"totalDr"`
+	Outstanding int32       `json:"outstanding"`
+}
+
+func (q *Queries) GetSupplierLedgerSummary(ctx context.Context, arg GetSupplierLedgerSummaryParams) (GetSupplierLedgerSummaryRow, error) {
+	row := q.db.QueryRow(ctx, getSupplierLedgerSummary, arg.SupplierID, arg.FromDate, arg.ToDate)
+	var i GetSupplierLedgerSummaryRow
+	err := row.Scan(&i.TotalCr, &i.TotalDr, &i.Outstanding)
+	return i, err
+}
+
 const getSupplierLedgerSummaryBySupplier = `-- name: GetSupplierLedgerSummaryBySupplier :one
 SELECT
     COALESCE(SUM(amount) FILTER (WHERE entry_type = 'cr'), 0) AS total_cr,
@@ -141,13 +184,20 @@ SELECT
     s.company_name AS supplier_name
 FROM supplier_ledger sl
 JOIN suppliers s ON s.id = sl.supplier_id
+WHERE
+    ($3::uuid IS NULL OR sl.supplier_id = $3::uuid)
+    AND ($4::date IS NULL OR sl.date >= $4::timestamptz)
+    AND ($5::date IS NULL OR sl.date <= $5::timestamptz)
 ORDER BY sl.date DESC
 LIMIT $1 OFFSET $2
 `
 
 type ListSupplierLedgerParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+	Limit      int32       `json:"limit"`
+	Offset     int32       `json:"offset"`
+	SupplierID pgtype.UUID `json:"supplierId"`
+	FromDate   pgtype.Date `json:"fromDate"`
+	ToDate     pgtype.Date `json:"toDate"`
 }
 
 type ListSupplierLedgerRow struct {
@@ -164,7 +214,13 @@ type ListSupplierLedgerRow struct {
 }
 
 func (q *Queries) ListSupplierLedger(ctx context.Context, arg ListSupplierLedgerParams) ([]ListSupplierLedgerRow, error) {
-	rows, err := q.db.Query(ctx, listSupplierLedger, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listSupplierLedger,
+		arg.Limit,
+		arg.Offset,
+		arg.SupplierID,
+		arg.FromDate,
+		arg.ToDate,
+	)
 	if err != nil {
 		return nil, err
 	}
