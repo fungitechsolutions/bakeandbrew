@@ -2,7 +2,7 @@ CREATE TABLE supplier_ledger (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     supplier_id UUID NOT NULL REFERENCES suppliers(id) ON DELETE RESTRICT,
     date TIMESTAMPTZ NOT NULL,
-    bs_date TEXT NOT NULL,
+    bs_date TEXT NOT NULL, 
     entry_type TEXT NOT NULL CHECK (entry_type IN ('dr', 'cr')),
     amount BIGINT NOT NULL CHECK (amount > 0),
     description TEXT,
