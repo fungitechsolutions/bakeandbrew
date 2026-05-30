@@ -2,7 +2,7 @@ CREATE TABLE suppliers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     company_name TEXT NOT NULL UNIQUE,
     vat_no TEXT UNIQUE,
-    phone TEXT,
+    phone TEXT, 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
