@@ -24,7 +24,7 @@ export const getCashLedger = async ({
   if (fromAD) params.append("from_ad", fromAD);
   if (toAD) params.append("to_ad", toAD);
   const res = await api.get<GetCashLedgerResponse>(
-    `/admin/accounting/cash-ledger/list?${params.toString()}`,
+    `/admin/accounting/cash-ledger?${params.toString()}`,
   );
   return {
     cashLedger: res.data.data,
