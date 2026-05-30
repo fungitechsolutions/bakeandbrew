@@ -15,6 +15,7 @@ import (
 	bankledger "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/accounting/bank_ledger"
 	"github.com/suprimkhatri77/sms/backend/internal/handlers/admin/accounting/banks"
 	cashledger "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/accounting/cash_ledger"
+	supplierledger "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/accounting/supplier_ledger"
 	"github.com/suprimkhatri77/sms/backend/internal/handlers/admin/accounting/suppliers"
 	adminAnalytics "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/analytics"
 	adminCourses "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/courses"
@@ -170,6 +171,10 @@ func Setup(r *gin.Engine, cfg Config) {
 	adminSupplierRouter.POST("", suppliers.CreateSupplier(cfg.Queries))
 	adminSupplierRouter.PUT("/:supplierID", suppliers.UpdateSupplier(cfg.Queries))
 	adminSupplierRouter.DELETE("/:supplierID", suppliers.DeleteSupplier(cfg.Queries))
+
+	adminSupplierRouter.GET("/ledger", supplierledger.ListSupplierLedger(cfg.Queries))
+	adminSupplierRouter.POST("/ledger", supplierledger.CreateSupplierLedgerEntry(cfg.Queries))
+	adminSupplierRouter.GET("/ledger/summary", supplierledger.GetSupplierLedgerSummary(cfg.Queries))
 
 	adminCashLedgerRouter := adminAccountingRouter.Group("/cash-ledger")
 	adminCashLedgerRouter.GET("/list", cashledger.ListCashLedger(cfg.Queries))

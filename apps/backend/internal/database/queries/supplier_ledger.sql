@@ -17,8 +17,13 @@ SELECT
     s.company_name AS supplier_name
 FROM supplier_ledger sl
 JOIN suppliers s ON s.id = sl.supplier_id
+WHERE
+    (sqlc.narg('supplier_id')::uuid IS NULL OR sl.supplier_id = sqlc.narg('supplier_id')::uuid)
+    AND (sqlc.narg('from_date')::date IS NULL OR sl.date >= sqlc.narg('from_date')::timestamptz)
+    AND (sqlc.narg('to_date')::date IS NULL OR sl.date <= sqlc.narg('to_date')::timestamptz)
 ORDER BY sl.date DESC
 LIMIT $1 OFFSET $2;
+
 
 -- name: ListSupplierLedgerBySupplier :many
 SELECT
@@ -48,8 +53,26 @@ SELECT
 FROM supplier_ledger
 WHERE supplier_id = $1;
 
+-- name: GetSupplierLedgerSummary :one
+SELECT
+    COALESCE(SUM(amount) FILTER (WHERE entry_type = 'cr'), 0) AS total_cr,
+    COALESCE(SUM(amount) FILTER (WHERE entry_type = 'dr'), 0) AS total_dr,
+    COALESCE(SUM(amount) FILTER (WHERE entry_type = 'cr'), 0) -
+    COALESCE(SUM(amount) FILTER (WHERE entry_type = 'dr'), 0) AS outstanding
+FROM supplier_ledger sl
+JOIN suppliers s ON s.id = sl.supplier_id
+WHERE
+    (sqlc.narg('supplier_id')::uuid IS NULL OR sl.supplier_id = sqlc.narg('supplier_id')::uuid)
+    AND (sqlc.narg('from_date')::date IS NULL OR sl.date >= sqlc.narg('from_date')::timestamptz)
+    AND (sqlc.narg('to_date')::date IS NULL OR sl.date <= sqlc.narg('to_date')::timestamptz);
+
 -- name: GetSupplierLedgerCount :one
-SELECT COUNT(*) FROM supplier_ledger;
+SELECT COUNT(*) FROM supplier_ledger sl
+WHERE
+    (sqlc.narg('supplier_id')::uuid IS NULL OR sl.supplier_id = sqlc.narg('supplier_id')::uuid)
+    AND (sqlc.narg('from_date')::date IS NULL OR sl.date >= sqlc.narg('from_date')::timestamptz)
+    AND (sqlc.narg('to_date')::date IS NULL OR sl.date <= sqlc.narg('to_date')::timestamptz);
 
 -- name: DeleteSupplierLedgerEntry :exec
 DELETE FROM supplier_ledger WHERE id = $1;
+
