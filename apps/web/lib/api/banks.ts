@@ -59,6 +59,6 @@ export const deleteBank = async (
 export const setDefaultBank = async (
   bankID: string,
 ): Promise<SetDefaultBankResponse> => {
-  const res = await api.put(`/admin/accounting/banks/set-default/${bankID}`);
+  const res = await api.put(`/admin/accounting/banks/${bankID}/set-default`);
   return res.data;
 };

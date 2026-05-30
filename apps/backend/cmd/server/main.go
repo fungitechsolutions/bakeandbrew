@@ -12,18 +12,20 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/suprimkhatri77/sms/backend/internal/config"
+	appconfig "github.com/suprimkhatri77/sms/backend/internal/config"
+
 	"github.com/suprimkhatri77/sms/backend/internal/database"
 	dbgen "github.com/suprimkhatri77/sms/backend/internal/database/generated"
 	"github.com/suprimkhatri77/sms/backend/internal/middleware"
 	"github.com/suprimkhatri77/sms/backend/internal/pkg/cloudinary"
 	"github.com/suprimkhatri77/sms/backend/internal/repository"
 	"github.com/suprimkhatri77/sms/backend/internal/routes"
+	routeconfig "github.com/suprimkhatri77/sms/backend/internal/routes/config"
 	"github.com/suprimkhatri77/sms/backend/internal/validator"
 )
 
 func main() {
-	cfg, err := config.Load()
+	cfg, err := appconfig.Load()
 	if err != nil {
 		log.Fatalf("config: %v", err)
 	}
@@ -71,7 +73,7 @@ func main() {
 	r.Use(gin.Logger())
 	r.Use(middleware.CORS(cfg))
 
-	routes.Setup(r, routes.Config{
+	routes.Setup(r, routeconfig.Config{
 		Config:      cfg,
 		Queries:     queries,
 		CldClient:   cldClient,
