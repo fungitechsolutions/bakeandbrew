@@ -1,12 +1,12 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Supplier, SupplierPaginationMeta } from "./types";
+import { PaginationMeta, Supplier } from "@repo/types";
 import { SupplierRow } from "./SupplierRow";
 
 interface SuppliersTableProps {
   suppliers: Supplier[];
-  meta: SupplierPaginationMeta;
+  meta: PaginationMeta;
   onEdit: (supplier: Supplier) => void;
   onDelete: (supplier: Supplier) => void;
   onPageChange: (page: number) => void;
@@ -55,8 +55,8 @@ export function SuppliersTable({
               <SupplierRow
                 key={supplier.id}
                 supplier={supplier}
-                onEdit={onEdit}
-                onDelete={onDelete}
+                onEdit={() => onEdit(supplier)}
+                onDelete={() => onDelete(supplier)}
               />
             ))}
           </div>
