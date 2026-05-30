@@ -27,9 +27,19 @@ const suppliersData = z.object({
 export type SuppliersData = z.infer<typeof suppliersData>;
 
 export const createSupplierSchema = z.object({
-  companyName: z.string().min(2).max(100),
-  vatNo: z.string().optional(),
-  phone: z.string().optional(),
+  companyName: z
+    .string()
+    .min(2, "Company name is required")
+    .max(100, "Company name must be less than 100 characters"),
+  vatNo: z
+    .string()
+    .regex(/^[0-9]{10}$/, "Enter a valid VAT number")
+    .max(10, "VAT number must be 10 digits")
+    .optional(),
+  phone: z
+    .string()
+    .regex(/^[0-9]{10}$/, "Enter a valid phone number")
+    .optional(),
 });
 export type CreateSupplierInput = z.infer<typeof createSupplierSchema>;
 
@@ -43,9 +53,21 @@ export type CreateSupplierResponse = z.infer<
 >;
 
 export const updateSupplierSchema = z.object({
-  companyName: z.string().min(2).max(100),
-  vatNo: z.string().optional(),
-  phone: z.string().optional(),
+  companyName: z
+    .string()
+    .min(2, "Company name is required")
+    .max(100, "Company name must be less than 100 characters"),
+  vatNo: z
+    .string()
+    .regex(/^[0-9]{10}$/, "Enter a valid VAT number")
+    .max(10, "VAT number must be 10 digits")
+    .nullable()
+    .transform((val) => val ?? undefined),
+  phone: z
+    .string()
+    .regex(/^[0-9]{10}$/, "Enter a valid phone number")
+    .nullable()
+    .transform((val) => val ?? undefined),
 });
 export type UpdateSupplierInput = z.infer<typeof updateSupplierSchema>;
 

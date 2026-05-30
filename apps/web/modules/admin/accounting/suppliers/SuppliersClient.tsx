@@ -2,15 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { AxiosError } from "axios";
-import { ApiError } from "@/lib/axios";
-import {
-  CreateSupplierInput,
-  Supplier,
-  SuppliersData,
-  UpdateSupplierInput,
-} from "./types";
 
 import { SuppliersSkeleton } from "./SuppliersSkeleton";
 import { SuppliersError } from "./SuppliersError";
@@ -20,25 +11,15 @@ import { SupplierEditDialog } from "./SupplierEditDialog";
 import { SupplierDeleteDialog } from "./SupplierDeleteDialog";
 import { SupplierCreateDialog } from "./SupplierCreateDialog";
 
-// TODO: import real API + hooks
-// import { fetchSuppliers } from "@/lib/api/suppliers";
-// import { useCreateSupplier } from "@/hooks/mutations/admin/suppliers/useCreateSupplier";
-// import { useUpdateSupplier } from "@/hooks/mutations/admin/suppliers/useUpdateSupplier";
-// import { useDeleteSupplier } from "@/hooks/mutations/admin/suppliers/useDeleteSupplier";
-
-// ── MOCK (remove when real API is wired) ──────────────────────────────────────
-import { mockSuppliers } from "./mock-data";
-
-const MOCK_DATA: SuppliersData = {
-  suppliers: mockSuppliers,
-  meta: { page: 1, totalPages: 1, total: mockSuppliers.length, limit: 20 },
-};
-
-async function fetchSuppliersMock(_page: number): Promise<SuppliersData> {
-  await new Promise((r) => setTimeout(r, 400));
-  return MOCK_DATA;
-}
-// ─────────────────────────────────────────────────────────────────────────────
+import { useSuppliers } from "@/hooks/queries/admin/suppliers/useSuppliers";
+import {
+  CreateSupplierInput,
+  Supplier,
+  UpdateSupplierInput,
+} from "@repo/types";
+import { useCreateSupplier } from "@/hooks/mutations/admin/suppliers/useCreateSupplier";
+import { useUpdateSupplier } from "@/hooks/mutations/admin/suppliers/useUpdateSupplier";
+import { useDeleteSupplier } from "@/hooks/mutations/admin/suppliers/useDeleteSupplier";
 
 export function SuppliersClient() {
   const [page, setPage] = useState(1);
@@ -46,18 +27,8 @@ export function SuppliersClient() {
   const [editSupplier, setEditSupplier] = useState<Supplier | null>(null);
   const [deleteSupplier, setDeleteSupplier] = useState<Supplier | null>(null);
 
-  const { data, isPending, isError, error, refetch } = useQuery<
-    SuppliersData,
-    AxiosError<ApiError>
-  >({
-    queryKey: ["admin-suppliers", page],
-    // TODO: swap mock for real: queryFn: () => fetchSuppliers(page),
-    queryFn: () => fetchSuppliersMock(page),
-    staleTime: 1000 * 60 * 10,
-    gcTime: 1000 * 60 * 30,
-  });
+  const { data, isPending, isError, error, refetch } = useSuppliers(page);
 
-  // Keyboard shortcut — "a" to open create dialog (same as Banks)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
@@ -73,21 +44,26 @@ export function SuppliersClient() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  const createSupplier = useCreateSupplier();
+  const updateSupplier = useUpdateSupplier();
+  const deleteSupplierMutation = useDeleteSupplier();
+
   // TODO: replace with real mutations
   const handleCreate = async (data: CreateSupplierInput) => {
-    console.log("Create supplier:", data);
-    // await createSupplier.mutateAsync(data);
+    await createSupplier.mutateAsync(data);
   };
 
-  const handleEdit = async (supplier: Supplier, data: UpdateSupplierInput) => {
-    console.log("Update supplier:", supplier.id, data);
-    // await updateSupplier.mutateAsync({ supplierID: id, ...data });
+  const handleEdit = async (id: string, data: UpdateSupplierInput) => {
+    await updateSupplier.mutateAsync({
+      supplierID: id,
+      ...data,
+      companyName: data.companyName!,
+    });
     setEditSupplier(null);
   };
 
   const handleDelete = async (id: string) => {
-    console.log("Delete supplier:", id);
-    // await deleteSupplier.mutateAsync({ supplierID: id });
+    await deleteSupplierMutation.mutateAsync({ supplierID: id });
     setDeleteSupplier(null);
   };
 
@@ -133,7 +109,7 @@ export function SuppliersClient() {
             meta={data.meta}
             onEdit={setEditSupplier}
             onDelete={setDeleteSupplier}
-            onPageChange={setPage}
+            onPageChange={(page) => setPage(page)}
           />
         )}
       </div>
@@ -141,19 +117,19 @@ export function SuppliersClient() {
       {/* Dialogs */}
       <SupplierCreateDialog
         open={createOpen}
-        loading={false} // TODO: createSupplier.isPending
+        loading={createSupplier.isPending}
         onClose={() => setCreateOpen(false)}
         onCreate={handleCreate}
       />
       <SupplierEditDialog
         supplier={editSupplier}
-        loading={false} // TODO: updateSupplier.isPending
+        loading={updateSupplier.isPending}
         onClose={() => setEditSupplier(null)}
-        onSave={(id, data) => handleEdit(editSupplier!, data)}
+        onSave={(id, data) => handleEdit(id, data)}
       />
       <SupplierDeleteDialog
         supplier={deleteSupplier}
-        loading={false} // TODO: deleteSupplier.isPending
+        loading={deleteSupplierMutation.isPending}
         onClose={() => setDeleteSupplier(null)}
         onConfirm={handleDelete}
       />

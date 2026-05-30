@@ -25,4 +25,8 @@ export const queryKeys = {
     summary: (fromAD?: string | null, toAD?: string | null) =>
       ["admin-cash-ledger", "summary", fromAD, toAD] as const,
   },
+  suppliers: {
+    all: ["admin-suppliers"] as const,
+    list: (page: number) => ["admin-suppliers", "list", page] as const,
+  },
 };

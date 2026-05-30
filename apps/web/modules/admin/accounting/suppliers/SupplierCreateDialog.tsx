@@ -13,6 +13,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CreateSupplierInput } from "./types";
+import { createSupplierSchema } from "@repo/types";
+import z from "zod";
+import { FieldError } from "@/components/ui/field";
+import { ApiError } from "@/lib/axios";
+import { AxiosError } from "axios";
+import { mapFieldErrors } from "@/utils/api";
 
 interface SupplierCreateDialogProps {
   open: boolean;
@@ -30,29 +36,51 @@ export function SupplierCreateDialog({
   const [companyName, setCompanyName] = useState("");
   const [vatNo, setVatNo] = useState("");
   const [phone, setPhone] = useState("");
-  const [error, setError] = useState("");
+  const [errors, setErrors] =
+    useState<Partial<Record<keyof CreateSupplierInput, string>>>();
 
   const handleSubmit = async () => {
-    if (!companyName.trim()) {
-      setError("Company name is required.");
-      return;
-    }
-    setError("");
-    await onCreate({
+    const validateFields = createSupplierSchema.safeParse({
       companyName: companyName.trim(),
       vatNo: vatNo.trim() || undefined,
       phone: phone.trim() || undefined,
     });
-    setCompanyName("");
-    setVatNo("");
-    setPhone("");
+    if (!validateFields.success) {
+      const tree = z.treeifyError(validateFields.error).properties;
+      setErrors({
+        companyName: tree?.companyName?.errors[0],
+        vatNo: tree?.vatNo?.errors[0],
+        phone: tree?.phone?.errors[0],
+      });
+      return;
+    }
+
+    setErrors({});
+    try {
+      await onCreate({
+        companyName: companyName.trim(),
+        vatNo: vatNo.trim() || undefined,
+        phone: phone.trim() || undefined,
+      });
+      setCompanyName("");
+      setVatNo("");
+      setPhone("");
+      setErrors({});
+      onClose();
+    } catch (err) {
+      const error = err as AxiosError<ApiError>;
+      const data = error.response?.data;
+      if (data?.errors?.length) {
+        setErrors(mapFieldErrors(data));
+      }
+    }
   };
 
   const handleClose = () => {
     setCompanyName("");
     setVatNo("");
     setPhone("");
-    setError("");
+    setErrors({});
     onClose();
   };
 
@@ -79,12 +107,14 @@ export function SupplierCreateDialog({
               value={companyName}
               onChange={(e) => {
                 setCompanyName(e.target.value);
-                setError("");
+                setErrors((prev) => ({ ...prev, companyName: undefined }));
               }}
               onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
               autoFocus
             />
-            {error && <p className="text-xs text-red-500">{error}</p>}
+            {errors?.companyName && (
+              <FieldError>{errors.companyName}</FieldError>
+            )}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -100,6 +130,7 @@ export function SupplierCreateDialog({
               value={vatNo}
               onChange={(e) => setVatNo(e.target.value)}
             />
+            {errors?.vatNo && <FieldError>{errors.vatNo}</FieldError>}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -116,6 +147,7 @@ export function SupplierCreateDialog({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />
+            {errors?.phone && <FieldError>{errors.phone}</FieldError>}
           </div>
         </div>
 

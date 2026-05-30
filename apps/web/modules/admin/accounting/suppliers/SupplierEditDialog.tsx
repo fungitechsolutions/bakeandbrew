@@ -12,8 +12,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Supplier } from "./types";
-import { UpdateSupplierInput } from "./types";
+import {
+  Supplier,
+  UpdateSupplierInput,
+  updateSupplierSchema,
+} from "@repo/types";
+import z from "zod";
+import { AxiosError } from "axios";
+import { ApiError } from "@/lib/axios";
+import { mapFieldErrors } from "@/utils/api";
+import { toast } from "sonner";
+import { FieldError } from "@/components/ui/field";
 
 interface SupplierEditDialogProps {
   supplier: Supplier | null;
@@ -31,7 +40,8 @@ export function SupplierEditDialog({
   const [companyName, setCompanyName] = useState("");
   const [vatNo, setVatNo] = useState("");
   const [phone, setPhone] = useState("");
-  const [error, setError] = useState("");
+  const [errors, setErrors] =
+    useState<Partial<Record<keyof UpdateSupplierInput, string>>>();
 
   useEffect(() => {
     if (supplier) {
@@ -39,23 +49,47 @@ export function SupplierEditDialog({
         setCompanyName(supplier.companyName);
         setVatNo(supplier.vatNo ?? "");
         setPhone(supplier.phone ?? "");
-        setError("");
+        setErrors({});
       }, 0);
     }
-  }, [supplier]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [supplier]);
 
   const handleSave = async () => {
-    if (!companyName.trim()) {
-      setError("Company name is required.");
+    if (!supplier) {
+      toast.error("Supplier not found");
       return;
     }
-    if (!supplier) return;
-    setError("");
-    await onSave(supplier.id, {
+    const validateFields = updateSupplierSchema.safeParse({
       companyName: companyName.trim(),
       vatNo: vatNo.trim() || undefined,
       phone: phone.trim() || undefined,
     });
+    if (!validateFields.success) {
+      const tree = z.treeifyError(validateFields.error).properties;
+      setErrors({
+        companyName: tree?.companyName?.errors[0],
+        vatNo: tree?.vatNo?.errors[0],
+        phone: tree?.phone?.errors[0],
+      });
+      return;
+    }
+
+    setErrors({});
+
+    try {
+      await onSave(supplier.id, {
+        companyName: companyName.trim(),
+        vatNo: vatNo.trim() || undefined,
+        phone: phone.trim() || undefined,
+      });
+      onClose();
+    } catch (err) {
+      const error = err as AxiosError<ApiError>;
+      const data = error.response?.data;
+      if (data?.errors?.length) {
+        setErrors(mapFieldErrors(data));
+      }
+    }
   };
 
   return (
@@ -80,12 +114,14 @@ export function SupplierEditDialog({
               value={companyName}
               onChange={(e) => {
                 setCompanyName(e.target.value);
-                setError("");
+                setErrors((prev) => ({ ...prev, companyName: undefined }));
               }}
               onKeyDown={(e) => e.key === "Enter" && handleSave()}
               autoFocus
             />
-            {error && <p className="text-xs text-red-500">{error}</p>}
+            {errors?.companyName && (
+              <FieldError>{errors.companyName}</FieldError>
+            )}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -99,8 +135,12 @@ export function SupplierEditDialog({
               placeholder="e.g. 300123456"
               className="h-9 font-mono"
               value={vatNo}
-              onChange={(e) => setVatNo(e.target.value)}
+              onChange={(e) => {
+                setVatNo(e.target.value);
+                setErrors((prev) => ({ ...prev, vatNo: undefined }));
+              }}
             />
+            {errors?.vatNo && <FieldError>{errors.vatNo}</FieldError>}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -115,8 +155,12 @@ export function SupplierEditDialog({
               placeholder="e.g. 9841000000"
               className="h-9"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => {
+                setPhone(e.target.value);
+                setErrors((prev) => ({ ...prev, phone: undefined }));
+              }}
             />
+            {errors?.phone && <FieldError>{errors.phone}</FieldError>}
           </div>
         </div>
 

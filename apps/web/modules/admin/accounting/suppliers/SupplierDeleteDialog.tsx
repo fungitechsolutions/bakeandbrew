@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
-import { Supplier } from "./types";
+import { Supplier } from "@repo/types";
 
 interface SupplierDeleteDialogProps {
   supplier: Supplier | null;

@@ -1,12 +1,12 @@
 "use client";
 
 import { Pencil, Trash2, Hash, Phone } from "lucide-react";
-import { Supplier } from "./types";
+import { Supplier } from "@repo/types";
 
 interface SupplierRowProps {
   supplier: Supplier;
-  onEdit: (supplier: Supplier) => void;
-  onDelete: (supplier: Supplier) => void;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
 function formatDate(iso: string): string {
@@ -72,14 +72,14 @@ export function SupplierRow({ supplier, onEdit, onDelete }: SupplierRowProps) {
       {/* Actions */}
       <div className="flex items-center justify-end gap-1.5" role="cell">
         <button
-          onClick={() => onEdit(supplier)}
+          onClick={() => onEdit(supplier.id)}
           aria-label={`Edit ${supplier.companyName}`}
           className="w-8 h-8 rounded-md border border-stone-200 flex items-center justify-center text-stone-400 hover:bg-stone-100 hover:text-stone-700 hover:border-stone-300 transition-colors cursor-pointer"
         >
           <Pencil size={13} strokeWidth={2} />
         </button>
         <button
-          onClick={() => onDelete(supplier)}
+          onClick={() => onDelete(supplier.id)}
           aria-label={`Delete ${supplier.companyName}`}
           className="w-8 h-8 rounded-md border border-stone-200 flex items-center justify-center text-stone-400 hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors cursor-pointer"
         >
