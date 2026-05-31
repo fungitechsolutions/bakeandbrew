@@ -7,6 +7,7 @@ import (
 	adminInventoryStockOut "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/inventory/stockout"
 	adminInventorySummary "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/inventory/summary"
 	adminInventoryWastages "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/inventory/wastages"
+	"github.com/suprimkhatri77/sms/backend/internal/repository"
 	"github.com/suprimkhatri77/sms/backend/internal/routes/config"
 )
 
@@ -19,7 +20,7 @@ func setupAdminInventoryRoutes(admin *gin.RouterGroup, cfg config.Config) {
 	inv.DELETE("/products/:productID", products.DeleteProduct(cfg.Queries))
 
 	inv.GET("/stock/in", adminInventoryStockIn.ListStockIn(cfg.Queries))
-	inv.POST("/stock/in", adminInventoryStockIn.CreateStockIn(cfg.Queries))
+	inv.POST("/stock/in", adminInventoryStockIn.CreateStockIn(repository.NewInventoryTxRepository(cfg.Queries, cfg.PgxPool), cfg.PgxPool))
 	inv.PUT("/stock/in/:stockID", adminInventoryStockIn.UpdateStockIn(cfg.Queries))
 	inv.DELETE("/stock/in/:stockID", adminInventoryStockIn.DeleteStockIn(cfg.Queries))
 

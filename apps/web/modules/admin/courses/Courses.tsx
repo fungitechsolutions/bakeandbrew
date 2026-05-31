@@ -98,7 +98,7 @@ export default function CoursesPage() {
       const optimisticCourse: Course = {
         id: crypto.randomUUID(),
         name: data.name,
-        fee: data.fee,
+        fee: data.fee * 100,
         isActive: data.isActive,
         createdAt: new Date(),
       };

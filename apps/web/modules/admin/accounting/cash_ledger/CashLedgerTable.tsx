@@ -127,7 +127,7 @@ export function CashLedgerTable({
               entries.map((entry, idx) => (
                 <CashLedgerEntryRow
                   key={entry.id}
-                  entry={{ ...entry, amount: entry.amount / 100 }}
+                  entry={entry}
                   serialNo={idx + 1}
                   striped={idx % 2 !== 0}
                 />

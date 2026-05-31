@@ -3,8 +3,10 @@ package repository
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
 	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
 )
 
@@ -15,9 +17,6 @@ type AdminRepository interface {
 	GetCoursesByStudentID(ctx context.Context, studentID pgtype.UUID) ([]db.GetCoursesByStudentIDRow, error)
 
 	GetPaymentsByStudent(ctx context.Context, studentID pgtype.UUID) ([]db.GetPaymentsByStudentRow, error)
-
-	GetStudentFeeSummary(ctx context.Context, id pgtype.UUID) (db.GetStudentFeeSummaryRow, error)
-	AddPayment(ctx context.Context, params db.AddPaymentParams) (db.Payment, error)
 
 	UpdateStudentStatus(ctx context.Context, params db.UpdateStudentStatusParams) (db.Student, error)
 	CreateCourse(ctx context.Context, params db.CreateCourseParams) (db.Course, error)
@@ -46,4 +45,51 @@ type AdminRepository interface {
 	// admin/students/:id
 	UpdateStudentPersonalInfo(ctx context.Context, params db.UpdateStudentPersonalInfoParams) (pgconn.CommandTag, error)
 	UpdateStudentGuardianInfo(ctx context.Context, params db.UpdateStudentGuardianInfoParams) (pgconn.CommandTag, error)
+}
+
+type AdminPaymentTxRepository interface {
+	WithTx(tx pgx.Tx) AdminPaymentTxRepository
+	GetStudentFeeSummary(ctx context.Context, id pgtype.UUID) (db.GetStudentFeeSummaryRow, error)
+	AddPayment(ctx context.Context, params db.AddPaymentParams) (db.Payment, error)
+	GetStudentByID(ctx context.Context, id pgtype.UUID) (db.GetStudentByIDRow, error)
+	CreateBankLedgerEntry(ctx context.Context, params db.CreateBankLedgerEntryParams) (db.BankLedger, error)
+	CreateCashLedgerEntry(ctx context.Context, params db.CreateCashLedgerEntryParams) (db.CashLedger, error)
+	GetDefaultBankAccount(ctx context.Context) (db.GetDefaultBankAccountRow, error)
+}
+
+type adminPaymentTxRepository struct {
+	queries *db.Queries
+	pool    *pgxpool.Pool
+}
+
+func NewAdminPaymentTxRepository(queries *db.Queries, pool *pgxpool.Pool) AdminPaymentTxRepository {
+	return &adminPaymentTxRepository{queries: queries, pool: pool}
+}
+
+func (r *adminPaymentTxRepository) WithTx(tx pgx.Tx) AdminPaymentTxRepository {
+	return &adminPaymentTxRepository{queries: r.queries.WithTx(tx), pool: r.pool}
+}
+
+func (r *adminPaymentTxRepository) GetStudentFeeSummary(ctx context.Context, id pgtype.UUID) (db.GetStudentFeeSummaryRow, error) {
+	return r.queries.GetStudentFeeSummary(ctx, id)
+}
+
+func (r *adminPaymentTxRepository) AddPayment(ctx context.Context, params db.AddPaymentParams) (db.Payment, error) {
+	return r.queries.AddPayment(ctx, params)
+}
+
+func (r *adminPaymentTxRepository) GetStudentByID(ctx context.Context, id pgtype.UUID) (db.GetStudentByIDRow, error) {
+	return r.queries.GetStudentByID(ctx, id)
+}
+
+func (r *adminPaymentTxRepository) CreateBankLedgerEntry(ctx context.Context, params db.CreateBankLedgerEntryParams) (db.BankLedger, error) {
+	return r.queries.CreateBankLedgerEntry(ctx, params)
+}
+
+func (r *adminPaymentTxRepository) CreateCashLedgerEntry(ctx context.Context, params db.CreateCashLedgerEntryParams) (db.CashLedger, error) {
+	return r.queries.CreateCashLedgerEntry(ctx, params)
+}
+
+func (r *adminPaymentTxRepository) GetDefaultBankAccount(ctx context.Context) (db.GetDefaultBankAccountRow, error) {
+	return r.queries.GetDefaultBankAccount(ctx)
 }

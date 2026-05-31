@@ -1,14 +1,5 @@
 package types
 
-type CreateStockInRequest struct {
-	ProductID string  `json:"productID" binding:"required,uuid"`
-	Date      string  `json:"date" binding:"required"`
-	InvoiceNo string  `json:"invoiceNo" binding:"omitempty"`
-	Quantity  int     `json:"quantity" binding:"required,min=1,max=10000000"`
-	Rate      float64 `json:"rate" binding:"required,gt=0"`
-	Note      string  `json:"note" binding:"omitempty"`
-}
-
 type UpdateStockInRequest struct {
 	ProductID string  `json:"productID" binding:"required,uuid"`
 	Date      string  `json:"date" binding:"required"`

@@ -104,7 +104,7 @@ export function CashLedgerFilters({
               <CalendarDays className="h-4 w-4" strokeWidth={1.75} />
             </span>
             <NepaliDatePicker
-              inputClassName={cn(inputCls, "pl-9")}
+              inputClassName={cn(inputCls, "pl-9 rounded-none shadow-none")}
               value={filters.fromBsDate ?? ""}
               onChange={(bsValue: string) => {
                 if (bsValue) handleFromDateChange(bsValue);
@@ -127,7 +127,7 @@ export function CashLedgerFilters({
               <CalendarDays className="h-4 w-4" strokeWidth={1.75} />
             </span>
             <NepaliDatePicker
-              inputClassName={cn(inputCls, "pl-9")}
+              inputClassName={cn(inputCls, "pl-9 rounded-none shadow-none")}
               value={filters.toBsDate ?? ""}
               onChange={(bsValue: string) => {
                 if (bsValue) handleToDateChange(bsValue);
