@@ -3,10 +3,10 @@ package admin
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/handlers/admin/inventory/products"
-	adminInventoryStockIn "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/inventory/stock/in"
-	adminInventoryStockOut "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/inventory/stock/out"
-	adminInventoryWastages "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/inventory/stock/wastages"
+	adminInventoryStockIn "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/inventory/stockin"
+	adminInventoryStockOut "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/inventory/stockout"
 	adminInventorySummary "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/inventory/summary"
+	adminInventoryWastages "github.com/suprimkhatri77/sms/backend/internal/handlers/admin/inventory/wastages"
 	"github.com/suprimkhatri77/sms/backend/internal/routes/config"
 )
 
