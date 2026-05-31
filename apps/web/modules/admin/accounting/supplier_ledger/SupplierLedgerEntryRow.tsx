@@ -1,4 +1,4 @@
-import { SupplierLedger } from "./types";
+import { SupplierLedger } from "@repo/types";
 
 interface SupplierLedgerEntryRowProps {
   entry: SupplierLedger;

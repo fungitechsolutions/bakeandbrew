@@ -14,21 +14,16 @@ import { SupplierLedgerSummaryCards } from "./SupplierLedgerSummaryCard";
 import { SupplierLedgerSkeleton } from "./SupplierLedgerSkeleton";
 import { SupplierLedgerError } from "./SupplierLedgerError";
 import { SupplierLedgerEmpty } from "./SupplierLedgerEmpty";
-import { SupplierLedgerFilters, CreateSupplierLedgerEntryInput } from "./types";
+import { SupplierLedgerFilters } from "./types";
+import { CreateSupplierLedgerEntryInput } from "@repo/types";
 
-// TODO: replace with real API + hooks
-// import { getSupplierLedger }         from "@/lib/api/supplier_ledger";
-// import { useSupplierLedgerSummary }  from "@/hooks/queries/admin/suppliers/useSupplierLedgerSummary";
-// import { useSuppliersDropdown }      from "@/hooks/queries/admin/suppliers/useSuppliersDropdown";
-// import { useCreateSupplierLedgerEntry } from "@/hooks/mutations/admin/suppliers/useCreateSupplierLedgerEntry";
-// import { queryKeys } from "@/lib/query-keys";
-
-import {
-  mockSupplierLedgerEntries,
-  mockSupplierLedgerSummary,
-  mockSuppliersDropdown,
-} from "./mock-data";
 import { CreateSupplierLedgerEntryForm } from "./CreateSupplierLedgerEntryForm";
+import { SupplierLedgerData } from "@repo/types";
+import { queryKeys } from "@/lib/query-keys";
+import { getSupplierLedger } from "@/lib/api/supplier_ledger";
+import { useSupplierLedgerSummary } from "@/hooks/queries/admin/suppliers/ledger/useSupplierLedgerSummary";
+import { useSuppliers } from "@/hooks/queries/admin/suppliers/useSuppliers";
+import { useCreateSupplierLedgerEntry } from "@/hooks/queries/admin/suppliers/ledger/useCreateSupplierLedgerEntry";
 
 const PARAM_SUPPLIER_NAME = "supplier_name";
 const PARAM_FROM_BS = "from_bs";
@@ -38,9 +33,9 @@ function SupplierLedgerInner() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const page = Number(searchParams.get("page")) || 1;
   const [createOpen, setCreateOpen] = useState(false);
 
-  // ── Filter state ──────────────────────────────────────────────────────────────
   const [supplierId, setSupplierId] = useState("all");
   const [fromDate, setFromDate] = useState<string | null>(null);
   const [toDate, setToDate] = useState<string | null>(null);
@@ -86,52 +81,62 @@ function SupplierLedgerInner() {
     [setSearchParams],
   );
 
-  // ── Infinite query ────────────────────────────────────────────────────────────
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const ledgerSummaryQuery = useSupplierLedgerSummary({
+    supplierID: supplierId,
+    fromDate,
+    toDate,
+  });
 
-  // TODO: swap mock for real ↓
-  // const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, error, refetch } =
-  //   useInfiniteQuery<SupplierLedgerData, AxiosError<ApiError>>({
-  //     queryKey: queryKeys.supplierLedger.list(supplierId, fromDate, toDate),
-  //     queryFn: ({ pageParam = 1 }) =>
-  //       getSupplierLedger({ page: pageParam as number,
-  //         supplierID: supplierId !== "all" ? supplierId : undefined,
-  //         fromDate: fromDate ?? undefined, toDate: toDate ?? undefined }),
-  //     initialPageParam: 1,
-  //     getNextPageParam: (last) => last.meta.page < last.meta.totalPages ? last.meta.page + 1 : undefined,
-  //   });
-  // const entries    = useMemo(() => data?.pages.flatMap((p) => p.supplierLedger) ?? [], [data]);
-  // const totalCount = data?.pages[0]?.meta.total ?? 0;
-  // const hasReachedEnd = !hasNextPage && !isLoading;
+  const suppliersQuery = useSuppliers();
 
-  // ── MOCK ─────────────────────────────────────────────────────────────────────
-  const allEntries = mockSupplierLedgerEntries;
-  const entries =
-    supplierId === "all"
-      ? allEntries
-      : allEntries.filter((e) => e.supplierId === supplierId);
-  const totalCount = entries.length;
-  const isLoading = false;
-  const isError = false;
-  const error = null as AxiosError<ApiError> | null;
-  const hasReachedEnd = true;
-  const isFetchingNextPage = false;
-  const refetch = () => {};
-  const suppliers = mockSuppliersDropdown;
-  const summary = mockSupplierLedgerSummary;
-  const summaryLoading = false;
-  // ─────────────────────────────────────────────────────────────────────────────
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useInfiniteQuery<SupplierLedgerData, AxiosError<ApiError>>({
+    queryKey: queryKeys.suppliers.ledger.list(
+      supplierId,
+      page,
+      fromDate,
+      toDate,
+    ),
+    queryFn: ({ pageParam = 1 }) =>
+      getSupplierLedger(pageParam as number, {
+        supplierID: supplierId,
+        fromDate,
+        toDate,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (last) =>
+      last.meta.page < last.meta.totalPages ? last.meta.page + 1 : undefined,
+  });
+  const entries = useMemo(
+    () => data?.pages.flatMap((p) => p.supplierLedger) ?? [],
+    [data],
+  );
+  const totalCount = data?.pages[0]?.meta.total ?? 0;
+  const hasReachedEnd = !hasNextPage && !isLoading;
 
+  const createSupplierLedgerEntry = useCreateSupplierLedgerEntry();
   const handleScroll = useCallback((_e: React.UIEvent<HTMLDivElement>) => {
-    // TODO: uncomment for real infinite scroll
-    // if (!hasNextPage || isFetchingNextPage) return;
-    // const el = _e.currentTarget;
-    // if (el.scrollHeight - el.scrollTop - el.clientHeight < 200) void fetchNextPage();
+    if (!hasNextPage || isFetchingNextPage) return;
+    const el = _e.currentTarget;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 200)
+      void fetchNextPage();
   }, []);
 
-  const handleCreate = async (data: CreateSupplierLedgerEntryInput) => {
-    console.log("Create supplier ledger entry:", data);
-    // await createSupplierLedgerEntry.mutateAsync(data);
+  const handleCreate = async (
+    data: CreateSupplierLedgerEntryInput & { supplierID: string },
+  ) => {
+    await createSupplierLedgerEntry.mutateAsync({
+      ...data,
+    });
   };
 
   return (
@@ -157,13 +162,13 @@ function SupplierLedgerInner() {
 
       {/* Summary cards — always show (skeleton while loading) */}
       <SupplierLedgerSummaryCards
-        summary={summaryLoading ? null : summary}
-        loading={summaryLoading}
+        summary={ledgerSummaryQuery.data ?? null}
+        loading={ledgerSummaryQuery.isPending}
       />
 
       {/* Filters */}
       <SupplierLedgerFiltersBar
-        suppliers={suppliers}
+        suppliers={suppliersQuery.data?.suppliers ?? []}
         filters={filters}
         onChange={handleFilterChange}
       />
@@ -202,8 +207,8 @@ function SupplierLedgerInner() {
       <CreateSupplierLedgerEntryForm
         open={createOpen}
         onOpenChange={setCreateOpen}
-        loading={false} // TODO: createSupplierLedgerEntry.isPending
-        suppliers={suppliers}
+        loading={createSupplierLedgerEntry.isPending}
+        suppliers={suppliersQuery.data?.suppliers ?? []}
         defaultSupplierId={supplierId !== "all" ? supplierId : undefined}
         createLedgerEntry={handleCreate}
       />

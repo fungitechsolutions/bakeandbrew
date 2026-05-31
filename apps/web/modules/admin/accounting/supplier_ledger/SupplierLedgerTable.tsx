@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { SupplierLedgerEntryRow } from "./SupplierLedgerEntryRow";
-import { SupplierLedger } from "./types";
+import { SupplierLedger } from "@repo/types";
 
 const COL_SPAN_WITH = 8;
 const COL_SPAN_WITHOUT = 7;
@@ -44,11 +44,11 @@ export function SupplierLedgerTable({
       maximumFractionDigits: 2,
     });
 
-  useEffect(() => {
-    if (hasReachedEnd && entries.length > 0) {
-      toast.info(`All ${totalCount} entries loaded`);
-    }
-  }, [hasReachedEnd, entries.length, totalCount]);
+  // useEffect(() => {
+  //   if (hasReachedEnd && entries.length > 0) {
+  //     toast.info(`All ${totalCount} entries loaded`);
+  //   }
+  // }, [hasReachedEnd, entries.length, totalCount]);
 
   return (
     <div
@@ -98,7 +98,7 @@ export function SupplierLedgerTable({
             {entries.map((entry, idx) => (
               <SupplierLedgerEntryRow
                 key={entry.id}
-                entry={{ ...entry, amount: entry.amount / 100 }}
+                entry={entry}
                 serialNo={idx + 1}
                 showSupplierColumn={showSupplierColumn}
                 striped={idx % 2 !== 0}
@@ -135,13 +135,13 @@ export function SupplierLedgerTable({
                 className="px-4 py-2 text-right font-mono"
                 style={{ color: "#dc2626" }}
               >
-                {fmt(totalDebit / 100)}
+                {fmt(totalDebit)}
               </td>
               <td
                 className="px-4 py-2 text-right font-mono"
                 style={{ color: "#16a34a" }}
               >
-                {fmt(totalCredit / 100)}
+                {fmt(totalCredit)}
               </td>
               <td />
               <td />

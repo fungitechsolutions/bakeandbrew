@@ -28,5 +28,40 @@ export const queryKeys = {
   suppliers: {
     all: ["admin-suppliers"] as const,
     list: (page: number) => ["admin-suppliers", "list", page] as const,
+    ledger: {
+      summary: ({
+        supplierID,
+        fromDate,
+        toDate,
+      }: {
+        supplierID: string | null;
+        fromDate: string | null;
+        toDate: string | null;
+      }) =>
+        [
+          "admin-suppliers",
+          "ledger",
+          "summary",
+          supplierID,
+          fromDate,
+          toDate,
+        ] as const,
+      list: (
+        supplierID: string,
+        page: number,
+        fromDate: string | null,
+        toDate: string | null,
+      ) =>
+        [
+          "admin-suppliers",
+          "ledger",
+          "list",
+          supplierID,
+          page,
+          fromDate,
+          toDate,
+        ] as const,
+      all: ["admin-suppliers", "ledger"] as const,
+    },
   },
 };
