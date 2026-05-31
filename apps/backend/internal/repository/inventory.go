@@ -3,7 +3,9 @@ package repository
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
 	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
 )
 
@@ -38,4 +40,30 @@ type InventoryRepository interface {
 	DeleteWastage(ctx context.Context, id pgtype.UUID) error
 	ListWastage(ctx context.Context, params db.ListWastageParams) ([]db.ListWastageRow, error)
 	GetWastageCount(ctx context.Context) (int64, error)
+}
+
+type InventoryTxRepository interface {
+	WithTx(tx pgx.Tx) InventoryTxRepository
+	CreateStockIn(ctx context.Context, params db.CreateStockInParams) (db.StockIn, error)
+	CreateSupplierLedgerEntry(ctx context.Context, params db.CreateSupplierLedgerEntryParams) (db.SupplierLedger, error)
+}
+
+type inventoryTxRepository struct {
+	queries *db.Queries
+	pool    *pgxpool.Pool
+}
+
+func NewInventoryTxRepository(queries *db.Queries, pool *pgxpool.Pool) InventoryTxRepository {
+	return &inventoryTxRepository{queries: queries, pool: pool}
+}
+
+func (r *inventoryTxRepository) WithTx(tx pgx.Tx) InventoryTxRepository {
+	return &inventoryTxRepository{queries: r.queries.WithTx(tx), pool: r.pool}
+}
+
+func (r *inventoryTxRepository) CreateStockIn(ctx context.Context, params db.CreateStockInParams) (db.StockIn, error) {
+	return r.queries.CreateStockIn(ctx, params)
+}
+func (r *inventoryTxRepository) CreateSupplierLedgerEntry(ctx context.Context, params db.CreateSupplierLedgerEntryParams) (db.SupplierLedger, error) {
+	return r.queries.CreateSupplierLedgerEntry(ctx, params)
 }

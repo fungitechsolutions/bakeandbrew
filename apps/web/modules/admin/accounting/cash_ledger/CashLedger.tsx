@@ -104,7 +104,6 @@ function CashLedgerPageInner() {
   const createCashLedgerEntry = useCreateCashLedgerEntry();
   const handleCreateEntry = async (data: CreateCashLedgerEntryInput) => {
     await createCashLedgerEntry.mutateAsync(data);
-    console.log("Create cash ledger entry:", data);
   };
 
   const summaryQuery = useCashLedgerSummary({ fromDate, toDate });

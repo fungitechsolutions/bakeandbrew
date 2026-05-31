@@ -69,7 +69,7 @@ export function CreateCashLedgerEntryForm({
         return;
       }
 
-      const amountPaisa = Math.round(parseFloat(value.amount) * 100);
+      const amountPaisa = Number(value.amount);
       if (isNaN(amountPaisa) || amountPaisa <= 0) {
         toast.error("Please enter a valid amount");
         return;

@@ -36,7 +36,7 @@ export function CashLedgerSummaryCards({
   const cards = [
     {
       label: "Total Credits",
-      value: summary ? formatRs(summary.totalCr / 100) : "Rs. 0.00",
+      value: summary ? formatRs(summary.totalCr) : "Rs. 0.00",
       icon: TrendingUp,
       accent: "#16a34a",
       bg: "#f0fdf4",
@@ -45,7 +45,7 @@ export function CashLedgerSummaryCards({
     },
     {
       label: "Total Debits",
-      value: summary ? formatRs(summary.totalDr / 100) : "Rs. 0.00",
+      value: summary ? formatRs(summary.totalDr) : "Rs. 0.00",
       icon: TrendingDown,
       accent: "#dc2626",
       bg: "#fef2f2",
@@ -54,7 +54,7 @@ export function CashLedgerSummaryCards({
     },
     {
       label: "Net Balance",
-      value: summary ? formatRs(summary.balance / 100) : "Rs. 0.00",
+      value: summary ? formatRs(summary.balance) : "Rs. 0.00",
       icon: Wallet,
       accent: isPositive ? "#16a34a" : "#dc2626",
       bg: "#fdf6ec",
