@@ -24,7 +24,16 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { BSToAD } from "bikram-sambat-js";
-import { SupplierForDropdown, CreateSupplierLedgerEntryInput } from "./types";
+import { SupplierForDropdown } from "./types";
+import {
+  CreateSupplierLedgerEntryInput,
+  createSupplierLedgerEntryInput,
+} from "@repo/types";
+import z from "zod";
+import { FieldError } from "@/components/ui/field";
+import { AxiosError } from "axios";
+import { ApiError } from "@/lib/axios";
+import { mapFieldErrors } from "@/utils/api";
 
 interface CreateSupplierLedgerEntryFormProps {
   open: boolean;
@@ -32,7 +41,9 @@ interface CreateSupplierLedgerEntryFormProps {
   suppliers: SupplierForDropdown[];
   defaultSupplierId?: string;
   onOpenChange: (open: boolean) => void;
-  createLedgerEntry: (data: CreateSupplierLedgerEntryInput) => Promise<void>;
+  createLedgerEntry: (
+    data: CreateSupplierLedgerEntryInput & { supplierID: string },
+  ) => Promise<void>;
 }
 
 const inputCls =
@@ -52,7 +63,8 @@ export function CreateSupplierLedgerEntryForm({
   const [entryType, setEntryType] = useState<"dr" | "cr" | "">("");
   const [amountRs, setAmountRs] = useState("");
   const [description, setDescription] = useState("");
-  const [error, setError] = useState("");
+  const [errors, setErrors] =
+    useState<Partial<Record<keyof CreateSupplierLedgerEntryInput, string>>>();
 
   const resetForm = () => {
     setSupplierId(defaultSupplierId ?? "");
@@ -61,7 +73,7 @@ export function CreateSupplierLedgerEntryForm({
     setEntryType("");
     setAmountRs("");
     setDescription("");
-    setError("");
+    setErrors({});
   };
 
   const handleOpenChange = (nextOpen: boolean) => {
@@ -71,26 +83,46 @@ export function CreateSupplierLedgerEntryForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!supplierId || !bsDate || !adDate || !entryType || !amountRs) {
-      setError("Please fill in all required fields.");
+    if (!supplierId) {
+      toast.error("Please select a supplier.");
       return;
     }
-    const amountPaisa = Math.round(parseFloat(amountRs) * 100);
-    if (isNaN(amountPaisa) || amountPaisa <= 0) {
-      setError("Please enter a valid amount.");
-      return;
-    }
-    setError("");
-    await createLedgerEntry({
-      supplierId,
+
+    const validateFields = createSupplierLedgerEntryInput.safeParse({
       date: adDate,
       bsDate,
       entryType: entryType as "dr" | "cr",
-      amount: amountPaisa,
-      description: description.trim() || undefined,
+      amount: Number(amountRs),
+      description: description.trim() ?? undefined,
     });
-    resetForm();
-    onOpenChange(false);
+    if (!validateFields.success) {
+      const tree = z.treeifyError(validateFields.error).properties;
+
+      setErrors({
+        date: tree?.date?.errors[0],
+        bsDate: tree?.bsDate?.errors[0],
+        entryType: tree?.entryType?.errors[0],
+        amount: tree?.amount?.errors[0],
+        description: tree?.description?.errors[0],
+      });
+      return;
+    }
+    const data = validateFields.data;
+    setErrors({});
+    try {
+      await createLedgerEntry({
+        supplierID: supplierId ?? "",
+        ...data,
+      });
+      resetForm();
+      onOpenChange(false);
+    } catch (err) {
+      const error = err as AxiosError<ApiError>;
+      const data = error.response?.data;
+      if (data?.errors?.length) {
+        setErrors(mapFieldErrors(data));
+      }
+    }
   };
 
   return (
@@ -116,7 +148,10 @@ export function CreateSupplierLedgerEntryForm({
                 onValueChange={(v) => v && setSupplierId(v)}
               >
                 <SelectTrigger className="h-9 text-sm w-full">
-                  <SelectValue placeholder="Select supplier" />
+                  <SelectValue placeholder="Select supplier">
+                    {suppliers.find((s) => s.id === supplierId)?.companyName ??
+                      "Select supplier"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {suppliers.map((s) => (
@@ -153,6 +188,7 @@ export function CreateSupplierLedgerEntryForm({
                 options={{ calenderLocale: "en", valueLocale: "en" }}
               />
             </div>
+            {errors?.bsDate && <FieldError>{errors.bsDate}</FieldError>}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -175,6 +211,7 @@ export function CreateSupplierLedgerEntryForm({
                 </SelectItem>
               </SelectContent>
             </Select>
+            {errors?.entryType && <FieldError>{errors.entryType}</FieldError>}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -198,6 +235,7 @@ export function CreateSupplierLedgerEntryForm({
                 onChange={(e) => setAmountRs(e.target.value)}
               />
             </div>
+            {errors?.amount && <FieldError>{errors.amount}</FieldError>}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -214,9 +252,10 @@ export function CreateSupplierLedgerEntryForm({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
+            {errors?.description && (
+              <FieldError>{errors.description}</FieldError>
+            )}
           </div>
-
-          {error && <p className="text-xs text-red-500">{error}</p>}
 
           <div className="flex gap-2 pt-2">
             <Button

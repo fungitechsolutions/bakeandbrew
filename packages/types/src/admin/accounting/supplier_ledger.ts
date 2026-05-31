@@ -3,7 +3,7 @@ import { paginationMetaSchema } from "../../base";
 
 const supplierLedgerSchema = z.object({
   id: z.uuid(),
-  supplierID: z.uuid().optional(),
+  supplierId: z.uuid(),
   date: z.string(),
   bsDate: z.string(),
   entryType: z.enum(["cr", "dr"]),
@@ -11,7 +11,7 @@ const supplierLedgerSchema = z.object({
   description: z.string().optional(),
   stockInId: z.uuid().optional(),
   createdAt: z.string(),
-  companyName: z.string(),
+  supplierName: z.string(),
 });
 export type SupplierLedger = z.infer<typeof supplierLedgerSchema>;
 
@@ -50,11 +50,22 @@ export type GetSupplierLedgerSummaryResponse = z.infer<
 >;
 
 export const createSupplierLedgerEntryInput = z.object({
-  date: z.date(),
-  bsDate: z.string(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {
+    error: "AD date must be in YYYY-MM-DD format",
+  }),
+  bsDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {
+    error: "BS date must be in YYYY-MM-DD format",
+  }),
   entryType: z.enum(["cr", "dr"]),
-  amount: z.number(),
-  description: z.string(),
+  amount: z
+    .number()
+    .gt(0, {
+      error: "Amount must be greater than 0",
+    })
+    .lte(10000000, {
+      error: "Amount must not exceed Rs. 1,00,00,000",
+    }),
+  description: z.string().optional(),
 });
 
 export type CreateSupplierLedgerEntryInput = z.infer<

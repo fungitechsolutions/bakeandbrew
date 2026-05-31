@@ -52,5 +52,5 @@ func setupAdminAccountingRoutes(admin *gin.RouterGroup, cfg config.Config) {
 	// supplier ledger
 	sup.GET("/ledger", supplierledger.ListSupplierLedger(cfg.Queries))
 	sup.GET("/ledger/summary", supplierledger.GetSupplierLedgerSummary(cfg.Queries))
-	sup.POST("/ledger", supplierledger.CreateSupplierLedgerEntry(cfg.Queries))
+	sup.POST("/:supplierID/ledger", supplierledger.CreateSupplierLedgerEntry(cfg.Queries))
 }

@@ -1,7 +1,7 @@
 import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatRs } from "../bank-ledger/format";
-import { SupplierLedgerSummary } from "./types";
+import { SupplierLedgerSummary } from "@repo/types";
 
 interface SupplierLedgerSummaryCardsProps {
   summary: SupplierLedgerSummary | null;
@@ -29,13 +29,13 @@ export function SupplierLedgerSummaryCards({
     );
   }
 
-  const balance = summary?.balance ?? 0;
+  const balance = summary?.outstanding ?? 0;
   const isOverpaid = balance < 0;
 
   const cards = [
     {
       label: "Total Purchased (Cr)",
-      value: summary ? formatRs(summary.totalCr / 100) : "Rs. 0.00",
+      value: summary ? formatRs(summary.totalCr) : "Rs. 0.00",
       icon: TrendingUp,
       accent: "#16a34a",
       bg: "#f0fdf4",
@@ -43,7 +43,7 @@ export function SupplierLedgerSummaryCards({
     },
     {
       label: "Total Paid (Dr)",
-      value: summary ? formatRs(summary.totalDr / 100) : "Rs. 0.00",
+      value: summary ? formatRs(summary.totalDr) : "Rs. 0.00",
       icon: TrendingDown,
       accent: "#dc2626",
       bg: "#fef2f2",
@@ -51,7 +51,7 @@ export function SupplierLedgerSummaryCards({
     },
     {
       label: isOverpaid ? "Overpaid" : "Payable Balance",
-      value: summary ? formatRs(Math.abs(balance) / 100) : "Rs. 0.00",
+      value: summary ? formatRs(Math.abs(balance)) : "Rs. 0.00",
       icon: Wallet,
       accent: isOverpaid ? "#dc2626" : "var(--brand-brown)",
       bg: "#fdf6ec",
