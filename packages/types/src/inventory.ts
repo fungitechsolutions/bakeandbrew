@@ -78,21 +78,34 @@ export type CreateProductInput = z.infer<typeof createProductSchema>;
 export type CreateProductResponse = z.infer<typeof createProductResponseSchema>;
 
 const optionalString = z.string().optional().or(z.literal(""));
+const adDateSchema = z
+  .string()
+  .regex(
+    /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/,
+    "Date must be in YYYY-MM-DD format",
+  );
+const bsDateSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "BS date must be in YYYY-MM-DD format");
+
 export const createStockInSchema = z.object({
   productID: z.uuid(),
+  supplierID: z.uuid({ error: "Supplier is required" }),
   quantity: z.number().min(1),
   rate: z.number().gt(0),
-  date: z
-    .string()
-    .regex(
-      /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/,
-      "Date must be in YYYY-MM-DD format",
-    ),
+  date: adDateSchema,
+  bsDate: bsDateSchema,
   note: optionalString,
   invoiceNo: optionalString,
 });
 
+export const updateStockInSchema = createStockInSchema.omit({
+  supplierID: true,
+  bsDate: true,
+});
+
 export type CreateStockInInput = z.infer<typeof createStockInSchema>;
+export type UpdateStockInInput = z.infer<typeof updateStockInSchema>;
 
 const stockInSchema = z.object({
   id: z.uuid(),

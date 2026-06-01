@@ -253,7 +253,7 @@ export function WastageClient() {
   };
 
   return (
-    <div className="space-y-4 min-h-screen bg-(--brand-cream) px-4 py-8 sm:px-6 lg:px-8 mx-auto max-w-7xl">
+    <div className="space-y-4 min-h-screen bg-(--brand-cream) px-4 py-8 sm:px-6 lg:px-8 mx-auto ">
       <InventoryPageHeader
         title="Wastage"
         description="Track damaged, expired, or lost inventory."

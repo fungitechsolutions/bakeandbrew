@@ -17,7 +17,7 @@ import (
 type CreateSupplierRequest struct {
 	CompanyName string `json:"companyName" binding:"required,notblank,min=2,max=100"`
 	Phone       string `json:"phone" binding:"omitempty,nepal_phone"`
-	VatNo       string `json:"vatNo" binding:"omitempty,min=1,max=50"`
+	VatNo       string `json:"vatNo" binding:"omitempty,nepal_vat"`
 }
 
 func CreateSupplier(queries accountingRepository.SuppliersRepository) gin.HandlerFunc {

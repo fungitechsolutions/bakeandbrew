@@ -55,5 +55,14 @@ func Init() {
 			matched, _ := regexp.MatchString(`^\d{9,20}$`, val)
 			return matched
 		})
+
+		v.RegisterValidation("nepal_vat", func(fl validator.FieldLevel) bool {
+			val := fl.Field().String()
+			if val == "" {
+				return true
+			}
+			matched, _ := regexp.MatchString(`^[0-9]{9}$`, val)
+			return matched
+		})
 	})
 }
