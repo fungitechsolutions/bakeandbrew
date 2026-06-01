@@ -38,6 +38,7 @@ export { type ImageUploadResponse } from "./upload";
 export {
   createProductResponseSchema,
   createStockInSchema,
+  updateStockInSchema,
   createStockOutSchema,
   editStockOutSchema,
   createWastageSchema,
@@ -49,6 +50,7 @@ export {
   type DeleteProductResponse,
   type CreateStockInResponse,
   type CreateStockInInput,
+  type UpdateStockInInput,
   type ListStockInResponse,
   type DeleteStockInResponse,
   type CreateStockOutInput,

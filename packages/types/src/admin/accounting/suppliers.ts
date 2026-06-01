@@ -59,8 +59,8 @@ export const updateSupplierSchema = z.object({
     .max(100, "Company name must be less than 100 characters"),
   vatNo: z
     .string()
-    .regex(/^[0-9]{10}$/, "Enter a valid VAT number")
-    .max(10, "VAT number must be 10 digits")
+    .regex(/^[0-9]{9}$/, "Enter a valid VAT number")
+    .max(9, "VAT number must be 9 digits")
     .nullable()
     .transform((val) => val ?? undefined),
   phone: z
