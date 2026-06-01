@@ -35,18 +35,6 @@ func AddPayment(queries repository.AdminPaymentTxRepository, pool *pgxpool.Pool)
 		userIDFromContext := c.MustGet("userID").(string)
 
 		studentIDFromParams := c.Param("studentID")
-		if studentIDFromParams == "" {
-			slog.Warn("missing student id",
-				slog.String("handler", "AddPayment"),
-			)
-			c.JSON(http.StatusBadRequest, types.APIResponse{
-				Success: false,
-				Message: "Missing student ID",
-				Code:    constants.MissingStudentID,
-			})
-			return
-		}
-
 		studentID, err := utils.ConvertToUUID(studentIDFromParams)
 		if err != nil {
 			slog.Warn("invalid student id format",

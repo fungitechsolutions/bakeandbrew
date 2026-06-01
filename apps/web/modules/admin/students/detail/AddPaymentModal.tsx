@@ -8,6 +8,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
+import { mapFieldErrors } from "@/utils/api";
+import { APIResponse } from "@repo/types";
+import { AxiosError } from "axios";
+import { ADToBS } from "bikram-sambat-js";
 import {
   AlertCircle,
   Banknote,
@@ -18,12 +23,29 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import z from "zod";
 
 const modalSchema = z.object({
-  amount: z.number().gt(0),
-  remarks: z.string().min(3).max(100).optional(),
-  paymentMode: z.string().min(2).max(60),
+  amount: z.number().gt(0, {
+    error: "Amount must be greater than 0",
+  }),
+  remarks: z
+    .string()
+    .min(3)
+    .max(100, {
+      error: "Remarks must be less than 100 characters",
+    })
+    .optional(),
+  paymentMode: z.string().min(2).max(60, {
+    error: "Payment mode must be less than 60 characters",
+  }),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {
+    error: "AD date must be in YYYY-MM-DD format",
+  }),
+  bsDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {
+    error: "BS date must be in YYYY-MM-DD format",
+  }),
 });
 type AddPaymentModal = z.infer<typeof modalSchema>;
 
@@ -31,14 +53,18 @@ type AddPaymentModalErrors = {
   amount?: string;
   remarks?: string;
   paymentMode?: string;
+  date?: string;
+  bsDate?: string;
 };
 
 export function AddPaymentModal({
   onClose,
   onAdd,
+  isAdding,
 }: {
   onClose: () => void;
   onAdd: (data: AddPaymentModal) => void;
+  isAdding: boolean;
 }) {
   const [amount, setAmount] = useState("");
   const [remarks, setRemarks] = useState("");
@@ -53,11 +79,15 @@ export function AddPaymentModal({
     { value: "bank", label: "Bank Transfer", icon: Building2 },
   ]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    const date = new Date().toISOString().split("T")[0];
+    const bsDate = ADToBS(date);
     const result = modalSchema.safeParse({
       amount: Number(amount),
       remarks: remarks || undefined,
       paymentMode: paymentMode || undefined,
+      date: date,
+      bsDate: bsDate,
     });
 
     if (!result.success) {
@@ -66,12 +96,24 @@ export function AddPaymentModal({
         amount: tree?.amount?.errors[0],
         remarks: tree?.remarks?.errors[0],
         paymentMode: tree?.paymentMode?.errors[0],
+        date: tree?.date?.errors[0],
+        bsDate: tree?.bsDate?.errors[0],
       });
       return;
     }
-
-    onAdd(result.data);
-    onClose();
+    try {
+      await onAdd(result.data);
+      onClose();
+    } catch (err) {
+      const error = err as AxiosError<APIResponse>;
+      const data = error.response?.data;
+      if (data?.errors?.length) {
+        toast.error(data.errors[0].message);
+        setError(mapFieldErrors(data));
+      } else {
+        toast.error(data?.message);
+      }
+    }
   };
 
   const handleAddNewMode = () => {
@@ -293,17 +335,30 @@ export function AddPaymentModal({
         <div className="mt-6 flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 rounded-xl border border-[#2d4a3e]/15 py-3 text-[0.9rem] font-medium text-[#2d4a3e] transition-all hover:bg-[#2d4a3e]/05"
+            disabled={isAdding}
+            className={`flex-1 rounded-xl border border-[#2d4a3e]/15 py-3 text-[0.9rem] font-medium text-[#2d4a3e] transition-all hover:bg-[#2d4a3e]/05 ${
+              isAdding ? "opacity-50 cursor-not-allowed" : ""
+            }`}
             style={{ fontFamily: "var(--font-dm-sans)" }}
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
-            className="flex-1 rounded-xl bg-[#2d4a3e] py-3 text-[0.9rem] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(45,74,62,0.25)]"
+            className={`flex-1 rounded-xl bg-[#2d4a3e] py-3 text-[0.9rem] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(45,74,62,0.25)] ${
+              isAdding ? "opacity-50 cursor-not-allowed" : ""
+            }`}
             style={{ fontFamily: "var(--font-dm-sans)" }}
+            disabled={isAdding}
           >
-            Add Payment
+            {isAdding ? (
+              <div className="flex items-center justify-center gap-2 text-[0.9rem] font-semibold text-white">
+                <Spinner />
+                Adding...
+              </div>
+            ) : (
+              "Add Payment"
+            )}
           </button>
         </div>
       </div>

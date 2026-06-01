@@ -118,7 +118,7 @@ export default function StudentDetailPage({
     },
   });
 
-  const { mutate: addPayment } = useMutation({
+  const { mutateAsync: addPayment, isPending: isAddingPayment } = useMutation({
     mutationFn: async (data: AddPayment) => {
       const res = await api.post<AddPaymentResponse>(
         `/admin/students/${student.id}/payments`,
@@ -130,9 +130,6 @@ export default function StudentDetailPage({
       toast.success(result.message);
       router.refresh();
     },
-    onError: (error) => {
-      toast.error(error.message);
-    },
   });
 
   const { handlePrint } = usePrintInvoice({ student, courses, payments });
@@ -143,6 +140,7 @@ export default function StudentDetailPage({
         <AddPaymentModal
           onClose={() => setShowPaymentModal(false)}
           onAdd={(data) => addPayment({ ...data })}
+          isAdding={isAddingPayment}
         />
       )}
 
