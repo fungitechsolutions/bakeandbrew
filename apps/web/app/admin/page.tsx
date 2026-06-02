@@ -2,7 +2,9 @@ import Link from "next/link";
 import {
   BarChart3,
   BookOpen,
+  BookOpenCheck,
   CircleHelp,
+  Package,
   Settings,
   Users,
   UserSquare2,
@@ -11,7 +13,7 @@ import {
 export default function Page() {
   return (
     <div className="min-h-screen bg-(--brand-cream) px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto">
         <div className="mb-8 flex flex-col gap-2">
           <h1
             className="text-[1.8rem] font-bold text-(--brand-green)"
@@ -64,6 +66,18 @@ export default function Page() {
               desc: "School and system settings.",
               href: "/admin/settings",
               icon: Settings,
+            },
+            {
+              title: "Inventory",
+              desc: "Manage inventory and stock.",
+              href: "/admin/inventory",
+              icon: Package,
+            },
+            {
+              title: "Accounting",
+              desc: "Manage accounting and financial transactions.",
+              href: "/admin/accounting",
+              icon: BookOpenCheck,
             },
           ].map((c) => (
             <Link
