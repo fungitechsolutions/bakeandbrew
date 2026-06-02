@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   Coffee,
@@ -9,6 +11,10 @@ import {
 } from "lucide-react";
 import { CoursesList } from "@repo/types";
 import { getApiUrl } from "@/lib/api-url";
+import { useQuery } from "@tanstack/react-query";
+import ProgramsSkeleton from "./programs/ProgramLoadingSkeleton";
+import ProgramsError from "./programs/ProgramsError";
+import api from "@/lib/axios";
 
 const programs = [
   {
@@ -93,15 +99,39 @@ const programs = [
   // },
 ] as const;
 
-export default async function Programs() {
-  const res = await fetch(`${getApiUrl()}/api/v1/courses`, {
-    method: "GET",
+async function fetchCourses() {
+  const res = await api.get<CoursesList>("/courses");
+  if (!res.data.success) {
+    throw new Error(res.data.message || "Failed to fetch courses data");
+  }
+
+  return res.data.data;
+}
+
+export default function Programs() {
+  const { data, isPending, isError, error, refetch, isFetching } = useQuery({
+    queryKey: ["landing-programs"],
+    queryFn: fetchCourses,
+    staleTime: 10 * 60 * 1000,
   });
 
-  if (!res.ok) throw new Error("Failed to fetch courses data");
-  const data = (await res.json()) as CoursesList;
-  if (!data.success) throw new Error(data.message);
-  const courses = data.data;
+  if (isPending) {
+    return <ProgramsSkeleton />;
+  }
+
+  if (isError) {
+    return (
+      <ProgramsError
+        message={
+          error?.message ?? "An unexpected error occurred. Please try again."
+        }
+        onRetry={() => void refetch()}
+        isRetrying={isFetching}
+      />
+    );
+  }
+
+  const courses = data;
 
   return (
     <section
