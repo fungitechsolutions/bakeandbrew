@@ -1,10 +1,10 @@
-import { env } from "@/utils/env";
+import { getApiUrl } from "@/lib/api-url";
 import { getAllCookies } from "@/utils/get-all-cookies";
 import { StudentDiscountResponse } from "@repo/types";
 
 export async function getStudentDiscount(studentID: string) {
   const res = await fetch(
-    `${env.NEXT_PUBLIC_API_URL}/api/v1/admin/students/${studentID}/discounts`,
+    `${getApiUrl()}/api/v1/admin/students/${studentID}/discounts`,
     {
       method: "GET",
       headers: {

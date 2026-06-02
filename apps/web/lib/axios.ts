@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { AxiosInstance, InternalAxiosRequestConfig } from "axios";
+import { getApiUrl } from "./api-url";
 
 export type ApiError = {
   success: false;
@@ -21,7 +22,7 @@ export type ApiSuccess<T> = {
 const AUTH_ENDPOINTS = ["/auth/refresh", "/auth/login", "/auth/logout"];
 const CookieDomain = process.env.NEXT_PUBLIC_COOKIE_DOMAIN || "";
 const api: AxiosInstance = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_API_URL}/api/v1`,
+  baseURL: `${getApiUrl()}/api/v1`,
   withCredentials: true,
 });
 
