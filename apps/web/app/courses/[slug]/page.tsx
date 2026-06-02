@@ -16,6 +16,7 @@ import { SectionLabel } from "@/components/courses/SectionLabel";
 import { CurriculumAccordion } from "../../../components/courses/CurriculumAccordion";
 import { VideoPlayer } from "@/components/courses/VideoPlayer";
 import { FaqList } from "../../../components/courses/FAQ";
+import { getApiUrl } from "@/lib/api-url";
 
 // ─── Static params ────────────────────────────────────────────────────────────
 export function generateStaticParams() {
@@ -63,9 +64,7 @@ export default async function CoursePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses/${slug}`,
-  );
+  const res = await fetch(`${getApiUrl()}/api/v1/courses/${slug}`);
   if (!res.ok) throw new Error("Failed to fetch course data");
   const data = (await res.json()) as CourseDetailResponse;
   if (!data.success) throw new Error(data.message);

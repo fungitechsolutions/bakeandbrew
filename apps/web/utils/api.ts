@@ -1,4 +1,5 @@
 import { APIResponse } from "@repo/types";
+import { getApiUrl } from "@/lib/api-url";
 
 export type ApiError = {
   success: false;
@@ -21,17 +22,14 @@ export async function apiFetch<T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<ApiSuccess<T>> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/v1${endpoint}`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-      credentials: "include",
-      ...options,
+  const response = await fetch(`${getApiUrl()}/api/v1${endpoint}`, {
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
     },
-  );
+    credentials: "include",
+    ...options,
+  });
 
   const result = await response.json();
 

@@ -1,9 +1,9 @@
-import { env } from "@/utils/env";
+import { getApiUrl } from "@/lib/api-url";
 import { getAllCookies } from "@/utils/get-all-cookies";
 import { CoursesListResponse } from "@repo/types";
 
 export async function GetAllCourses() {
-  const res = await fetch(`${env.NEXT_PUBLIC_API_URL}/api/v1/admin/courses`, {
+  const res = await fetch(`${getApiUrl()}/api/v1/admin/courses`, {
     method: "GET",
     headers: {
       Cookie: await getAllCookies(),

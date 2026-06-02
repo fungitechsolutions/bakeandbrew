@@ -8,6 +8,7 @@ import {
   // UtensilsCrossed,
 } from "lucide-react";
 import { CoursesList } from "@repo/types";
+import { getApiUrl } from "@/lib/api-url";
 
 const programs = [
   {
@@ -93,7 +94,7 @@ const programs = [
 ] as const;
 
 export default async function Programs() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/courses`, {
+  const res = await fetch(`${getApiUrl()}/api/v1/courses`, {
     method: "GET",
   });
 
