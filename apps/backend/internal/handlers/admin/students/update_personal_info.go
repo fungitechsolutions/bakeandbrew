@@ -18,7 +18,7 @@ import (
 type updateStudentPersonalInfo struct {
 	FullName  string `json:"fullName" binding:"required,notblank,min=2,max=70,alphaspace"`
 	DobAD     string `json:"dobAd" binding:"required,notblank,date_format"`
-	DobBS     string `json:"dobBs" binding:"required,notblank,date_format"`
+	DobBS     string `json:"dobBs" binding:"required,notblank,bs_date"`
 	Phone     string `json:"phone" binding:"required,notblank,nepal_phone"`
 	Address   string `json:"address" binding:"required,notblank,max=70"`
 	Source    string `json:"source" binding:"required,oneof=facebook instagram tiktok referral inperson"`
