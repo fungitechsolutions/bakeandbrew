@@ -13,12 +13,10 @@ import (
 )
 
 type ListStockInParams struct {
-	ProductName  string `form:"product_name"`
-	SupplierName string `form:"supplier_name"`
-	From         string `form:"from"`
-	To           string `form:"to"`
-	InvoiceNo    string `form:"invoice_no"`
-	SortByRate   string `form:"sort_by_rate"`
+	Search     string `form:"search"`
+	From       string `form:"from"`
+	To         string `form:"to"`
+	SortByRate string `form:"sort_by_rate"`
 }
 
 func ListStockIn(queries repository.InventoryRepository) gin.HandlerFunc {
@@ -47,11 +45,9 @@ func ListStockIn(queries repository.InventoryRepository) gin.HandlerFunc {
 		}
 
 		total, err := queries.GetStockInCount(ctx, db.GetStockInCountParams{
-			ProductName:  utils.ToNullableText(filter.ProductName),
-			SupplierName: utils.ToNullableText(filter.SupplierName),
-			From:         utils.ToNullableText(filter.From),
-			To:           utils.ToNullableText(filter.To),
-			InvoiceNo:    utils.ToNullableText(filter.InvoiceNo),
+			Search: utils.ToNullableText(filter.Search),
+			From:   utils.ToNullableText(filter.From),
+			To:     utils.ToNullableText(filter.To),
 		})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
@@ -89,14 +85,12 @@ func ListStockIn(queries repository.InventoryRepository) gin.HandlerFunc {
 		offset := LIMIT * (page - 1)
 
 		stockList, err := queries.ListStockIn(ctx, db.ListStockInParams{
-			Offset:       int32(offset),
-			Limit:        LIMIT,
-			ProductName:  utils.ToNullableText(filter.ProductName),
-			SupplierName: utils.ToNullableText(filter.SupplierName),
-			From:         utils.ToNullableText(filter.From),
-			To:           utils.ToNullableText(filter.To),
-			InvoiceNo:    utils.ToNullableText(filter.InvoiceNo),
-			SortByRate:   utils.ToNullableText(filter.SortByRate),
+			Offset:     int32(offset),
+			Limit:      LIMIT,
+			Search:     utils.ToNullableText(filter.Search),
+			From:       utils.ToNullableText(filter.From),
+			To:         utils.ToNullableText(filter.To),
+			SortByRate: utils.ToNullableText(filter.SortByRate),
 		})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, types.APIResponse{

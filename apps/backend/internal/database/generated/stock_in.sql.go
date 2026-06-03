@@ -115,29 +115,23 @@ FROM stock_in si
 JOIN products p ON p.id = si.product_id
 JOIN suppliers s ON s.id = si.supplier_id
 WHERE
-    ($1::TEXT IS NULL OR p.name ILIKE '%' || $1::TEXT || '%')
-    AND ($2::TEXT IS NULL OR s.company_name ILIKE '%' || $2::TEXT || '%')
-    AND ($3::TEXT IS NULL OR si.invoice_no ILIKE '%' || $3::TEXT || '%')
-    AND ($4::TEXT IS NULL OR si.date >= $4::TEXT)
-    AND ($5::TEXT IS NULL OR si.date <= $5::TEXT)
+    ($1::TEXT IS NULL OR (
+        p.name ILIKE '%' || $1::TEXT || '%'
+        OR s.company_name ILIKE '%' || $1::TEXT || '%'
+        OR si.invoice_no ILIKE '%' || $1::TEXT || '%'
+    ))
+    AND ($2::TEXT IS NULL OR si.date >= $2::TEXT)
+    AND ($3::TEXT IS NULL OR si.date <= $3::TEXT)
 `
 
 type GetStockInCountParams struct {
-	ProductName  pgtype.Text `json:"productName"`
-	SupplierName pgtype.Text `json:"supplierName"`
-	InvoiceNo    pgtype.Text `json:"invoiceNo"`
-	From         pgtype.Text `json:"from"`
-	To           pgtype.Text `json:"to"`
+	Search pgtype.Text `json:"search"`
+	From   pgtype.Text `json:"from"`
+	To     pgtype.Text `json:"to"`
 }
 
 func (q *Queries) GetStockInCount(ctx context.Context, arg GetStockInCountParams) (int64, error) {
-	row := q.db.QueryRow(ctx, getStockInCount,
-		arg.ProductName,
-		arg.SupplierName,
-		arg.InvoiceNo,
-		arg.From,
-		arg.To,
-	)
+	row := q.db.QueryRow(ctx, getStockInCount, arg.Search, arg.From, arg.To)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -153,27 +147,27 @@ FROM stock_in si
 JOIN products p ON p.id = si.product_id
 JOIN suppliers s ON s.id = si.supplier_id
 WHERE
-    ($3::TEXT IS NULL OR p.name ILIKE '%' || $3::TEXT || '%')
-    AND ($4::TEXT IS NULL OR s.company_name ILIKE '%' || $4::TEXT || '%')
-    AND ($5::TEXT IS NULL OR si.invoice_no ILIKE '%' || $5::TEXT || '%')
-    AND ($6::TEXT IS NULL OR si.date >= $6::TEXT)
-    AND ($7::TEXT IS NULL OR si.date <= $7::TEXT)
+    ($3::TEXT IS NULL OR (
+        p.name ILIKE '%' || $3::TEXT || '%'
+        OR s.company_name ILIKE '%' || $3::TEXT || '%'
+        OR si.invoice_no ILIKE '%' || $3::TEXT || '%'
+    ))
+    AND ($4::TEXT IS NULL OR si.date >= $4::TEXT)
+    AND ($5::TEXT IS NULL OR si.date <= $5::TEXT)
 ORDER BY
-    CASE WHEN $8::TEXT = 'asc' THEN si.rate END ASC,
-    CASE WHEN $8::TEXT = 'desc' THEN si.rate END DESC,
+    CASE WHEN $6::TEXT = 'asc' THEN si.rate END ASC,
+    CASE WHEN $6::TEXT = 'desc' THEN si.rate END DESC,
     si.created_at DESC
 LIMIT $1 OFFSET $2
 `
 
 type ListStockInParams struct {
-	Limit        int32       `json:"limit"`
-	Offset       int32       `json:"offset"`
-	ProductName  pgtype.Text `json:"productName"`
-	SupplierName pgtype.Text `json:"supplierName"`
-	InvoiceNo    pgtype.Text `json:"invoiceNo"`
-	From         pgtype.Text `json:"from"`
-	To           pgtype.Text `json:"to"`
-	SortByRate   pgtype.Text `json:"sortByRate"`
+	Limit      int32       `json:"limit"`
+	Offset     int32       `json:"offset"`
+	Search     pgtype.Text `json:"search"`
+	From       pgtype.Text `json:"from"`
+	To         pgtype.Text `json:"to"`
+	SortByRate pgtype.Text `json:"sortByRate"`
 }
 
 type ListStockInRow struct {
@@ -195,9 +189,7 @@ func (q *Queries) ListStockIn(ctx context.Context, arg ListStockInParams) ([]Lis
 	rows, err := q.db.Query(ctx, listStockIn,
 		arg.Limit,
 		arg.Offset,
-		arg.ProductName,
-		arg.SupplierName,
-		arg.InvoiceNo,
+		arg.Search,
 		arg.From,
 		arg.To,
 		arg.SortByRate,

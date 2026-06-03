@@ -20,8 +20,9 @@ SELECT
 FROM stock_out so
 JOIN products p ON p.id = so.product_id
 WHERE
-    (sqlc.narg('product_name')::TEXT IS NULL OR p.name ILIKE '%' || sqlc.narg('product_name')::TEXT || '%')
-    AND (sqlc.narg('bill_no')::TEXT IS NULL OR so.bill_no ILIKE '%' || sqlc.narg('bill_no')::TEXT || '%')
+    (sqlc.narg('search')::TEXT IS NULL OR (
+    p.name ILIKE '%' || sqlc.narg('search')::TEXT || '%'
+    OR so.bill_no ILIKE '%' || sqlc.narg('search')::TEXT || '%'))
     AND (sqlc.narg('from')::TEXT IS NULL OR so.date >= sqlc.narg('from')::TEXT)
     AND (sqlc.narg('to')::TEXT IS NULL OR so.date <= sqlc.narg('to')::TEXT)
 ORDER BY
@@ -76,7 +77,8 @@ SELECT COUNT(*)
 FROM stock_out so
 JOIN products p ON p.id = so.product_id
 WHERE
-    (sqlc.narg('product_name')::TEXT IS NULL OR p.name ILIKE '%' || sqlc.narg('product_name')::TEXT || '%')
-    AND (sqlc.narg('bill_no')::TEXT IS NULL OR so.bill_no ILIKE '%' || sqlc.narg('bill_no')::TEXT || '%')
+    (sqlc.narg('search')::TEXT IS NULL OR (
+    p.name ILIKE '%' || sqlc.narg('search')::TEXT || '%'
+    OR so.bill_no ILIKE '%' || sqlc.narg('search')::TEXT || '%'))
     AND (sqlc.narg('from')::TEXT IS NULL OR so.date >= sqlc.narg('from')::TEXT)
     AND (sqlc.narg('to')::TEXT IS NULL OR so.date <= sqlc.narg('to')::TEXT);
