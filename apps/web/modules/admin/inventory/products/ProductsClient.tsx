@@ -1,8 +1,13 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { CalendarIcon, Plus, Search, X } from "lucide-react";
+import { CalendarDays, Plus, Search, SlidersHorizontal, X } from "lucide-react";
+import { useDebounce } from "@/modules/admin/analytics/hooks/useDebounce";
+import { NepaliDatePicker } from "nepali-datepicker-reactjs";
+import { Label } from "@/components/ui/label";
+import { inputCls } from "../../students/detail/shared/utils";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 import { InventoryPageHeader } from "../shared/InventoryPageHeader";
@@ -26,6 +31,7 @@ import api from "@/lib/axios";
 import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { BSToAD } from "bikram-sambat-js";
 
 type Product = Extract<GetProductResponse, { success: true }>["data"][number];
 
@@ -49,6 +55,7 @@ export function ProductsClient() {
   );
   const [pendingTo, setPendingTo] = useState(searchParams.get("to") ?? "");
   const queryClient = useQueryClient();
+  const debouncedSearch = useDebounce(search, 400);
 
   const updateParams = useCallback(
     (updates: Record<string, string>) => {
@@ -57,24 +64,39 @@ export function ProductsClient() {
         if (v) params.set(k, v);
         else params.delete(k);
       });
-      params.delete("page"); // reset page on filter change
+      params.delete("page");
       router.push(`${pathname}?${params.toString()}`);
     },
     [searchParams, pathname, router],
   );
 
+  useEffect(() => {
+    updateParams({ search: debouncedSearch.trim() });
+  }, [debouncedSearch]);
+
   const { data, isPending, isError, refetch, error } = useQuery({
-    queryKey: ["admin-inventory-products", page],
+    queryKey: [
+      "admin-inventory-products",
+      page,
+      debouncedSearch.trim(),
+      dateFrom,
+      dateTo,
+    ],
     queryFn: async () => {
+      const params = new URLSearchParams();
+      params.set("page", page.toString());
+      const trimmedSearch = debouncedSearch.trim();
+      if (trimmedSearch) params.set("name", trimmedSearch);
+      if (dateFrom) params.set("from", BSToAD(dateFrom));
+      if (dateTo) params.set("to", BSToAD(dateTo));
       const res = await api.get<GetProductResponse>(
-        `/admin/inventory/products?page=${page}`,
+        `/admin/inventory/products?${params.toString()}`,
       );
       return res.data;
     },
-    staleTime: 30 * 1000,
-    gcTime: 5 * 60 * 1000,
+    staleTime: 10 * 1000 * 60,
+    gcTime: 20 * 60 * 1000,
   });
-
   const createProduct = useMutation({
     mutationFn: async (data: CreateProductInput) => {
       try {
@@ -254,12 +276,6 @@ export function ProductsClient() {
       queryClient.invalidateQueries({ queryKey: ["admin-inventory-products"] });
     },
   });
-  if (isPending) return <ProductsLoading />;
-  if (isError) return <ProductsError error={error} reset={refetch} />;
-  if (!data || !data.success)
-    return <ProductsError error={data} reset={refetch} />;
-
-  const products = data.data;
 
   const handleCreate = () => {
     setEditingProduct(null);
@@ -289,8 +305,9 @@ export function ProductsClient() {
   };
 
   const handleSearchChange = (value: string) => {
+    if (value.startsWith(" ")) return;
     setSearch(value);
-    updateParams({ search: value });
+    setPage(1);
   };
 
   const handleApplyDates = () => {
@@ -308,24 +325,8 @@ export function ProductsClient() {
     router.push(pathname);
   };
 
-  const filtered = products.filter((p) => {
-    const matchesSearch =
-      !search || p.name.toLowerCase().includes(search.toLowerCase());
-    const created = p.createdAt ? new Date(p.createdAt) : null;
-    const matchesFrom = !dateFrom || (created && created >= new Date(dateFrom));
-    const matchesTo =
-      !dateTo || (created && created <= new Date(dateTo + "T23:59:59"));
-    return matchesSearch && matchesFrom && matchesTo;
-  });
-
-  const filteredPaginated = filtered.slice(
-    (page - 1) * data.meta.limit,
-    page * data.meta.limit,
-  );
-
   const hasActiveFilters = !!search || !!dateFrom || !!dateTo;
   const hasPendingDateChange = pendingFrom !== dateFrom || pendingTo !== dateTo;
-
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-8xl mx-auto space-y-4">
       <InventoryPageHeader
@@ -343,98 +344,128 @@ export function ProductsClient() {
         }
       />
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        {/* Search */}
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-          <Input
-            placeholder="Search by name"
-            value={search}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-9 w-full"
-            style={{ fontFamily: "var(--font-dm-sans)" }}
-          />
+      {/* ── Filters ── */}
+      <div
+        className="rounded-lg border border-stone-200 bg-white px-4 py-4 sm:px-5"
+        style={{ fontFamily: "var(--font-dm-sans)" }}
+      >
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-stone-500">
+            <SlidersHorizontal size={13} />
+            Filters
+          </span>
+          <div className="flex items-center gap-3">
+            {data?.success && hasActiveFilters && (
+              <p className="text-sm text-stone-500">
+                {data.meta.total} of {data.meta.total} product
+                {data.meta.total !== 1 ? "s" : ""}
+              </p>
+            )}
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClear}
+                className="h-7 gap-1 px-2 text-xs text-stone-500 hover:text-stone-800"
+              >
+                <X className="h-3.5 w-3.5" />
+                Clear
+              </Button>
+            )}
+          </div>
         </div>
 
-        {/* Date range + Apply */}
-        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-          <div className="relative">
-            <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <Input
-              type="date"
-              value={pendingFrom}
-              onChange={(e) => setPendingFrom(e.target.value)}
-              className="pl-9 w-36"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            />
-          </div>
-          <span className="text-muted-foreground text-sm shrink-0">to</span>
-          <div className="relative">
-            <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <Input
-              type="date"
-              value={pendingTo}
-              onChange={(e) => setPendingTo(e.target.value)}
-              className="pl-9 w-36"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            />
+        <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-12">
+          {/* Name search */}
+          <div className="flex min-w-0 flex-col gap-1 md:col-span-6">
+            <Label className="text-xs font-medium uppercase tracking-wide text-stone-400">
+              Name
+            </Label>
+            <div className="relative w-full">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search by product name…"
+                value={search}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="h-9 w-full pl-9"
+              />
+            </div>
           </div>
 
-          {/* Apply — only shows when dates have changed */}
-          {hasPendingDateChange && (
-            <Button
-              size="sm"
-              onClick={handleApplyDates}
-              className="bg-(--brand-green) hover:bg-(--brand-green-2) text-white shrink-0"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            >
-              Apply
-            </Button>
-          )}
+          {/* Date range */}
+          <div className="flex min-w-0 flex-col gap-1 md:col-span-6">
+            <Label className="text-xs font-medium uppercase tracking-wide text-stone-400">
+              Created date range
+            </Label>
+            <div className="flex w-full flex-wrap items-center gap-2">
+              <div className="relative min-w-[7.5rem] flex-1">
+                <span className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-[#2d4a3e]/40">
+                  <CalendarDays className="h-4 w-4" strokeWidth={1.75} />
+                </span>
+                <NepaliDatePicker
+                  inputClassName={cn(
+                    inputCls,
+                    "h-9 w-full pl-9 rounded-none shadow-none",
+                  )}
+                  value={pendingFrom}
+                  onChange={(v: string) => setPendingFrom(v)}
+                  options={{ calenderLocale: "en", valueLocale: "en" }}
+                />
+              </div>
 
-          {hasActiveFilters && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClear}
-              className="text-muted-foreground hover:text-foreground gap-1 shrink-0"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            >
-              <X className="h-3.5 w-3.5" />
-              Clear
-            </Button>
-          )}
+              <span className="shrink-0 text-sm text-stone-500">to</span>
+
+              <div className="relative min-w-[7.5rem] flex-1">
+                <span className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-[#2d4a3e]/40">
+                  <CalendarDays className="h-4 w-4" strokeWidth={1.75} />
+                </span>
+                <NepaliDatePicker
+                  inputClassName={cn(
+                    inputCls,
+                    "h-9 w-full pl-9 rounded-none shadow-none",
+                  )}
+                  value={pendingTo}
+                  onChange={(v: string) => setPendingTo(v)}
+                  options={{ calenderLocale: "en", valueLocale: "en" }}
+                />
+              </div>
+
+              {hasPendingDateChange && (
+                <Button
+                  size="sm"
+                  onClick={handleApplyDates}
+                  className="shrink-0 bg-(--brand-green) text-white hover:bg-(--brand-green-2)"
+                >
+                  Apply dates
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Result count when filtering */}
-      {hasActiveFilters && (
-        <p
-          className="text-sm text-muted-foreground"
-          style={{ fontFamily: "var(--font-dm-sans)" }}
-        >
-          {filtered.length === 0
-            ? "No products match your filters."
-            : `Showing ${filtered.length} of ${products.length} product${products.length !== 1 ? "s" : ""}`}
-        </p>
-      )}
-
-      {products.length === 0 ? (
+      {/* ── Table area ── */}
+      {isPending ? (
+        <ProductsLoading />
+      ) : isError || !data ? (
+        <ProductsError error={error} reset={refetch} />
+      ) : !data.success ? (
+        <ProductsError error={data} reset={refetch} />
+      ) : data.data.length === 0 && !hasActiveFilters ? (
         <EmptyState message="No products yet. Create your first product to get started." />
-      ) : filtered.length === 0 && hasActiveFilters ? (
+      ) : data.data.length === 0 && hasActiveFilters ? (
         <EmptyState message="No products match your current filters." />
       ) : (
         <>
           <ProductsTable
-            products={filteredPaginated}
+            products={data.data}
             onEdit={handleEdit}
             onDelete={handleDelete}
           />
           <Pagination
             page={page}
             meta={{
-              total: filtered.length,
+              total: data.meta.total,
               totalPages: data.meta.totalPages,
               limit: data.meta.limit,
             }}

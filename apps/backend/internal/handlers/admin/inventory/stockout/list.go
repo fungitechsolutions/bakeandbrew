@@ -13,11 +13,10 @@ import (
 )
 
 type ListStockOutParams struct {
-	ProductName string `form:"product_name"`
-	From        string `form:"from"`
-	To          string `form:"to"`
-	BillNO      string `form:"bill_no"`
-	SortByRate  string `form:"sort_by_rate"`
+	From       string `form:"from"`
+	To         string `form:"to"`
+	Search     string `form:"search"`
+	SortByRate string `form:"sort_by_rate"`
 }
 
 func ListStockOut(queries repository.InventoryRepository) gin.HandlerFunc {
@@ -46,10 +45,9 @@ func ListStockOut(queries repository.InventoryRepository) gin.HandlerFunc {
 		}
 
 		total, err := queries.GetStockOutCount(ctx, db.GetStockOutCountParams{
-			ProductName: utils.ToNullableText(filter.ProductName),
-			From:        utils.ToNullableText(filter.From),
-			To:          utils.ToNullableText(filter.To),
-			BillNo:      utils.ToNullableText(filter.BillNO),
+			Search: utils.ToNullableText(filter.Search),
+			From:   utils.ToNullableText(filter.From),
+			To:     utils.ToNullableText(filter.To),
 		})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
@@ -87,13 +85,12 @@ func ListStockOut(queries repository.InventoryRepository) gin.HandlerFunc {
 		offset := LIMIT * (page - 1)
 
 		stockOutList, err := queries.ListStockOut(ctx, db.ListStockOutParams{
-			Limit:       LIMIT,
-			Offset:      int32(offset),
-			ProductName: utils.ToNullableText(filter.ProductName),
-			From:        utils.ToNullableText(filter.From),
-			To:          utils.ToNullableText(filter.To),
-			BillNo:      utils.ToNullableText(filter.BillNO),
-			SortByRate:  utils.ToNullableText(filter.SortByRate),
+			Limit:      LIMIT,
+			Offset:     int32(offset),
+			Search:     utils.ToNullableText(filter.Search),
+			From:       utils.ToNullableText(filter.From),
+			To:         utils.ToNullableText(filter.To),
+			SortByRate: utils.ToNullableText(filter.SortByRate),
 		})
 
 		if err != nil {
