@@ -110,11 +110,34 @@ func (q *Queries) GetStockInByID(ctx context.Context, id pgtype.UUID) (GetStockI
 }
 
 const getStockInCount = `-- name: GetStockInCount :one
-SELECT COUNT(*) FROM stock_in
+SELECT COUNT(*)
+FROM stock_in si
+JOIN products p ON p.id = si.product_id
+JOIN suppliers s ON s.id = si.supplier_id
+WHERE
+    ($1::TEXT IS NULL OR p.name ILIKE '%' || $1::TEXT || '%')
+    AND ($2::TEXT IS NULL OR s.company_name ILIKE '%' || $2::TEXT || '%')
+    AND ($3::TEXT IS NULL OR si.invoice_no ILIKE '%' || $3::TEXT || '%')
+    AND ($4::TEXT IS NULL OR si.date >= $4::TEXT)
+    AND ($5::TEXT IS NULL OR si.date <= $5::TEXT)
 `
 
-func (q *Queries) GetStockInCount(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, getStockInCount)
+type GetStockInCountParams struct {
+	ProductName  pgtype.Text `json:"productName"`
+	SupplierName pgtype.Text `json:"supplierName"`
+	InvoiceNo    pgtype.Text `json:"invoiceNo"`
+	From         pgtype.Text `json:"from"`
+	To           pgtype.Text `json:"to"`
+}
+
+func (q *Queries) GetStockInCount(ctx context.Context, arg GetStockInCountParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getStockInCount,
+		arg.ProductName,
+		arg.SupplierName,
+		arg.InvoiceNo,
+		arg.From,
+		arg.To,
+	)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -129,13 +152,28 @@ SELECT
 FROM stock_in si
 JOIN products p ON p.id = si.product_id
 JOIN suppliers s ON s.id = si.supplier_id
-ORDER BY si.created_at DESC
+WHERE
+    ($3::TEXT IS NULL OR p.name ILIKE '%' || $3::TEXT || '%')
+    AND ($4::TEXT IS NULL OR s.company_name ILIKE '%' || $4::TEXT || '%')
+    AND ($5::TEXT IS NULL OR si.invoice_no ILIKE '%' || $5::TEXT || '%')
+    AND ($6::TEXT IS NULL OR si.date >= $6::TEXT)
+    AND ($7::TEXT IS NULL OR si.date <= $7::TEXT)
+ORDER BY
+    CASE WHEN $8::TEXT = 'asc' THEN si.rate END ASC,
+    CASE WHEN $8::TEXT = 'desc' THEN si.rate END DESC,
+    si.created_at DESC
 LIMIT $1 OFFSET $2
 `
 
 type ListStockInParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+	Limit        int32       `json:"limit"`
+	Offset       int32       `json:"offset"`
+	ProductName  pgtype.Text `json:"productName"`
+	SupplierName pgtype.Text `json:"supplierName"`
+	InvoiceNo    pgtype.Text `json:"invoiceNo"`
+	From         pgtype.Text `json:"from"`
+	To           pgtype.Text `json:"to"`
+	SortByRate   pgtype.Text `json:"sortByRate"`
 }
 
 type ListStockInRow struct {
@@ -154,7 +192,16 @@ type ListStockInRow struct {
 }
 
 func (q *Queries) ListStockIn(ctx context.Context, arg ListStockInParams) ([]ListStockInRow, error) {
-	rows, err := q.db.Query(ctx, listStockIn, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listStockIn,
+		arg.Limit,
+		arg.Offset,
+		arg.ProductName,
+		arg.SupplierName,
+		arg.InvoiceNo,
+		arg.From,
+		arg.To,
+		arg.SortByRate,
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -101,11 +101,30 @@ func (q *Queries) GetStockOutByID(ctx context.Context, id pgtype.UUID) (GetStock
 }
 
 const getStockOutCount = `-- name: GetStockOutCount :one
-SELECT COUNT(*) FROM stock_out
+SELECT COUNT(*)
+FROM stock_out so
+JOIN products p ON p.id = so.product_id
+WHERE
+    ($1::TEXT IS NULL OR p.name ILIKE '%' || $1::TEXT || '%')
+    AND ($2::TEXT IS NULL OR so.bill_no ILIKE '%' || $2::TEXT || '%')
+    AND ($3::TEXT IS NULL OR so.date >= $3::TEXT)
+    AND ($4::TEXT IS NULL OR so.date <= $4::TEXT)
 `
 
-func (q *Queries) GetStockOutCount(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, getStockOutCount)
+type GetStockOutCountParams struct {
+	ProductName pgtype.Text `json:"productName"`
+	BillNo      pgtype.Text `json:"billNo"`
+	From        pgtype.Text `json:"from"`
+	To          pgtype.Text `json:"to"`
+}
+
+func (q *Queries) GetStockOutCount(ctx context.Context, arg GetStockOutCountParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getStockOutCount,
+		arg.ProductName,
+		arg.BillNo,
+		arg.From,
+		arg.To,
+	)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -118,13 +137,26 @@ SELECT
     p.unit AS product_unit
 FROM stock_out so
 JOIN products p ON p.id = so.product_id
-ORDER BY so.created_at DESC
+WHERE
+    ($3::TEXT IS NULL OR p.name ILIKE '%' || $3::TEXT || '%')
+    AND ($4::TEXT IS NULL OR so.bill_no ILIKE '%' || $4::TEXT || '%')
+    AND ($5::TEXT IS NULL OR so.date >= $5::TEXT)
+    AND ($6::TEXT IS NULL OR so.date <= $6::TEXT)
+ORDER BY
+    CASE WHEN $7::TEXT = 'asc' THEN so.rate END ASC,
+    CASE WHEN $7::TEXT = 'desc' THEN so.rate END DESC,
+    so.created_at DESC
 LIMIT $1 OFFSET $2
 `
 
 type ListStockOutParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+	Limit       int32       `json:"limit"`
+	Offset      int32       `json:"offset"`
+	ProductName pgtype.Text `json:"productName"`
+	BillNo      pgtype.Text `json:"billNo"`
+	From        pgtype.Text `json:"from"`
+	To          pgtype.Text `json:"to"`
+	SortByRate  pgtype.Text `json:"sortByRate"`
 }
 
 type ListStockOutRow struct {
@@ -141,7 +173,15 @@ type ListStockOutRow struct {
 }
 
 func (q *Queries) ListStockOut(ctx context.Context, arg ListStockOutParams) ([]ListStockOutRow, error) {
-	rows, err := q.db.Query(ctx, listStockOut, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listStockOut,
+		arg.Limit,
+		arg.Offset,
+		arg.ProductName,
+		arg.BillNo,
+		arg.From,
+		arg.To,
+		arg.SortByRate,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +235,6 @@ type ListStockOutByBillNoRow struct {
 	ProductUnit string             `json:"productUnit"`
 }
 
-// useful for tracing which items went out under a specific physical bill
 func (q *Queries) ListStockOutByBillNo(ctx context.Context, billNo pgtype.Text) ([]ListStockOutByBillNoRow, error) {
 	rows, err := q.db.Query(ctx, listStockOutByBillNo, billNo)
 	if err != nil {

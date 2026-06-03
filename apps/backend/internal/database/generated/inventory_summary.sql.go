@@ -35,6 +35,9 @@ LEFT JOIN (
            SUM(qty) AS total_qty,
            SUM(qty * rate) AS total_amount
     FROM stock_in
+    WHERE
+        ($1::TEXT IS NULL OR date >= $1::TEXT)
+        AND ($2::TEXT IS NULL OR date <= $2::TEXT)
     GROUP BY product_id
 ) si ON si.product_id = p.id
 LEFT JOIN (
@@ -42,6 +45,9 @@ LEFT JOIN (
            SUM(qty) AS total_qty,
            SUM(qty * rate) AS total_amount
     FROM stock_out
+    WHERE
+        ($1::TEXT IS NULL OR date >= $1::TEXT)
+        AND ($2::TEXT IS NULL OR date <= $2::TEXT)
     GROUP BY product_id
 ) so ON so.product_id = p.id
 LEFT JOIN (
@@ -49,10 +55,18 @@ LEFT JOIN (
            SUM(qty) AS total_qty,
            SUM(qty * rate) AS total_amount
     FROM wastage
+    WHERE
+        ($1::TEXT IS NULL OR date >= $1::TEXT)
+        AND ($2::TEXT IS NULL OR date <= $2::TEXT)
     GROUP BY product_id
 ) w ON w.product_id = p.id
 ORDER BY p.name ASC
 `
+
+type GetInventorySummaryParams struct {
+	From pgtype.Text `json:"from"`
+	To   pgtype.Text `json:"to"`
+}
 
 type GetInventorySummaryRow struct {
 	ProductID      pgtype.UUID    `json:"productId"`
@@ -68,8 +82,8 @@ type GetInventorySummaryRow struct {
 	ClosingAmount  pgtype.Numeric `json:"closingAmount"`
 }
 
-func (q *Queries) GetInventorySummary(ctx context.Context) ([]GetInventorySummaryRow, error) {
-	rows, err := q.db.Query(ctx, getInventorySummary)
+func (q *Queries) GetInventorySummary(ctx context.Context, arg GetInventorySummaryParams) ([]GetInventorySummaryRow, error) {
+	rows, err := q.db.Query(ctx, getInventorySummary, arg.From, arg.To)
 	if err != nil {
 		return nil, err
 	}

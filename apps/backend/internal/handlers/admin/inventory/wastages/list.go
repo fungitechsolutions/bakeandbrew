@@ -9,12 +9,30 @@ import (
 	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
 	"github.com/suprimkhatri77/sms/backend/internal/repository"
 	"github.com/suprimkhatri77/sms/backend/internal/types"
+	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
+
+type ListWastageStockParams struct {
+	ProductName string `form:"product_name"`
+	From        string `form:"from"`
+	To          string `form:"to"`
+	SortByRate  string `form:"sort_by_rate"`
+}
 
 func ListWastageStock(queries repository.InventoryRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 		const LIMIT = 20
+
+		var filter ListWastageStockParams
+		if err := c.ShouldBindQuery(&filter); err != nil {
+			c.JSON(http.StatusBadRequest, types.APIResponse{
+				Success: false,
+				Message: "Invalid query parameters",
+				Code:    constants.InvalidQueryParam,
+			})
+			return
+		}
 
 		page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 		if err != nil || page <= 0 {
@@ -26,7 +44,11 @@ func ListWastageStock(queries repository.InventoryRepository) gin.HandlerFunc {
 			return
 		}
 
-		total, err := queries.GetWastageCount(ctx)
+		total, err := queries.GetWastageCount(ctx, db.GetWastageCountParams{
+			ProductName: utils.ToNullableText(filter.ProductName),
+			From:        utils.ToNullableText(filter.From),
+			To:          utils.ToNullableText(filter.To),
+		})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
@@ -63,8 +85,12 @@ func ListWastageStock(queries repository.InventoryRepository) gin.HandlerFunc {
 		offset := LIMIT * (page - 1)
 
 		wastageList, err := queries.ListWastage(ctx, db.ListWastageParams{
-			Limit:  LIMIT,
-			Offset: int32(offset),
+			Limit:       LIMIT,
+			Offset:      int32(offset),
+			ProductName: utils.ToNullableText(filter.ProductName),
+			From:        utils.ToNullableText(filter.From),
+			To:          utils.ToNullableText(filter.To),
+			SortByRate:  utils.ToNullableText(filter.SortByRate),
 		})
 
 		if err != nil {

@@ -19,8 +19,17 @@ SELECT
     p.unit AS product_unit
 FROM stock_out so
 JOIN products p ON p.id = so.product_id
-ORDER BY so.created_at DESC
+WHERE
+    (sqlc.narg('product_name')::TEXT IS NULL OR p.name ILIKE '%' || sqlc.narg('product_name')::TEXT || '%')
+    AND (sqlc.narg('bill_no')::TEXT IS NULL OR so.bill_no ILIKE '%' || sqlc.narg('bill_no')::TEXT || '%')
+    AND (sqlc.narg('from')::TEXT IS NULL OR so.date >= sqlc.narg('from')::TEXT)
+    AND (sqlc.narg('to')::TEXT IS NULL OR so.date <= sqlc.narg('to')::TEXT)
+ORDER BY
+    CASE WHEN sqlc.narg('sort_by_rate')::TEXT = 'asc' THEN so.rate END ASC,
+    CASE WHEN sqlc.narg('sort_by_rate')::TEXT = 'desc' THEN so.rate END DESC,
+    so.created_at DESC
 LIMIT $1 OFFSET $2;
+
 
 -- name: ListStockOutByProduct :many
 SELECT
@@ -33,7 +42,6 @@ WHERE so.product_id = $1
 ORDER BY so.created_at DESC;
 
 -- name: ListStockOutByBillNo :many
--- useful for tracing which items went out under a specific physical bill
 SELECT
     so.*,
     p.name AS product_name,
@@ -64,4 +72,11 @@ DELETE FROM stock_out
 WHERE id = $1;
 
 -- name: GetStockOutCount :one
-SELECT COUNT(*) FROM stock_out;
+SELECT COUNT(*)
+FROM stock_out so
+JOIN products p ON p.id = so.product_id
+WHERE
+    (sqlc.narg('product_name')::TEXT IS NULL OR p.name ILIKE '%' || sqlc.narg('product_name')::TEXT || '%')
+    AND (sqlc.narg('bill_no')::TEXT IS NULL OR so.bill_no ILIKE '%' || sqlc.narg('bill_no')::TEXT || '%')
+    AND (sqlc.narg('from')::TEXT IS NULL OR so.date >= sqlc.narg('from')::TEXT)
+    AND (sqlc.narg('to')::TEXT IS NULL OR so.date <= sqlc.narg('to')::TEXT);
