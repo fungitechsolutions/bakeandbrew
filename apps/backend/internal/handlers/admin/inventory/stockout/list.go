@@ -9,24 +9,48 @@ import (
 	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
 	"github.com/suprimkhatri77/sms/backend/internal/repository"
 	"github.com/suprimkhatri77/sms/backend/internal/types"
+	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
+
+type ListStockOutParams struct {
+	ProductName string `form:"product_name"`
+	From        string `form:"from"`
+	To          string `form:"to"`
+	BillNO      string `form:"bill_no"`
+	SortByRate  string `form:"sort_by_rate"`
+}
 
 func ListStockOut(queries repository.InventoryRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 		const LIMIT = 20
 
-		page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
-		if err != nil || page <= 0 {
+		var filter ListStockOutParams
+		if err := c.ShouldBindQuery(&filter); err != nil {
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
-				Message: "Invalid page parameter",
-				Code:    constants.InvalidPageParam,
+				Message: "Invalid query parameters",
+				Code:    constants.InvalidQueryParam,
 			})
 			return
 		}
 
-		total, err := queries.GetStockOutCount(ctx)
+		page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+		if err != nil || page <= 0 {
+			c.JSON(http.StatusBadRequest, types.APIResponse{
+				Success: false,
+				Message: "Invalid query parameter",
+				Code:    constants.InvalidQueryParam,
+			})
+			return
+		}
+
+		total, err := queries.GetStockOutCount(ctx, db.GetStockOutCountParams{
+			ProductName: utils.ToNullableText(filter.ProductName),
+			From:        utils.ToNullableText(filter.From),
+			To:          utils.ToNullableText(filter.To),
+			BillNo:      utils.ToNullableText(filter.BillNO),
+		})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
@@ -63,9 +87,15 @@ func ListStockOut(queries repository.InventoryRepository) gin.HandlerFunc {
 		offset := LIMIT * (page - 1)
 
 		stockOutList, err := queries.ListStockOut(ctx, db.ListStockOutParams{
-			Limit:  LIMIT,
-			Offset: int32(offset),
+			Limit:       LIMIT,
+			Offset:      int32(offset),
+			ProductName: utils.ToNullableText(filter.ProductName),
+			From:        utils.ToNullableText(filter.From),
+			To:          utils.ToNullableText(filter.To),
+			BillNo:      utils.ToNullableText(filter.BillNO),
+			SortByRate:  utils.ToNullableText(filter.SortByRate),
 		})
+
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,

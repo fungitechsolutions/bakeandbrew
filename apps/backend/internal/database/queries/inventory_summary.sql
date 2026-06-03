@@ -22,6 +22,9 @@ LEFT JOIN (
            SUM(qty) AS total_qty,
            SUM(qty * rate) AS total_amount
     FROM stock_in
+    WHERE
+        (sqlc.narg('from')::TEXT IS NULL OR date >= sqlc.narg('from')::TEXT)
+        AND (sqlc.narg('to')::TEXT IS NULL OR date <= sqlc.narg('to')::TEXT)
     GROUP BY product_id
 ) si ON si.product_id = p.id
 LEFT JOIN (
@@ -29,6 +32,9 @@ LEFT JOIN (
            SUM(qty) AS total_qty,
            SUM(qty * rate) AS total_amount
     FROM stock_out
+    WHERE
+        (sqlc.narg('from')::TEXT IS NULL OR date >= sqlc.narg('from')::TEXT)
+        AND (sqlc.narg('to')::TEXT IS NULL OR date <= sqlc.narg('to')::TEXT)
     GROUP BY product_id
 ) so ON so.product_id = p.id
 LEFT JOIN (
@@ -36,9 +42,12 @@ LEFT JOIN (
            SUM(qty) AS total_qty,
            SUM(qty * rate) AS total_amount
     FROM wastage
+    WHERE
+        (sqlc.narg('from')::TEXT IS NULL OR date >= sqlc.narg('from')::TEXT)
+        AND (sqlc.narg('to')::TEXT IS NULL OR date <= sqlc.narg('to')::TEXT)
     GROUP BY product_id
 ) w ON w.product_id = p.id
-ORDER BY p.name ASC;;
+ORDER BY p.name ASC;
 
 -- name: GetInventorySummaryByDateRange :many
 SELECT

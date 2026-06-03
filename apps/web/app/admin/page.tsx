@@ -70,13 +70,13 @@ export default function Page() {
             {
               title: "Inventory",
               desc: "Manage inventory and stock.",
-              href: "/admin/inventory",
+              href: "/admin/inventory/products",
               icon: Package,
             },
             {
               title: "Accounting",
               desc: "Manage accounting and financial transactions.",
-              href: "/admin/accounting",
+              href: "/admin/banks",
               icon: BookOpenCheck,
             },
           ].map((c) => (
