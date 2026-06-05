@@ -210,3 +210,8 @@ export {
   type SupplierLedgerSummary,
   type SupplierLedgerData,
 } from "./admin/accounting/supplier_ledger";
+
+export {
+  type BatchResponse,
+  type GetDistinctBatchesResponse,
+} from "./admin/students/batch";

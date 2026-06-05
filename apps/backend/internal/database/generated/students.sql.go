@@ -96,6 +96,30 @@ func (q *Queries) CreateStudent(ctx context.Context, arg CreateStudentParams) (S
 	return i, err
 }
 
+const getDistinctBatches = `-- name: GetDistinctBatches :many
+SELECT DISTINCT batch FROM students WHERE batch IS NOT NULL ORDER BY batch
+`
+
+func (q *Queries) GetDistinctBatches(ctx context.Context) ([]pgtype.Text, error) {
+	rows, err := q.db.Query(ctx, getDistinctBatches)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []pgtype.Text
+	for rows.Next() {
+		var batch pgtype.Text
+		if err := rows.Scan(&batch); err != nil {
+			return nil, err
+		}
+		items = append(items, batch)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getNextSerialNo = `-- name: GetNextSerialNo :one
 SELECT COALESCE(MAX(serial_no), 0) + 1 AS next_serial
 FROM students 

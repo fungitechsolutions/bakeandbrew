@@ -64,4 +64,8 @@ export const queryKeys = {
       all: ["admin-suppliers", "ledger"] as const,
     },
   },
+  batches: {
+    all: ["admin-students", "batches"] as const,
+    list: () => ["admin-students", "batches", "list"] as const,
+  },
 };
