@@ -19,6 +19,7 @@ func setupAdminStudentRoutes(admin *gin.RouterGroup, cfg config.Config) {
 	s.GET("/:studentID/detail", adminStudents.StudentDetail(cfg.Queries))
 	s.GET("/:studentID/courses", adminStudents.StudentEnrolledCourses(cfg.Queries))
 	s.GET("/:studentID/payments", adminStudents.StudentPaymentDetails(cfg.Queries))
+	s.GET("/batches", adminStudents.GetDistinctBatches(cfg.Queries))
 	s.PUT("/:studentID/status", adminStudents.UpdateStatus(cfg.Queries))
 	s.POST("/:studentID/payments", adminPayments.AddPayment(repository.NewAdminPaymentTxRepository(cfg.Queries, cfg.PgxPool), cfg.PgxPool))
 	s.PUT("/:studentID/info/guardian", adminStudents.UpdateGuardianInfo(cfg.Queries))

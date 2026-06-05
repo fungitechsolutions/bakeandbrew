@@ -398,4 +398,5 @@ WHERE student_id = $1
   AND status = 'rejected';
 
  
-
+-- name: GetDistinctBatches :many
+SELECT DISTINCT batch FROM students WHERE batch IS NOT NULL ORDER BY batch;

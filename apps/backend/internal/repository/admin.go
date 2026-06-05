@@ -45,6 +45,8 @@ type AdminRepository interface {
 	// admin/students/:id
 	UpdateStudentPersonalInfo(ctx context.Context, params db.UpdateStudentPersonalInfoParams) (pgconn.CommandTag, error)
 	UpdateStudentGuardianInfo(ctx context.Context, params db.UpdateStudentGuardianInfoParams) (pgconn.CommandTag, error)
+
+	GetDistinctBatches(ctx context.Context) ([]pgtype.Text, error)
 }
 
 type AdminPaymentTxRepository interface {

@@ -18,6 +18,7 @@ import { StudentsError } from "./StudentError";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "../analytics/hooks/useDebounce";
 import { StudentCard } from "./StudentCard";
+import { useStudentBatches } from "@/hooks/queries/admin/students/useStudentBtaches";
 
 type Status = "pending" | "active" | "completed" | "rejected";
 
@@ -105,6 +106,18 @@ export default function StudentsPage() {
       batch: null,
     });
   };
+
+  const {
+    data: batchesData,
+    isPending: isBatchesPending,
+    isError: isBatchesError,
+    error: batchesError,
+    refetch: refetchBatches,
+  } = useStudentBatches();
+
+  const batches = batchesData?.batches ?? [];
+  const showBatchFilter =
+    !isBatchesPending && !isBatchesError && batches.length > 0;
 
   const { data, isPending, refetch, isError } = useQuery({
     queryKey: [
@@ -313,33 +326,55 @@ export default function StudentsPage() {
             </div>
 
             {/* Batch */}
-            <div className="relative">
-              <select
-                value={batchFilter}
-                onChange={(e) => handleBatch(e.target.value)}
-                className={cn(
-                  "appearance-none cursor-pointer border py-1.5 pl-3 pr-7 text-[0.75rem] font-semibold uppercase tracking-wide outline-none transition-all",
-                  batchFilter !== "all"
-                    ? "border-[#2d4a3e] bg-[#2d4a3e] text-white"
-                    : "border-[#2d4a3e]/15 bg-white text-[#2d4a3e]/55 hover:border-[#2d4a3e]/30 hover:text-[#2d4a3e]",
-                )}
+            {isBatchesPending ? (
+              <div
+                className="h-[30px] w-[7.5rem] animate-pulse border border-[#2d4a3e]/15 bg-[#2d4a3e]/06"
+                aria-label="Loading batches"
+              />
+            ) : isBatchesError ? (
+              <button
+                type="button"
+                onClick={() => refetchBatches()}
+                title={
+                  batchesError instanceof Error
+                    ? batchesError.message
+                    : "Failed to load batches"
+                }
+                className="border border-red-200 bg-red-50 px-3 py-1.5 text-[0.72rem] font-semibold uppercase tracking-wide text-red-600 transition-colors hover:bg-red-100"
                 style={{ fontFamily: "var(--font-dm-sans)" }}
               >
-                <option value="all">All batches</option>
-                {BATCHES.map((b) => (
-                  <option key={b} value={b}>
-                    Batch {b}
-                  </option>
-                ))}
-                {/* TODO: swap BATCHES with fetched batches query */}
-              </select>
-              <ChevronDown
-                className={cn(
-                  "pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2",
-                  batchFilter !== "all" ? "text-white/70" : "text-[#2d4a3e]/35",
-                )}
-              />
-            </div>
+                Batches failed · Retry
+              </button>
+            ) : showBatchFilter ? (
+              <div className="relative">
+                <select
+                  value={batchFilter}
+                  onChange={(e) => handleBatch(e.target.value)}
+                  className={cn(
+                    "appearance-none cursor-pointer border py-1.5 pl-3 pr-7 text-[0.75rem] font-semibold uppercase tracking-wide outline-none transition-all",
+                    batchFilter !== "all"
+                      ? "border-[#2d4a3e] bg-[#2d4a3e] text-white"
+                      : "border-[#2d4a3e]/15 bg-white text-[#2d4a3e]/55 hover:border-[#2d4a3e]/30 hover:text-[#2d4a3e]",
+                  )}
+                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                >
+                  <option value="all">All batches</option>
+                  {batches.map((b, idx) => (
+                    <option key={`${b}-${idx}`} value={b}>
+                      {b}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  className={cn(
+                    "pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2",
+                    batchFilter !== "all"
+                      ? "text-white/70"
+                      : "text-[#2d4a3e]/35",
+                  )}
+                />
+              </div>
+            ) : null}
 
             {/* Clear all */}
             {activeFilterCount > 0 && (
