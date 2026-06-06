@@ -9,7 +9,7 @@ services:
     ports:
       - "5000:5000"
     env_file:
-      - ./apps/backend/.env
+      - .env.development
     volumes:
       - ./apps/backend:/app
       - /app/tmp
@@ -24,7 +24,7 @@ services:
     ports:
       - "3000:3000"
     env_file:
-      - ./apps/web/.env
+      - .env.development
     volumes:
       - ./apps/web:/app/apps/web
       - ./packages:/app/packages
@@ -39,7 +39,7 @@ services:
     ports:
       - "5432:5432"
     env_file:
-      - ./apps/backend/.env
+      - .env.development
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
