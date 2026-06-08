@@ -13,8 +13,8 @@ import (
 	"github.com/gin-gonic/gin"
 
 	appconfig "github.com/suprimkhatri77/sms/backend/internal/config"
-
 	"github.com/suprimkhatri77/sms/backend/internal/database"
+
 	dbgen "github.com/suprimkhatri77/sms/backend/internal/database/generated"
 	"github.com/suprimkhatri77/sms/backend/internal/middleware"
 	"github.com/suprimkhatri77/sms/backend/internal/pkg/cloudinary"
@@ -47,10 +47,12 @@ func main() {
 	}
 
 	ctx := context.Background()
-	db, err := database.New(ctx, cfg.DatabaseURL)
+	db, err := database.ConnectWithRetry(ctx, cfg.DatabaseURL, 10)
 	if err != nil {
-		log.Fatalf("database: %v", err)
+		slog.Error("error", "err", err)
+		os.Exit(1)
 	}
+
 	defer db.Close()
 	queries := dbgen.New(db.Pool)
 
