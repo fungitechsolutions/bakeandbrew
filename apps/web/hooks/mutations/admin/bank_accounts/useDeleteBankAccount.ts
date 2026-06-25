@@ -1,7 +1,6 @@
 import { deleteBankAccount } from "@/lib/api/bank_accounts";
-import { ApiError } from "@/lib/axios";
 import { queryKeys } from "@/lib/query-keys";
-import { DeleteBankAccountResponse } from "@repo/types";
+import { APIError, DeleteBankAccountResponse } from "@repo/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
@@ -10,7 +9,7 @@ export const useDeleteBankAccount = () => {
   const queryClient = useQueryClient();
   return useMutation<
     DeleteBankAccountResponse,
-    AxiosError<ApiError>,
+    AxiosError<APIError>,
     { accountID: string }
   >({
     mutationFn: ({ accountID }) => deleteBankAccount({ accountID }),

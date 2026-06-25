@@ -15,7 +15,7 @@ export const fieldErrorSchema = z.object({
 export const apiErrorSchema = z.object({
   success: z.boolean(),
   message: z.string(),
-  code: z.string().optional(),
+  code: z.string(),
   errors: z.array(fieldErrorSchema).optional(),
 });
 

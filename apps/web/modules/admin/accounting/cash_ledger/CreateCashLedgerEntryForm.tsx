@@ -30,7 +30,8 @@ import {
 import { useForm } from "@tanstack/react-form-nextjs";
 import { BSToAD } from "bikram-sambat-js";
 import { AxiosError } from "axios";
-import { ApiError } from "@/lib/axios";
+import { APIError } from "@repo/types";
+
 import { mapFieldErrors } from "@/utils/api";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 
@@ -87,7 +88,7 @@ export function CreateCashLedgerEntryForm({
         setErrors({});
         onOpenChange(false);
       } catch (err) {
-        const error = err as AxiosError<ApiError>;
+        const error = err as AxiosError<APIError>;
         const data = error.response?.data;
         if (data?.errors?.length) {
           setErrors(mapFieldErrors(data));

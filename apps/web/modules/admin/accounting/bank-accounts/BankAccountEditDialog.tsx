@@ -16,7 +16,8 @@ import {
 } from "@repo/types";
 import { useForm } from "@tanstack/react-form-nextjs";
 import { AxiosError } from "axios";
-import { ApiError } from "@/lib/axios";
+import { APIError } from "@repo/types";
+
 import { mapFieldErrors } from "@/utils/api";
 
 interface BankAccountEditDialogProps {
@@ -53,7 +54,7 @@ function EditForm({ account, loading, onClose, onSave }: EditFormProps) {
         await onSave({ accountID: account.id, ...value });
         onClose();
       } catch (err) {
-        const error = err as AxiosError<ApiError>;
+        const error = err as AxiosError<APIError>;
         const data = error.response?.data;
         if (data?.errors?.length) {
           setErrors(mapFieldErrors(data));

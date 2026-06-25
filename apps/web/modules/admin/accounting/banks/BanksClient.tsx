@@ -11,7 +11,8 @@ import { BankCreateDialog } from "./BankCreateDialog";
 import { BankEditDialog } from "./BankEditDialog";
 import { BankDeleteDialog } from "./BankDeleteDialog";
 import { AxiosError } from "axios";
-import { ApiError } from "@/lib/axios";
+import { APIError } from "@repo/types";
+
 import { Bank } from "@repo/types";
 import { BanksData, fetchBanks } from "@/lib/api/banks";
 import { useCreateBank } from "@/hooks/mutations/admin/banks/useCreateBank";
@@ -32,7 +33,7 @@ export function BanksClient() {
 
   const { data, isPending, isError, error, refetch } = useQuery<
     BanksData,
-    AxiosError<ApiError>
+    AxiosError<APIError>
   >({
     queryKey: ["admin-banks", page],
     queryFn: () => fetchBanks(page ?? 1),

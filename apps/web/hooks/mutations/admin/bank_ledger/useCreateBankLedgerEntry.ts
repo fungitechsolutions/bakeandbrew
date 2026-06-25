@@ -1,9 +1,9 @@
 import { createBankLedger } from "@/lib/api/bank_ledger";
-import { ApiError } from "@/lib/axios";
 import { queryKeys } from "@/lib/query-keys";
 import {
   CreateBankLedgerEntryInput,
   CreateBankLedgerEntryResponse,
+  APIError,
 } from "@repo/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
@@ -13,7 +13,7 @@ export const useCreateBankLedgerEntry = () => {
   const queryClient = useQueryClient();
   return useMutation<
     CreateBankLedgerEntryResponse,
-    AxiosError<ApiError>,
+    AxiosError<APIError>,
     CreateBankLedgerEntryInput & { accountID: string }
   >({
     mutationFn: ({ accountID, ...data }) =>

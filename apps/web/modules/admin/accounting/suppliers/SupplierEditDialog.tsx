@@ -19,7 +19,8 @@ import {
 } from "@repo/types";
 import z from "zod";
 import { AxiosError } from "axios";
-import { ApiError } from "@/lib/axios";
+import { APIError } from "@repo/types";
+
 import { mapFieldErrors } from "@/utils/api";
 import { toast } from "sonner";
 import { FieldError } from "@/components/ui/field";
@@ -84,7 +85,7 @@ export function SupplierEditDialog({
       });
       onClose();
     } catch (err) {
-      const error = err as AxiosError<ApiError>;
+      const error = err as AxiosError<APIError>;
       const data = error.response?.data;
       if (data?.errors?.length) {
         setErrors(mapFieldErrors(data));

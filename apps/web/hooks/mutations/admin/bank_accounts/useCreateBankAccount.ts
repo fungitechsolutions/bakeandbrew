@@ -1,7 +1,10 @@
 import { createBankAccount } from "@/lib/api/bank_accounts";
-import { ApiError } from "@/lib/axios";
 import { queryKeys } from "@/lib/query-keys";
-import { CreateBankAccountInput, CreateBankAccountResponse } from "@repo/types";
+import {
+  APIError,
+  CreateBankAccountInput,
+  CreateBankAccountResponse,
+} from "@repo/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
@@ -11,7 +14,7 @@ export const useCreateBankAccount = () => {
 
   return useMutation<
     CreateBankAccountResponse,
-    AxiosError<ApiError>,
+    AxiosError<APIError>,
     CreateBankAccountInput & { bankID: string }
   >({
     mutationFn: ({ bankID, ...data }) => createBankAccount({ bankID, data }),

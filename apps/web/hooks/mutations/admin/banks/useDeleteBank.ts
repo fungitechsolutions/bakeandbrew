@@ -1,5 +1,5 @@
 import { deleteBank } from "@/lib/api/banks";
-import { ApiError } from "@/lib/axios";
+import { APIError } from "@repo/types";
 import { DeleteBankResponse } from "@repo/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
@@ -10,7 +10,7 @@ export const useDeleteBank = () => {
 
   return useMutation<
     DeleteBankResponse,
-    AxiosError<ApiError>,
+    AxiosError<APIError>,
     { bankID: string }
   >({
     mutationFn: ({ bankID }) => deleteBank(bankID),
