@@ -2,6 +2,31 @@ import { NextRequest, NextResponse } from "next/server";
 import { User } from "@repo/types";
 import { jwtDecode } from "jwt-decode";
 
+function clearAuthCookies(response: NextResponse) {
+  const cookieOptions = {
+    maxAge: 0,
+    path: "/",
+    domain:
+      process.env.NODE_ENV === "production"
+        ? process.env.COOKIE_DOMAIN
+        : "",
+    secure: process.env.NODE_ENV === "production",
+  };
+
+  response.cookies.set("access_token", "", {
+    ...cookieOptions,
+    httpOnly: true,
+  });
+  response.cookies.set("refresh_token", "", {
+    ...cookieOptions,
+    httpOnly: true,
+  });
+  response.cookies.set("is_logged_in", "", {
+    ...cookieOptions,
+    httpOnly: false,
+  });
+}
+
 export function getSession(token: string): User | null {
   try {
     const decoded = jwtDecode<User & { exp: number }>(token);
@@ -39,36 +64,7 @@ export async function attemptRefresh(
       if (res.status === 401) {
         console.log("in !res.ok block clearing cookies.....");
         const redirect = NextResponse.redirect(new URL("/auth/login", req.url));
-        redirect.cookies.set("access_token", "", {
-          maxAge: 0,
-          path: "/",
-          domain:
-            process.env.NODE_ENV === "production"
-              ? process.env.COOKIE_DOMAIN
-              : "",
-          secure: process.env.NODE_ENV === "production",
-          httpOnly: true,
-        });
-        redirect.cookies.set("refresh_token", "", {
-          maxAge: 0,
-          path: "/",
-          domain:
-            process.env.NODE_ENV === "production"
-              ? process.env.COOKIE_DOMAIN
-              : "",
-          secure: process.env.NODE_ENV === "production",
-          httpOnly: true,
-        });
-        redirect.cookies.set("is_logged_in", "", {
-          maxAge: 0,
-          path: "/",
-          domain:
-            process.env.NODE_ENV === "production"
-              ? process.env.COOKIE_DOMAIN
-              : "",
-          secure: process.env.NODE_ENV === "production",
-          httpOnly: false,
-        });
+        clearAuthCookies(redirect);
         return redirect;
       }
 
@@ -113,7 +109,67 @@ export async function attemptRefresh(
     return response;
   } catch (error) {
     console.log("attemptRefresh threw an error:", error);
-    return NextResponse.redirect(new URL("/", req.url));
+    const redirect = NextResponse.redirect(new URL("/auth/login", req.url));
+    clearAuthCookies(redirect);
+    return redirect;
+  }
+}
+
+export async function attemptRefreshForAuthRoute(
+  refreshToken: string,
+  req: NextRequest,
+) {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/refresh`,
+      {
+        method: "POST",
+        headers: { Cookie: `refresh_token=${refreshToken}` },
+      },
+    );
+
+    if (!res.ok) {
+      const response = NextResponse.next();
+      if (res.status === 401) {
+        clearAuthCookies(response);
+      }
+      return response;
+    }
+
+    const cookies = res.headers.getSetCookie();
+    const newAccessToken = extractTokenFromCookie(cookies.join("; "));
+
+    if (!newAccessToken) {
+      const response = NextResponse.next();
+      clearAuthCookies(response);
+      return response;
+    }
+
+    const user = await getSession(newAccessToken);
+
+    if (!user) {
+      const response = NextResponse.next();
+      clearAuthCookies(response);
+      return response;
+    }
+
+    if (user.role === "student") {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+    if (user.role === "admin" || user.role === "superadmin") {
+      return NextResponse.redirect(new URL("/admin", req.url));
+    }
+
+    const response = NextResponse.next();
+    cookies.forEach((cookie) => {
+      response.headers.append("set-cookie", cookie);
+    });
+    return response;
+  } catch (error) {
+    console.log("attemptRefreshForAuthRoute threw an error:", error);
+    const response = NextResponse.next();
+    clearAuthCookies(response);
+    return response;
   }
 }
 
