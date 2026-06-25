@@ -6,7 +6,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { Toaster } from "sonner";
 import { AxiosError } from "axios";
-import { ApiError } from "@/lib/axios";
+import { APIError } from "@repo/types";
 
 import { SupplierLedgerFiltersBar } from "./SupplierLedgerFilterBar";
 import { SupplierLedgerTable } from "./SupplierLedgerTable";
@@ -99,7 +99,7 @@ function SupplierLedgerInner() {
     isError,
     error,
     refetch,
-  } = useInfiniteQuery<SupplierLedgerData, AxiosError<ApiError>>({
+  } = useInfiniteQuery<SupplierLedgerData, AxiosError<APIError>>({
     queryKey: queryKeys.suppliers.ledger.list(
       supplierId,
       page,
@@ -180,7 +180,7 @@ function SupplierLedgerInner() {
         {isError && (
           <SupplierLedgerError
             message={
-              (error as AxiosError<ApiError>)?.response?.data.message ??
+              (error as AxiosError<APIError>)?.response?.data.message ??
               "Something went wrong"
             }
             onRetry={refetch}

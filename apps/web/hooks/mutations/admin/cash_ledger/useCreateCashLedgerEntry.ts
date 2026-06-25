@@ -5,15 +5,15 @@ import {
 } from "@repo/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { ApiError } from "@/lib/axios";
 import { toast } from "sonner";
+import { APIError } from "@repo/types";
 import { queryKeys } from "@/lib/query-keys";
 
 export const useCreateCashLedgerEntry = () => {
   const queryClient = useQueryClient();
   return useMutation<
     CreateCashLedgerEntryResponse,
-    AxiosError<ApiError>,
+    AxiosError<APIError>,
     CreateCashLedgerEntryInput
   >({
     mutationFn: ({ ...data }) => createCashLedgerEntry({ data }),

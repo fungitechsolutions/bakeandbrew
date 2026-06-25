@@ -1,5 +1,5 @@
 import { BanksData, setDefaultBank } from "@/lib/api/banks";
-import { ApiError } from "@/lib/axios";
+import { APIError } from "@repo/types";
 import { SetDefaultBankResponse } from "@repo/types";
 import { QueryKey, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
@@ -14,7 +14,7 @@ export const useSetDefaultBank = (page: number) => {
 
   return useMutation<
     SetDefaultBankResponse,
-    AxiosError<ApiError>,
+    AxiosError<APIError>,
     { bankID: string },
     ToggleBankContext
   >({

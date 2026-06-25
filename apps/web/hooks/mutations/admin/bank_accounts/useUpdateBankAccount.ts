@@ -1,7 +1,10 @@
 import { updateBankAccount } from "@/lib/api/bank_accounts";
-import { ApiError } from "@/lib/axios";
 import { queryKeys } from "@/lib/query-keys";
-import { UpdateBankAccountInput, UpdateBankAccountResponse } from "@repo/types";
+import {
+  APIError,
+  UpdateBankAccountInput,
+  UpdateBankAccountResponse,
+} from "@repo/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
@@ -11,7 +14,7 @@ export const useUpdateBankAccount = () => {
 
   return useMutation<
     UpdateBankAccountResponse,
-    AxiosError<ApiError>,
+    AxiosError<APIError>,
     UpdateBankAccountInput & { accountID: string }
   >({
     mutationFn: ({ accountID, ...data }) =>

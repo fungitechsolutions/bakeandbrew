@@ -1,7 +1,6 @@
 import { deleteSupplier } from "@/lib/api/supplier";
-import { ApiError } from "@/lib/axios";
 import { queryKeys } from "@/lib/query-keys";
-import { DeleteSupplierResponse } from "@repo/types";
+import { APIError, DeleteSupplierResponse } from "@repo/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
@@ -10,7 +9,7 @@ export const useDeleteSupplier = () => {
   const queryClient = useQueryClient();
   return useMutation<
     DeleteSupplierResponse,
-    AxiosError<ApiError>,
+    AxiosError<APIError>,
     { supplierID: string }
   >({
     mutationFn: ({ supplierID }) => deleteSupplier(supplierID),

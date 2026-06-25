@@ -16,7 +16,8 @@ import { CreateSupplierInput } from "./types";
 import { createSupplierSchema } from "@repo/types";
 import z from "zod";
 import { FieldError } from "@/components/ui/field";
-import { ApiError } from "@/lib/axios";
+import { APIError } from "@repo/types";
+
 import { AxiosError } from "axios";
 import { mapFieldErrors } from "@/utils/api";
 
@@ -68,7 +69,7 @@ export function SupplierCreateDialog({
       setErrors({});
       onClose();
     } catch (err) {
-      const error = err as AxiosError<ApiError>;
+      const error = err as AxiosError<APIError>;
       const data = error.response?.data;
       if (data?.errors?.length) {
         setErrors(mapFieldErrors(data));

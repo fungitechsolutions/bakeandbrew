@@ -15,7 +15,8 @@ import {
   updateBankInputSchema,
 } from "@repo/types/admin/accounting/bank";
 import { useForm } from "@tanstack/react-form-nextjs";
-import { ApiError } from "@/lib/axios";
+import { APIError } from "@repo/types";
+
 import { AxiosError } from "axios";
 import { mapFieldErrors } from "@/utils/api";
 
@@ -51,7 +52,7 @@ export function BankEditDialog({
         formApi.reset();
         onClose();
       } catch (err) {
-        const error = err as AxiosError<ApiError>;
+        const error = err as AxiosError<APIError>;
         const data = error.response?.data;
         if (data?.errors?.length) {
           setError(mapFieldErrors(data));

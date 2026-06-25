@@ -1,6 +1,5 @@
 import { updateBank } from "@/lib/api/banks";
-import { ApiError } from "@/lib/axios";
-import { UpdateBankResponse } from "@repo/types";
+import { APIError, UpdateBankResponse } from "@repo/types";
 import { UpdateBankInput } from "@repo/types/admin/accounting/bank";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
@@ -10,7 +9,7 @@ export const useUpdateBank = () => {
   const queryClient = useQueryClient();
   return useMutation<
     UpdateBankResponse,
-    AxiosError<ApiError>,
+    AxiosError<APIError>,
     UpdateBankInput & { bankID: string }
   >({
     mutationFn: ({ bankID, ...data }) => updateBank(data, bankID),
