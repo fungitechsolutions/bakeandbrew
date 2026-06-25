@@ -31,7 +31,9 @@ func RotateTokens(queries repository.AuthRepository, cfg *config.Config) gin.Han
 				"ip", c.ClientIP(),
 			)
 
-			c.JSON(http.StatusBadRequest, types.APIResponse{
+			utils.ClearAuthCookies(c, cfg)
+
+			c.JSON(http.StatusUnauthorized, types.APIResponse{
 				Success: false,
 				Message: "Missing refresh token",
 				Code:    constants.MissingRefreshToken,
@@ -55,6 +57,8 @@ func RotateTokens(queries repository.AuthRepository, cfg *config.Config) gin.Han
 				"ip", c.ClientIP(),
 			)
 
+			utils.ClearAuthCookies(c, cfg)
+
 			c.JSON(http.StatusUnauthorized, types.APIResponse{
 				Success: false,
 				Message: "Invalid refresh token",
@@ -69,6 +73,8 @@ func RotateTokens(queries repository.AuthRepository, cfg *config.Config) gin.Han
 				"ip", c.ClientIP(),
 			)
 
+			utils.ClearAuthCookies(c, cfg)
+
 			c.JSON(http.StatusUnauthorized, types.APIResponse{
 				Success: false,
 				Message: "Invalid token",
@@ -80,6 +86,8 @@ func RotateTokens(queries repository.AuthRepository, cfg *config.Config) gin.Han
 		sessionIDFromClaims, ok := claims["session_id"].(string)
 		slog.Info("session from claims", "", sessionIDFromClaims)
 		if !ok {
+			utils.ClearAuthCookies(c, cfg)
+
 			c.JSON(http.StatusUnauthorized, types.APIResponse{
 				Success: false,
 				Message: "Invalid token claims",
@@ -90,6 +98,8 @@ func RotateTokens(queries repository.AuthRepository, cfg *config.Config) gin.Han
 
 		sessionID, err := utils.ConvertToUUID(sessionIDFromClaims)
 		if err != nil {
+			utils.ClearAuthCookies(c, cfg)
+
 			c.JSON(http.StatusUnauthorized, types.APIResponse{
 				Success: false,
 				Message: "Invalid token claims",
@@ -107,9 +117,7 @@ func RotateTokens(queries repository.AuthRepository, cfg *config.Config) gin.Han
 		})
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
-				// utils.SetAuthCookie(c, "access_token", "", -1, cfg)
-				// utils.SetAuthCookie(c, "refresh_token", "", -1, cfg)
-				// utils.SetPublicCookie(c, "is_logged_in", "", -1, cfg)
+				utils.ClearAuthCookies(c, cfg)
 
 				c.JSON(http.StatusUnauthorized, types.APIResponse{
 					Success: false,
