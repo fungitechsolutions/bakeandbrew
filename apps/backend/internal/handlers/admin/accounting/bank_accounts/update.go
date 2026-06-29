@@ -2,7 +2,10 @@ package bankaccounts
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -13,6 +16,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 	"github.com/suprimkhatri77/sms/backend/internal/validator"
 )
+
+const handlerUpdateBankAccount = "UpdateBankAccount"
 
 type UpdateBankAccountRequest struct {
 	AccountName   string `json:"accountName" binding:"required,notblank,min=10,max=100"`
@@ -26,6 +31,8 @@ func UpdateBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 		accountIDFromParam := c.Param("accountID")
 		accountID, err := utils.ConvertToUUID(accountIDFromParam)
 		if err != nil {
+			applog.Warn(c, handlerUpdateBankAccount, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid ID format",
@@ -36,6 +43,8 @@ func UpdateBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 
 		var req UpdateBankAccountRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
+			applog.Warn(c, handlerUpdateBankAccount, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid request data",
@@ -56,6 +65,8 @@ func UpdateBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 		if err != nil {
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+				applog.Warn(c, handlerUpdateBankAccount, "conflict",
+					slog.Any(applog.AttrError, err))
 				c.JSON(http.StatusConflict, types.APIResponse{
 					Success: false,
 					Message: "Account with that name already exists",
@@ -64,6 +75,9 @@ func UpdateBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 				return
 
 			}
+			applog.Error(c, handlerUpdateBankAccount, "failed to process request",
+				slog.Any(applog.AttrError, err),
+			)
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -73,6 +87,7 @@ func UpdateBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 		}
 
 		if result.RowsAffected() == 0 {
+			applog.Warn(c, handlerUpdateBankAccount, "resource not found")
 			c.JSON(http.StatusNotFound, types.APIResponse{
 				Success: false,
 				Message: "Bank account not found",
@@ -81,6 +96,7 @@ func UpdateBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 			return
 		}
 
+		applog.Info(c, handlerUpdateBankAccount, "bank account updated")
 		c.JSON(http.StatusOK, types.APIResponse{
 			Success: true,
 			Message: "Bank account updated",

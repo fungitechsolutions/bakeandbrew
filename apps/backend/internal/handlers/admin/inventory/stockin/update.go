@@ -1,8 +1,11 @@
 package in
 
 import (
+	"log/slog"
 	"math"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
@@ -13,12 +16,15 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/validator"
 )
 
+const handlerUpdateStockIn = "UpdateStockIn"
+
 func UpdateStockIn(queries repository.InventoryRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 
 		stockIDFromParam := c.Param("stockID")
 		if stockIDFromParam == "" {
+			applog.Warn(c, handlerUpdateStockIn, "invalid request")
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Missing stock ID",
@@ -29,6 +35,8 @@ func UpdateStockIn(queries repository.InventoryRepository) gin.HandlerFunc {
 
 		stockID, err := utils.ConvertToUUID(stockIDFromParam)
 		if err != nil {
+			applog.Warn(c, handlerUpdateStockIn, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid stock ID format",
@@ -40,6 +48,8 @@ func UpdateStockIn(queries repository.InventoryRepository) gin.HandlerFunc {
 		var req types.UpdateStockInRequest
 
 		if err := c.ShouldBindJSON(&req); err != nil {
+			applog.Warn(c, handlerUpdateStockIn, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid request data",
@@ -53,6 +63,8 @@ func UpdateStockIn(queries repository.InventoryRepository) gin.HandlerFunc {
 
 		productID, err := utils.ConvertToUUID(req.ProductID)
 		if err != nil {
+			applog.Warn(c, handlerUpdateStockIn, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid stock ID format",
@@ -72,6 +84,8 @@ func UpdateStockIn(queries repository.InventoryRepository) gin.HandlerFunc {
 		})
 
 		if err != nil {
+			applog.Error(c, handlerUpdateStockIn, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -80,6 +94,7 @@ func UpdateStockIn(queries repository.InventoryRepository) gin.HandlerFunc {
 			return
 		}
 
+		applog.Info(c, handlerUpdateStockIn, "stock updated")
 		c.JSON(http.StatusOK, types.APIResponse{
 			Success: true,
 			Message: "Stock updated",

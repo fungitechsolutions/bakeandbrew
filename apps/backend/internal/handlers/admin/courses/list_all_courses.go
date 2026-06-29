@@ -1,7 +1,10 @@
 package courses
 
 import (
+	"log/slog"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
@@ -10,6 +13,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/types"
 )
 
+const handlerListAllCourses = "ListAllCourses"
+
 func ListAllCourses(queries repository.CoursesRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
@@ -17,6 +22,8 @@ func ListAllCourses(queries repository.CoursesRepository) gin.HandlerFunc {
 		courses, err := queries.ListCourses(ctx)
 
 		if err != nil {
+			applog.Error(c, handlerListAllCourses, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

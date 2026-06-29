@@ -1,8 +1,11 @@
 package suppliers
 
 import (
+	"log/slog"
 	"net/http"
 	"strconv"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
@@ -11,6 +14,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/types"
 )
 
+const handlerListSuppliers = "ListSuppliers"
+
 func ListSuppliers(queries accountingRepository.SuppliersRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
@@ -18,6 +23,8 @@ func ListSuppliers(queries accountingRepository.SuppliersRepository) gin.Handler
 
 		page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 		if err != nil {
+			applog.Warn(c, handlerListSuppliers, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid query parameter",
@@ -27,6 +34,7 @@ func ListSuppliers(queries accountingRepository.SuppliersRepository) gin.Handler
 		}
 
 		if page <= 0 {
+			applog.Warn(c, handlerListSuppliers, "invalid request")
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Page must be greater than 0",
@@ -37,6 +45,8 @@ func ListSuppliers(queries accountingRepository.SuppliersRepository) gin.Handler
 
 		total, err := queries.GetSupplierCount(ctx)
 		if err != nil {
+			applog.Error(c, handlerListSuppliers, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -60,6 +70,7 @@ func ListSuppliers(queries accountingRepository.SuppliersRepository) gin.Handler
 
 		totalPages := (total + PAGE_LIMIT - 1) / PAGE_LIMIT
 		if page > int(totalPages) {
+			applog.Warn(c, handlerListSuppliers, "invalid request")
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid page parameter",
@@ -75,6 +86,8 @@ func ListSuppliers(queries accountingRepository.SuppliersRepository) gin.Handler
 			Offset: int32(offset),
 		})
 		if err != nil {
+			applog.Error(c, handlerListSuppliers, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

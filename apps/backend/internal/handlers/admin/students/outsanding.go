@@ -39,7 +39,7 @@ func ListOutstandingStudentsDue(queries repository.AdminRepository) gin.HandlerF
 			})
 			return
 		}
-		slog.Debug("params", "", params)
+		slog.Debug("outstanding students query params", slog.Any("params", params))
 
 		if params.Page < 1 {
 			params.Page = 1

@@ -89,18 +89,19 @@ func main() {
 	}
 
 	go func() {
-		log.Printf("server listening on %s", srv.Addr)
+		slog.Info("server listening", slog.String("addr", srv.Addr))
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %v", err)
+			slog.Error("server listen failed", slog.Any("error", err))
+			os.Exit(1)
 		}
 	}()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Println("shutting down...")
+	slog.Info("shutting down server")
 	if err := srv.Shutdown(context.Background()); err != nil {
-		log.Printf("server shutdown: %v", err)
+		slog.Error("server shutdown failed", slog.Any("error", err))
 	}
-	log.Println("server stopped")
+	slog.Info("server stopped")
 }

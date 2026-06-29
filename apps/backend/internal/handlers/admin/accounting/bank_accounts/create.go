@@ -2,7 +2,10 @@ package bankaccounts
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -13,6 +16,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 	"github.com/suprimkhatri77/sms/backend/internal/validator"
 )
+
+const handlerCreateBankAccount = "CreateBankAccount"
 
 type CreateBankAccountRequest struct {
 	AccountName   string `json:"accountName" binding:"required,notblank,min=2,max=100"`
@@ -27,6 +32,9 @@ func CreateBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 
 		bankID, err := utils.ConvertToUUID(bankIDFromParam)
 		if err != nil {
+			applog.Warn(c, handlerCreateBankAccount, "invalid request",
+				slog.String("bankID_raw", bankIDFromParam),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid ID format",
@@ -37,6 +45,9 @@ func CreateBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 
 		var req CreateBankAccountRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
+			applog.Warn(c, handlerCreateBankAccount, "invalid request",
+				slog.String("bankID_raw", bankIDFromParam),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid request data",
@@ -62,6 +73,8 @@ func CreateBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 
 				case "23503":
 
+					applog.Warn(c, handlerCreateBankAccount, "resource not found",
+						slog.Any(applog.AttrError, err))
 					c.JSON(http.StatusNotFound, types.APIResponse{
 						Success: false,
 						Message: "Bank not found",
@@ -71,6 +84,7 @@ func CreateBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 				case "23505":
 					switch pgErr.ConstraintName {
 					case "bank_accounts_bank_id_account_name_key":
+						applog.Warn(c, handlerCreateBankAccount, "conflict")
 						c.JSON(http.StatusConflict, types.APIResponse{
 							Success: false,
 							Message: "Account with that name already exists",
@@ -79,6 +93,7 @@ func CreateBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 
 						return
 					case "idx_bank_accounts_single_default":
+						applog.Warn(c, handlerCreateBankAccount, "conflict")
 						c.JSON(http.StatusConflict, types.APIResponse{
 							Success: false,
 							Message: "Only one account can be default at a time",
@@ -86,6 +101,9 @@ func CreateBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 						})
 						return
 					default:
+						applog.Error(c, handlerCreateBankAccount, "failed to process request",
+							slog.Any(applog.AttrError, err),
+						)
 						c.JSON(http.StatusInternalServerError, types.APIResponse{
 							Success: false,
 							Message: "Failed to process request",
@@ -95,6 +113,9 @@ func CreateBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 
 					}
 				default:
+					applog.Error(c, handlerCreateBankAccount, "failed to process request",
+						slog.Any(applog.AttrError, err),
+					)
 					c.JSON(http.StatusInternalServerError, types.APIResponse{
 						Success: false,
 						Message: "Failed to process request",
@@ -106,6 +127,10 @@ func CreateBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 
 			}
 
+			applog.Error(c, handlerCreateBankAccount, "failed to process request",
+
+				slog.Any(applog.AttrError, err),
+			)
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -114,6 +139,7 @@ func CreateBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 			return
 		}
 
+		applog.Info(c, handlerCreateBankAccount, "bank account created")
 		c.JSON(http.StatusCreated, types.APIResponse{
 			Success: true,
 			Message: "Bank account created",

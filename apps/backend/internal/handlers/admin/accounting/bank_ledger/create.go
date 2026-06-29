@@ -2,9 +2,11 @@ package bankledger
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 	"net/http"
 	"time"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -16,6 +18,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 	"github.com/suprimkhatri77/sms/backend/internal/validator"
 )
+
+const handlerCreateBankLedgerEntry = "CreateBankLedgerEntry"
 
 type CreateBankLedgerEntryRequest struct {
 	Date        string  `json:"date" binding:"required,date_format"`
@@ -34,6 +38,8 @@ func CreateBankLedgerEntry(queries accountingRepository.BankLedgerRepository) gi
 
 		accountID, err := utils.ConvertToUUID(accountIDFromParam)
 		if err != nil {
+			applog.Warn(c, handlerCreateBankLedgerEntry, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid ID format",
@@ -44,7 +50,8 @@ func CreateBankLedgerEntry(queries accountingRepository.BankLedgerRepository) gi
 
 		var req CreateBankLedgerEntryRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
-			log.Println("error: ", err)
+			applog.Warn(c, handlerCreateBankLedgerEntry, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid request data",
@@ -58,6 +65,8 @@ func CreateBankLedgerEntry(queries accountingRepository.BankLedgerRepository) gi
 
 		adDate, err := time.Parse("2006-01-02", req.Date)
 		if err != nil {
+			applog.Warn(c, handlerCreateBankLedgerEntry, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid date format",
@@ -82,6 +91,8 @@ func CreateBankLedgerEntry(queries accountingRepository.BankLedgerRepository) gi
 				case "23503":
 					switch pgErr.ConstraintName {
 					case "bank_ledger_bank_account_id_fkey":
+						applog.Warn(c, handlerCreateBankLedgerEntry, "resource not found",
+							slog.Any(applog.AttrError, err))
 						c.JSON(http.StatusNotFound, types.APIResponse{
 							Success: false,
 							Message: "Bank account not found",
@@ -89,6 +100,7 @@ func CreateBankLedgerEntry(queries accountingRepository.BankLedgerRepository) gi
 						})
 						return
 					case "bank_ledger_payment_id_fkey":
+						applog.Warn(c, handlerCreateBankLedgerEntry, "resource not found")
 						c.JSON(http.StatusNotFound, types.APIResponse{
 							Success: false,
 							Message: "Payment not found",
@@ -96,6 +108,9 @@ func CreateBankLedgerEntry(queries accountingRepository.BankLedgerRepository) gi
 						})
 						return
 					default:
+						applog.Error(c, handlerCreateBankLedgerEntry, "failed to process request",
+							slog.Any(applog.AttrError, err),
+						)
 						c.JSON(http.StatusInternalServerError, types.APIResponse{
 							Success: false,
 							Message: "Failed to process request",
@@ -106,6 +121,7 @@ func CreateBankLedgerEntry(queries accountingRepository.BankLedgerRepository) gi
 				case "23514":
 					switch pgErr.ConstraintName {
 					case "bank_ledger_entry_type_check":
+						applog.Warn(c, handlerCreateBankLedgerEntry, "invalid request")
 						c.JSON(http.StatusBadRequest, types.APIResponse{
 							Success: false,
 							Message: "Entry type must be one of cr or dr",
@@ -113,6 +129,7 @@ func CreateBankLedgerEntry(queries accountingRepository.BankLedgerRepository) gi
 						})
 						return
 					case "bank_ledger_amount_check":
+						applog.Warn(c, handlerCreateBankLedgerEntry, "invalid request")
 						c.JSON(http.StatusBadRequest, types.APIResponse{
 							Success: false,
 							Message: "Ledger amount must be greater than 0",
@@ -120,6 +137,9 @@ func CreateBankLedgerEntry(queries accountingRepository.BankLedgerRepository) gi
 						})
 						return
 					default:
+						applog.Error(c, handlerCreateBankLedgerEntry, "failed to process request",
+							slog.Any(applog.AttrError, err),
+						)
 						c.JSON(http.StatusInternalServerError, types.APIResponse{
 							Success: false,
 							Message: "Failed to process request",
@@ -128,6 +148,9 @@ func CreateBankLedgerEntry(queries accountingRepository.BankLedgerRepository) gi
 						return
 					}
 				default:
+					applog.Error(c, handlerCreateBankLedgerEntry, "failed to process request",
+						slog.Any(applog.AttrError, err),
+					)
 					c.JSON(http.StatusInternalServerError, types.APIResponse{
 						Success: false,
 						Message: "Failed to process request",
@@ -136,6 +159,9 @@ func CreateBankLedgerEntry(queries accountingRepository.BankLedgerRepository) gi
 					return
 				}
 			}
+			applog.Error(c, handlerCreateBankLedgerEntry, "failed to process request",
+				slog.Any(applog.AttrError, err),
+			)
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -144,6 +170,7 @@ func CreateBankLedgerEntry(queries accountingRepository.BankLedgerRepository) gi
 			return
 		}
 
+		applog.Info(c, handlerCreateBankLedgerEntry, "ledger entry created")
 		c.JSON(http.StatusCreated, types.APIResponse{
 			Success: true,
 			Message: "Ledger entry created",

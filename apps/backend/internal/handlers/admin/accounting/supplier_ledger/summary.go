@@ -1,7 +1,10 @@
 package supplierledger
 
 import (
+	"log/slog"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
@@ -10,6 +13,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/types"
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
+
+const handlerGetSupplierLedgerSummary = "GetSupplierLedgerSummary"
 
 type GetSupplierLedgerSummaryParams struct {
 	SupplierID string `form:"supplier_id"`
@@ -24,6 +29,8 @@ func GetSupplierLedgerSummary(queries accountingRepository.SupplierLedgerReposit
 
 		var filters ListSupplierLedgerParams
 		if err := c.ShouldBindQuery(&filters); err != nil {
+			applog.Warn(c, handlerGetSupplierLedgerSummary, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid query parameter",
@@ -39,6 +46,8 @@ func GetSupplierLedgerSummary(queries accountingRepository.SupplierLedgerReposit
 		})
 
 		if err != nil {
+			applog.Error(c, handlerGetSupplierLedgerSummary, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

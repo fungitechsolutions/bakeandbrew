@@ -2,9 +2,11 @@ package cashledger
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 	"net/http"
 	"time"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -16,6 +18,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 	"github.com/suprimkhatri77/sms/backend/internal/validator"
 )
+
+const handlerCreateCashLedgerEntry = "CreateCashLedgerEntry"
 
 type CreateCashLedgerEntryRequest struct {
 	Date        string  `json:"date" binding:"required,date_format"`
@@ -32,7 +36,8 @@ func CreateCashLedgerEntry(queries accountingRepository.CashLedgerRepository) gi
 
 		var req CreateCashLedgerEntryRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
-			log.Println("error: ", err)
+			applog.Warn(c, handlerCreateCashLedgerEntry, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid request data",
@@ -46,6 +51,8 @@ func CreateCashLedgerEntry(queries accountingRepository.CashLedgerRepository) gi
 
 		adDate, err := time.Parse("2006-01-02", req.Date)
 		if err != nil {
+			applog.Warn(c, handlerCreateCashLedgerEntry, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid date format",
@@ -70,6 +77,8 @@ func CreateCashLedgerEntry(queries accountingRepository.CashLedgerRepository) gi
 				case "23503":
 					switch pgErr.ConstraintName {
 					case "cash_ledger_payment_id_fkey":
+						applog.Warn(c, handlerCreateCashLedgerEntry, "resource not found",
+							slog.Any(applog.AttrError, err))
 						c.JSON(http.StatusNotFound, types.APIResponse{
 							Success: false,
 							Message: "Payment not found",
@@ -77,6 +86,9 @@ func CreateCashLedgerEntry(queries accountingRepository.CashLedgerRepository) gi
 						})
 						return
 					default:
+						applog.Error(c, handlerCreateCashLedgerEntry, "failed to process request",
+							slog.Any(applog.AttrError, err),
+						)
 						c.JSON(http.StatusInternalServerError, types.APIResponse{
 							Success: false,
 							Message: "Failed to process request",
@@ -87,6 +99,7 @@ func CreateCashLedgerEntry(queries accountingRepository.CashLedgerRepository) gi
 				case "23514":
 					switch pgErr.ConstraintName {
 					case "cash_ledger_entry_type_check":
+						applog.Warn(c, handlerCreateCashLedgerEntry, "invalid request")
 						c.JSON(http.StatusBadRequest, types.APIResponse{
 							Success: false,
 							Message: "Entry type must be one of cr or dr",
@@ -94,6 +107,7 @@ func CreateCashLedgerEntry(queries accountingRepository.CashLedgerRepository) gi
 						})
 						return
 					case "cash_ledger_amount_check":
+						applog.Warn(c, handlerCreateCashLedgerEntry, "invalid request")
 						c.JSON(http.StatusBadRequest, types.APIResponse{
 							Success: false,
 							Message: "Ledger amount must be greater than 0",
@@ -101,6 +115,9 @@ func CreateCashLedgerEntry(queries accountingRepository.CashLedgerRepository) gi
 						})
 						return
 					default:
+						applog.Error(c, handlerCreateCashLedgerEntry, "failed to process request",
+							slog.Any(applog.AttrError, err),
+						)
 						c.JSON(http.StatusInternalServerError, types.APIResponse{
 							Success: false,
 							Message: "Failed to process request",
@@ -109,6 +126,9 @@ func CreateCashLedgerEntry(queries accountingRepository.CashLedgerRepository) gi
 						return
 					}
 				default:
+					applog.Error(c, handlerCreateCashLedgerEntry, "failed to process request",
+						slog.Any(applog.AttrError, err),
+					)
 					c.JSON(http.StatusInternalServerError, types.APIResponse{
 						Success: false,
 						Message: "Failed to process request",
@@ -117,6 +137,9 @@ func CreateCashLedgerEntry(queries accountingRepository.CashLedgerRepository) gi
 					return
 				}
 			}
+			applog.Error(c, handlerCreateCashLedgerEntry, "failed to process request",
+				slog.Any(applog.AttrError, err),
+			)
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -125,6 +148,7 @@ func CreateCashLedgerEntry(queries accountingRepository.CashLedgerRepository) gi
 			return
 		}
 
+		applog.Info(c, handlerCreateCashLedgerEntry, "ledger entry created")
 		c.JSON(http.StatusCreated, types.APIResponse{
 			Success: true,
 			Message: "Ledger entry created",

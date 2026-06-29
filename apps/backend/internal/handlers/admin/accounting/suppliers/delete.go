@@ -1,7 +1,10 @@
 package suppliers
 
 import (
+	"log/slog"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
@@ -10,6 +13,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
 
+const handlerDeleteSupplier = "DeleteSupplier"
+
 func DeleteSupplier(queries accountingRepository.SuppliersRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
@@ -17,6 +22,8 @@ func DeleteSupplier(queries accountingRepository.SuppliersRepository) gin.Handle
 		supplierIDFromParam := c.Param("supplierID")
 		supplierID, err := utils.ConvertToUUID(supplierIDFromParam)
 		if err != nil {
+			applog.Warn(c, handlerDeleteSupplier, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid ID format",
@@ -27,6 +34,8 @@ func DeleteSupplier(queries accountingRepository.SuppliersRepository) gin.Handle
 
 		result, err := queries.DeleteSupplier(ctx, supplierID)
 		if err != nil {
+			applog.Error(c, handlerDeleteSupplier, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -36,6 +45,7 @@ func DeleteSupplier(queries accountingRepository.SuppliersRepository) gin.Handle
 		}
 
 		if result.RowsAffected() == 0 {
+			applog.Warn(c, handlerDeleteSupplier, "resource not found")
 			c.JSON(http.StatusNotFound, types.APIResponse{
 				Success: false,
 				Message: "Supplier not found",
@@ -44,6 +54,7 @@ func DeleteSupplier(queries accountingRepository.SuppliersRepository) gin.Handle
 			return
 		}
 
+		applog.Info(c, handlerDeleteSupplier, "supplier deleted")
 		c.JSON(http.StatusOK, types.APIResponse{
 			Success: true,
 			Message: "Supplier deleted",

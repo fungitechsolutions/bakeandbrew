@@ -2,7 +2,10 @@ package products
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -14,12 +17,16 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/validator"
 )
 
+const handlerCreateProduct = "CreateProduct"
+
 func CreateProduct(queries repository.InventoryRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 
 		var req types.CreateProductRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
+			applog.Warn(c, handlerCreateProduct, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid request data",
@@ -39,6 +46,8 @@ func CreateProduct(queries repository.InventoryRepository) gin.HandlerFunc {
 		if err != nil {
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+				applog.Warn(c, handlerCreateProduct, "conflict",
+					slog.Any(applog.AttrError, err))
 				c.JSON(http.StatusConflict, types.APIResponse{
 					Success: false,
 					Message: "Product already exists",
@@ -46,6 +55,9 @@ func CreateProduct(queries repository.InventoryRepository) gin.HandlerFunc {
 				})
 				return
 			}
+			applog.Error(c, handlerCreateProduct, "failed to process request",
+				slog.Any(applog.AttrError, err),
+			)
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -54,6 +66,7 @@ func CreateProduct(queries repository.InventoryRepository) gin.HandlerFunc {
 			return
 		}
 
+		applog.Info(c, handlerCreateProduct, "product created")
 		c.JSON(http.StatusCreated, types.APIResponse{
 			Success: true,
 			Message: "Product created",

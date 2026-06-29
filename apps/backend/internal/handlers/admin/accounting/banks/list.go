@@ -1,8 +1,11 @@
 package banks
 
 import (
+	"log/slog"
 	"net/http"
 	"strconv"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
@@ -10,6 +13,8 @@ import (
 	accountingRepository "github.com/suprimkhatri77/sms/backend/internal/repository/accounting"
 	"github.com/suprimkhatri77/sms/backend/internal/types"
 )
+
+const handlerListBanks = "ListBanks"
 
 func ListBanks(queries accountingRepository.BankRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -19,6 +24,8 @@ func ListBanks(queries accountingRepository.BankRepository) gin.HandlerFunc {
 
 		page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 		if err != nil {
+			applog.Warn(c, handlerListBanks, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid page parameter",
@@ -29,6 +36,8 @@ func ListBanks(queries accountingRepository.BankRepository) gin.HandlerFunc {
 
 		total, err := queries.GetBanksCount(ctx)
 		if err != nil {
+			applog.Error(c, handlerListBanks, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -53,6 +62,7 @@ func ListBanks(queries accountingRepository.BankRepository) gin.HandlerFunc {
 		totalPages := (total + PAGE_LIMIT - 1) / PAGE_LIMIT
 
 		if page > int(totalPages) {
+			applog.Warn(c, handlerListBanks, "invalid request")
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid page parameter",
@@ -69,6 +79,8 @@ func ListBanks(queries accountingRepository.BankRepository) gin.HandlerFunc {
 		})
 
 		if err != nil {
+			applog.Error(c, handlerListBanks, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

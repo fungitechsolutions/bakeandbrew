@@ -84,7 +84,7 @@ func RotateTokens(queries repository.AuthRepository, cfg *config.Config) gin.Han
 		}
 
 		sessionIDFromClaims, ok := claims["session_id"].(string)
-		slog.Info("session from claims", "", sessionIDFromClaims)
+		slog.Info("session resolved from claims", slog.String("session_id", sessionIDFromClaims))
 		if !ok {
 			utils.ClearAuthCookies(c, cfg)
 

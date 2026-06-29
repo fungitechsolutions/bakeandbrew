@@ -2,7 +2,10 @@ package student
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
@@ -12,6 +15,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/types"
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
+
+const handlerGetStudentAdmissionStatus = "GetStudentAdmissionStatus"
 
 type GetStudentAdmissionStatusDataResponse struct {
 	Exists    bool               `json:"exists"`
@@ -28,6 +33,9 @@ func GetStudentAdmissionStatus(queries repository.StudentRepository) gin.Handler
 
 		studentID, err := utils.ConvertToUUID(studentIDFomContext)
 		if err != nil {
+			applog.Error(c, handlerGetStudentAdmissionStatus, "failed to process request",
+				applog.WithStudentID(studentIDFomContext),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -47,6 +55,9 @@ func GetStudentAdmissionStatus(queries repository.StudentRepository) gin.Handler
 				})
 				return
 			}
+			applog.Error(c, handlerGetStudentAdmissionStatus, "failed to process request",
+				applog.WithStudentID(studentIDFomContext),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

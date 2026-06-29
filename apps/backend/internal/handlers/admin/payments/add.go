@@ -2,7 +2,6 @@ package payments
 
 import (
 	"errors"
-	"log"
 	"log/slog"
 	"net/http"
 	"time"
@@ -124,18 +123,21 @@ func AddPayment(queries repository.AdminPaymentTxRepository, pool *pgxpool.Pool)
 			return
 		}
 
-		log.Println("totalPaid: ", summary.TotalPaid)
 		effectiveFee := summary.TotalFee
-		log.Println("total fee: ", summary.TotalFee)
 		discountAmount := summary.TotalDiscountAmount
-		log.Println("dis amount: ", discountAmount)
-
 		scholarshipAmount := summary.ScholarshipAmount
-		log.Println("scholarship amount: ", scholarshipAmount)
 		alreadyCovered := summary.TotalPaid + discountAmount + scholarshipAmount
-		log.Println("already paid: ", alreadyCovered)
 		remaining := effectiveFee - alreadyCovered
-		log.Println("remaining: ", remaining)
+		slog.Debug("fee summary calculated",
+			slog.String("handler", "AddPayment"),
+			slog.String("student_id", studentIDFromParams),
+			slog.Int64("total_paid", summary.TotalPaid),
+			slog.Int64("total_fee", summary.TotalFee),
+			slog.Int64("discount_amount", discountAmount),
+			slog.Int64("scholarship_amount", scholarshipAmount),
+			slog.Int64("already_covered", alreadyCovered),
+			slog.Int64("remaining", remaining),
+		)
 		if remaining <= 0 {
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,

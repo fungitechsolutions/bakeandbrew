@@ -2,7 +2,10 @@ package banks
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -14,6 +17,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/validator"
 )
 
+const handlerUpdateBank = "UpdateBank"
+
 type UpdateBankRequest struct {
 	Name string `json:"name" binding:"required,notblank,min=2,max=100"`
 }
@@ -24,6 +29,8 @@ func UpdateBank(queries accountingRepository.BankRepository) gin.HandlerFunc {
 
 		bankIDFromParam := c.Param("bankID")
 		if bankIDFromParam == "" {
+			applog.Warn(c, handlerUpdateBank, "invalid request",
+				slog.String("bankID_raw", bankIDFromParam))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Missing bank ID",
@@ -34,6 +41,9 @@ func UpdateBank(queries accountingRepository.BankRepository) gin.HandlerFunc {
 
 		bankID, err := utils.ConvertToUUID(bankIDFromParam)
 		if err != nil {
+			applog.Warn(c, handlerUpdateBank, "invalid request",
+				slog.String("bankID_raw", bankIDFromParam),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid ID format",
@@ -44,6 +54,9 @@ func UpdateBank(queries accountingRepository.BankRepository) gin.HandlerFunc {
 
 		var req UpdateBankRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
+			applog.Warn(c, handlerUpdateBank, "invalid request",
+				slog.String("bankID_raw", bankIDFromParam),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid request data",
@@ -65,6 +78,8 @@ func UpdateBank(queries accountingRepository.BankRepository) gin.HandlerFunc {
 			if errors.As(err, &pgErr) && pgErr.Code == "23505" {
 				switch pgErr.ConstraintName {
 				case "idx_banks_single_default":
+					applog.Warn(c, handlerUpdateBank, "conflict",
+						slog.Any(applog.AttrError, err))
 					c.JSON(http.StatusConflict, types.APIResponse{
 						Success: false,
 						Message: "Only one bank can be set as default",
@@ -72,6 +87,7 @@ func UpdateBank(queries accountingRepository.BankRepository) gin.HandlerFunc {
 					})
 					return
 				case "banks_name_key":
+					applog.Warn(c, handlerUpdateBank, "conflict")
 					c.JSON(http.StatusConflict, types.APIResponse{
 						Success: false,
 						Message: "Bank with this name already exists",
@@ -79,6 +95,9 @@ func UpdateBank(queries accountingRepository.BankRepository) gin.HandlerFunc {
 					})
 					return
 				default:
+					applog.Error(c, handlerUpdateBank, "failed to process request",
+						slog.Any(applog.AttrError, err),
+					)
 					c.JSON(http.StatusInternalServerError, types.APIResponse{
 						Success: false,
 						Message: "Failed to process request",
@@ -89,6 +108,10 @@ func UpdateBank(queries accountingRepository.BankRepository) gin.HandlerFunc {
 
 			}
 
+			applog.Error(c, handlerUpdateBank, "failed to process request",
+
+				slog.Any(applog.AttrError, err),
+			)
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -97,6 +120,7 @@ func UpdateBank(queries accountingRepository.BankRepository) gin.HandlerFunc {
 			return
 		}
 
+		applog.Info(c, handlerUpdateBank, "bank data updated")
 		c.JSON(http.StatusOK, types.APIResponse{
 			Success: true,
 			Message: "Bank data updated",

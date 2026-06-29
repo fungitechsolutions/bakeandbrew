@@ -2,7 +2,10 @@ package suppliers
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -13,6 +16,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 	"github.com/suprimkhatri77/sms/backend/internal/validator"
 )
+
+const handlerCreateSupplier = "CreateSupplier"
 
 type CreateSupplierRequest struct {
 	CompanyName string `json:"companyName" binding:"required,notblank,min=2,max=100"`
@@ -26,6 +31,8 @@ func CreateSupplier(queries accountingRepository.SuppliersRepository) gin.Handle
 
 		var req CreateSupplierRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
+			applog.Warn(c, handlerCreateSupplier, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid request data",
@@ -50,6 +57,8 @@ func CreateSupplier(queries accountingRepository.SuppliersRepository) gin.Handle
 				switch pgErr.ConstraintName {
 
 				case "suppliers_company_name_key":
+					applog.Warn(c, handlerCreateSupplier, "conflict",
+						slog.Any(applog.AttrError, err))
 					c.JSON(http.StatusConflict, types.APIResponse{
 						Success: false,
 						Message: "Company with that name already exists",
@@ -57,6 +66,7 @@ func CreateSupplier(queries accountingRepository.SuppliersRepository) gin.Handle
 					})
 					return
 				case "suppliers_vat_no_key":
+					applog.Warn(c, handlerCreateSupplier, "conflict")
 					c.JSON(http.StatusConflict, types.APIResponse{
 						Success: false,
 						Message: "Vat no already exists",
@@ -64,6 +74,9 @@ func CreateSupplier(queries accountingRepository.SuppliersRepository) gin.Handle
 					})
 					return
 				default:
+					applog.Error(c, handlerCreateSupplier, "failed to process request",
+						slog.Any(applog.AttrError, err),
+					)
 					c.JSON(http.StatusInternalServerError, types.APIResponse{
 						Success: false,
 						Message: "Failed to process request",
@@ -72,6 +85,9 @@ func CreateSupplier(queries accountingRepository.SuppliersRepository) gin.Handle
 					return
 				}
 			}
+			applog.Error(c, handlerCreateSupplier, "failed to process request",
+				slog.Any(applog.AttrError, err),
+			)
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -80,6 +96,7 @@ func CreateSupplier(queries accountingRepository.SuppliersRepository) gin.Handle
 			return
 		}
 
+		applog.Info(c, handlerCreateSupplier, "supplier created")
 		c.JSON(http.StatusCreated, types.APIResponse{
 			Success: true,
 			Message: "Supplier created",

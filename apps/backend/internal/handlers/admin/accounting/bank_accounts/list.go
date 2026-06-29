@@ -1,8 +1,11 @@
 package bankaccounts
 
 import (
+	"log/slog"
 	"net/http"
 	"strconv"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
@@ -11,6 +14,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/types"
 )
 
+const handlerListBankAccounts = "ListBankAccounts"
+
 func ListBankAccounts(queries accountingRepository.BankAccountRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
@@ -18,6 +23,8 @@ func ListBankAccounts(queries accountingRepository.BankAccountRepository) gin.Ha
 
 		page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 		if err != nil || page <= 0 {
+			applog.Warn(c, handlerListBankAccounts, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid query parameter",
@@ -28,6 +35,8 @@ func ListBankAccounts(queries accountingRepository.BankAccountRepository) gin.Ha
 
 		total, err := queries.GetBankAccountsCount(ctx)
 		if err != nil {
+			applog.Error(c, handlerListBankAccounts, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -53,6 +62,7 @@ func ListBankAccounts(queries accountingRepository.BankAccountRepository) gin.Ha
 		totalPages := (total + PAGE_LIMIT - 1) / PAGE_LIMIT
 
 		if page > int(totalPages) {
+			applog.Warn(c, handlerListBankAccounts, "invalid request")
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid query parameter",
@@ -69,6 +79,8 @@ func ListBankAccounts(queries accountingRepository.BankAccountRepository) gin.Ha
 		})
 
 		if err != nil {
+			applog.Error(c, handlerListBankAccounts, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

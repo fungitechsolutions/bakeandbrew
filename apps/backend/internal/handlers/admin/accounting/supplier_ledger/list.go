@@ -1,8 +1,11 @@
 package supplierledger
 
 import (
+	"log/slog"
 	"net/http"
 	"strconv"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
@@ -11,6 +14,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/types"
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
+
+const handlerListSupplierLedger = "ListSupplierLedger"
 
 type ListSupplierLedgerParams struct {
 	SupplierID string `form:"supplier_id"`
@@ -25,6 +30,8 @@ func ListSupplierLedger(queries accountingRepository.SupplierLedgerRepository) g
 
 		var filters ListSupplierLedgerParams
 		if err := c.ShouldBindQuery(&filters); err != nil {
+			applog.Warn(c, handlerListSupplierLedger, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid query parameter",
@@ -35,6 +42,8 @@ func ListSupplierLedger(queries accountingRepository.SupplierLedgerRepository) g
 
 		page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 		if err != nil || page <= 0 {
+			applog.Warn(c, handlerListSupplierLedger, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid query parameter",
@@ -49,6 +58,8 @@ func ListSupplierLedger(queries accountingRepository.SupplierLedgerRepository) g
 			ToDate:     utils.ToNullableDate(filters.ToDate),
 		})
 		if err != nil {
+			applog.Error(c, handlerListSupplierLedger, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -73,6 +84,7 @@ func ListSupplierLedger(queries accountingRepository.SupplierLedgerRepository) g
 
 		totalPages := (total + PAGE_LIMIT - 1) / PAGE_LIMIT
 		if page > int(totalPages) {
+			applog.Warn(c, handlerListSupplierLedger, "invalid request")
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid page parameter value",
@@ -92,6 +104,8 @@ func ListSupplierLedger(queries accountingRepository.SupplierLedgerRepository) g
 		})
 
 		if err != nil {
+			applog.Error(c, handlerListSupplierLedger, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

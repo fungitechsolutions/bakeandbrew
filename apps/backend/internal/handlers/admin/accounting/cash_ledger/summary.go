@@ -1,7 +1,10 @@
 package cashledger
 
 import (
+	"log/slog"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
@@ -10,6 +13,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/types"
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
+
+const handlerGetCashLedgerSummary = "GetCashLedgerSummary"
 
 type GetCashLedgerSummaryParams struct {
 	FromAD string `form:"from_ad"`
@@ -22,6 +27,8 @@ func GetCashLedgerSummary(queries accountingRepository.CashLedgerRepository) gin
 
 		var filter GetCashLedgerSummaryParams
 		if err := c.ShouldBindQuery(&filter); err != nil {
+			applog.Warn(c, handlerGetCashLedgerSummary, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid query parameters",
@@ -36,6 +43,8 @@ func GetCashLedgerSummary(queries accountingRepository.CashLedgerRepository) gin
 		})
 
 		if err != nil {
+			applog.Error(c, handlerGetCashLedgerSummary, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

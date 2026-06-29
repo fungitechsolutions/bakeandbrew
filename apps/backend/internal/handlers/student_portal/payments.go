@@ -1,7 +1,10 @@
 package studentPortal
 
 import (
+	"log/slog"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
@@ -10,6 +13,10 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/types"
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
+
+const handlerGetStudentFeeSummary = "GetStudentFeeSummary"
+
+const handlerGetStudentPayments = "GetStudentPayments"
 
 type GetStudentFeeSummaryDataResponse struct {
 	TotalFee     int64 `json:"totalFee"`
@@ -25,6 +32,9 @@ func GetStudentFeeSummary(queries repository.StudentPortal) gin.HandlerFunc {
 		studentIDFromContext := c.MustGet("userID").(string)
 		studentID, err := utils.ConvertToUUID(studentIDFromContext)
 		if err != nil {
+			applog.Warn(c, handlerGetStudentFeeSummary, "invalid request",
+				applog.WithStudentID(studentIDFromContext),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid ID format",
@@ -35,6 +45,9 @@ func GetStudentFeeSummary(queries repository.StudentPortal) gin.HandlerFunc {
 
 		id, err := queries.GetStudentID(ctx, studentID)
 		if err != nil {
+			applog.Error(c, handlerGetStudentFeeSummary, "failed to process request",
+				applog.WithStudentID(studentIDFromContext),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -45,6 +58,9 @@ func GetStudentFeeSummary(queries repository.StudentPortal) gin.HandlerFunc {
 
 		coursesCount, err := queries.GetStudentCoursesCount(ctx, id)
 		if err != nil {
+			applog.Error(c, handlerGetStudentFeeSummary, "failed to process request",
+				applog.WithStudentID(studentIDFromContext),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -55,6 +71,8 @@ func GetStudentFeeSummary(queries repository.StudentPortal) gin.HandlerFunc {
 
 		summary, err := queries.GetStudentFeeSummary(ctx, id)
 		if err != nil {
+			applog.Error(c, handlerGetStudentFeeSummary, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -84,6 +102,9 @@ func GetStudentPayments(queries repository.StudentPortal) gin.HandlerFunc {
 		studentIDFromContext := c.MustGet("userID").(string)
 		studentID, err := utils.ConvertToUUID(studentIDFromContext)
 		if err != nil {
+			applog.Warn(c, handlerGetStudentPayments, "invalid request",
+				applog.WithStudentID(studentIDFromContext),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid ID format",
@@ -94,6 +115,9 @@ func GetStudentPayments(queries repository.StudentPortal) gin.HandlerFunc {
 
 		id, err := queries.GetStudentID(ctx, studentID)
 		if err != nil {
+			applog.Error(c, handlerGetStudentPayments, "failed to process request",
+				applog.WithStudentID(studentIDFromContext),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -104,6 +128,9 @@ func GetStudentPayments(queries repository.StudentPortal) gin.HandlerFunc {
 
 		payments, err := queries.GetStudentPayments(ctx, id)
 		if err != nil {
+			applog.Error(c, handlerGetStudentPayments, "failed to process request",
+				applog.WithStudentID(studentIDFromContext),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

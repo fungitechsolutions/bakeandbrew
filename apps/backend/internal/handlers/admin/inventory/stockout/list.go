@@ -1,8 +1,11 @@
 package out
 
 import (
+	"log/slog"
 	"net/http"
 	"strconv"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
@@ -11,6 +14,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/types"
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
+
+const handlerListStockOut = "ListStockOut"
 
 type ListStockOutParams struct {
 	From       string `form:"from"`
@@ -26,6 +31,8 @@ func ListStockOut(queries repository.InventoryRepository) gin.HandlerFunc {
 
 		var filter ListStockOutParams
 		if err := c.ShouldBindQuery(&filter); err != nil {
+			applog.Warn(c, handlerListStockOut, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid query parameters",
@@ -36,6 +43,8 @@ func ListStockOut(queries repository.InventoryRepository) gin.HandlerFunc {
 
 		page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 		if err != nil || page <= 0 {
+			applog.Warn(c, handlerListStockOut, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid query parameter",
@@ -50,6 +59,8 @@ func ListStockOut(queries repository.InventoryRepository) gin.HandlerFunc {
 			To:     utils.ToNullableText(filter.To),
 		})
 		if err != nil {
+			applog.Error(c, handlerListStockOut, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -74,6 +85,7 @@ func ListStockOut(queries repository.InventoryRepository) gin.HandlerFunc {
 
 		totalPages := (total + LIMIT - 1) / LIMIT
 		if page > int(totalPages) {
+			applog.Warn(c, handlerListStockOut, "invalid request")
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid page parameter value",
@@ -94,6 +106,8 @@ func ListStockOut(queries repository.InventoryRepository) gin.HandlerFunc {
 		})
 
 		if err != nil {
+			applog.Error(c, handlerListStockOut, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

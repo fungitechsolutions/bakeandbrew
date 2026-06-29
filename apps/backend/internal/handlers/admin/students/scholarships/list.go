@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 	"github.com/suprimkhatri77/sms/backend/internal/repository"
 	"github.com/suprimkhatri77/sms/backend/internal/types"
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
@@ -29,7 +30,10 @@ func ListStudentScholarshipDetail(queries repository.StudentsScholarship) gin.Ha
 
 		studentID, err := utils.ConvertToUUID(studentIDFromParam)
 		if err != nil {
-			slog.Error("err", "", err)
+			applog.Error(c, "ListStudentScholarshipDetail", "invalid student id format",
+				slog.String("student_id_raw", studentIDFromParam),
+				slog.Any(applog.AttrError, err),
+			)
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -48,7 +52,10 @@ func ListStudentScholarshipDetail(queries repository.StudentsScholarship) gin.Ha
 				})
 				return
 			}
-			slog.Error("err", "", err)
+			applog.Error(c, "ListStudentScholarshipDetail", "failed to fetch scholarship",
+				applog.WithStudentID(studentIDFromParam),
+				slog.Any(applog.AttrError, err),
+			)
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

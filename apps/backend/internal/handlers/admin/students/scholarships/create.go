@@ -2,7 +2,6 @@ package scholarship
 
 import (
 	"errors"
-	"log"
 	"log/slog"
 	"net/http"
 
@@ -97,19 +96,21 @@ func CreateScholarship(queries repository.StudentsScholarship) gin.HandlerFunc {
 			return
 		}
 
-		log.Println("total paid: ", summary.TotalPaid)
 		effectiveFee := summary.TotalFee
-		log.Println("total fee: ", summary.TotalFee)
-
 		discountAmount := summary.TotalDiscountAmount
-		log.Println("discount amount: ", discountAmount)
 		scholarshipAmount := summary.ScholarshipAmount
-		log.Println("scholarship amount: ", scholarshipAmount)
 		alreadyCovered := summary.TotalPaid + discountAmount + scholarshipAmount
-		log.Println("already covered amount: ", alreadyCovered)
-
 		remainingBalance := effectiveFee - alreadyCovered
-		log.Println("remaining balance amount: ", remainingBalance)
+		slog.Debug("scholarship balance calculated",
+			slog.String("handler", "CreateScholarship"),
+			slog.String("student_id", studentIDFromParam),
+			slog.Int64("total_paid", summary.TotalPaid),
+			slog.Int64("total_fee", summary.TotalFee),
+			slog.Int64("discount_amount", discountAmount),
+			slog.Int64("scholarship_amount", scholarshipAmount),
+			slog.Int64("already_covered", alreadyCovered),
+			slog.Int64("remaining_balance", remainingBalance),
+		)
 		if remainingBalance <= 0 {
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,

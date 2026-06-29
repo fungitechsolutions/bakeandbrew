@@ -147,12 +147,12 @@ export function PersonalInfoSection({
 
   const handleSave = async () => {
     setSaving(true);
-    console.log("batch: ", form.batch);
+    // console.log("batch: ", form.batch);
     const validateFields = updateStudentPersonalInfoInputSchema.safeParse(form);
     if (!validateFields.success) {
       setSaving(false);
       const tree = z.treeifyError(validateFields.error).properties;
-      console.log("error: ", tree);
+      // console.log("error: ", tree);
       setErrors({
         fullName: tree?.fullName?.errors[0],
         dobAd: tree?.dobAd?.errors[0],
