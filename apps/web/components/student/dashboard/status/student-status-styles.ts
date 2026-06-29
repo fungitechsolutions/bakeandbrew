@@ -14,7 +14,7 @@ export const studentStatusPrimaryBtnClass = landingPrimaryButtonClass;
 export const studentStatusSecondaryBtnClass = `${landingSecondaryButtonClass} border-[rgba(47,78,64,0.18)]`;
 
 export const studentStatusBadgeClass =
-  "inline-flex items-center gap-2 border px-3 py-1.5 font-[family-name:var(--font-dm-sans)] text-[0.68rem] font-bold uppercase tracking-[0.14em]";
+  "inline-flex items-center gap-2 border px-3 py-1.5 font-(family-name:--font-dm-sans) text-[0.68rem] font-bold uppercase tracking-[0.14em]";
 
 export const studentStatusBentoClass =
   "border border-[rgba(47,78,64,0.1)] bg-white p-5 transition-shadow duration-200 hover:shadow-[0_8px_32px_rgba(47,78,64,0.06)]";

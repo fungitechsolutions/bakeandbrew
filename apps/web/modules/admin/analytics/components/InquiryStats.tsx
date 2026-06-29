@@ -50,10 +50,10 @@ export function InquiryStats({ data, embedded = false }: InquiryStatsProps) {
               <MessageSquare className="h-4 w-4" />
             </span>
             <div>
-              <p className="font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.1em] text-[rgba(47,78,64,0.45)]">
+              <p className="font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-widest text-[rgba(47,78,64,0.45)]">
                 Total
               </p>
-              <p className="font-[family-name:var(--font-lora)] text-xl font-bold text-(--brand-ink)">
+              <p className="font-(family-name:--font-lora) text-xl font-bold text-(--brand-ink)">
                 {data.total}
               </p>
             </div>
@@ -65,10 +65,10 @@ export function InquiryStats({ data, embedded = false }: InquiryStatsProps) {
               <Mail className="h-4 w-4" />
             </span>
             <div>
-              <p className="font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.1em] text-[rgba(47,78,64,0.45)]">
+              <p className="font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-widest text-[rgba(47,78,64,0.45)]">
                 Unread
               </p>
-              <p className="font-[family-name:var(--font-lora)] text-xl font-bold text-(--brand-ink)">
+              <p className="font-(family-name:--font-lora) text-xl font-bold text-(--brand-ink)">
                 {data.unread}
               </p>
             </div>

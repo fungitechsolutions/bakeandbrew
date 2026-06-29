@@ -44,7 +44,7 @@ export function BankRow({
         <div className="flex min-w-0 items-center gap-2.5">
           <span>{bank.name}</span>
           {bank.isDefault ? (
-            <span className="shrink-0 border border-[rgba(47,78,64,0.2)] bg-[rgba(47,78,64,0.06)] px-2 py-0.5 font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.08em] text-(--brand-green)">
+            <span className="shrink-0 border border-[rgba(47,78,64,0.2)] bg-[rgba(47,78,64,0.06)] px-2 py-0.5 font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.08em] text-(--brand-green)">
               Default
             </span>
           ) : null}

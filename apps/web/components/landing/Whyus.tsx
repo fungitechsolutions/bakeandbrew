@@ -115,7 +115,7 @@ export default function WhyUs() {
                 <h3 className="mb-2 font-[family-name:var(--font-playfair)] text-[1.1rem] font-semibold text-(--brand-green)">
                   {feature.title}
                 </h3>
-                <p className="font-[family-name:var(--font-dm-sans)] text-[0.9rem] leading-[1.65] text-[rgba(47,78,64,0.58)]">
+                <p className="font-(family-name:--font-dm-sans) text-[0.9rem] leading-[1.65] text-[rgba(47,78,64,0.58)]">
                   {feature.description}
                 </p>
                 <div className={`mt-5 h-[2px] w-8 ${tone.bar}`} />

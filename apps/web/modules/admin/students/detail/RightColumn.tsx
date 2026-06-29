@@ -32,14 +32,14 @@ export function RightColumn({
                 <span className="h-2 w-2 bg-(--brand-brown)" />
                 <span className={detailValueClass}>{course.name}</span>
               </div>
-              <span className="font-[family-name:var(--font-dm-sans)] text-sm font-semibold tabular-nums text-(--brand-green)">
+              <span className="font-(family-name:--font-dm-sans) text-sm font-semibold tabular-nums text-(--brand-green)">
                 {formatNpr(course.feeAtEnrollment / 100)}
               </span>
             </div>
           ))}
           <div className="mt-1 flex items-center justify-between border-t border-[rgba(47,78,64,0.12)] pt-3">
             <span className={detailLabelClass}>Total</span>
-            <span className="font-[family-name:var(--font-lora)] text-base font-bold text-(--brand-green)">
+            <span className="font-(family-name:--font-lora) text-base font-bold text-(--brand-green)">
               {formatNpr(totalFee)}
             </span>
           </div>
@@ -70,7 +70,7 @@ export function RightColumn({
 
       {student.notes ? (
         <SectionCard title="Admin Notes" icon={AlertCircle}>
-          <p className="border border-amber-200 bg-amber-50 px-4 py-3 font-[family-name:var(--font-dm-sans)] text-sm leading-relaxed text-amber-900">
+          <p className="border border-amber-200 bg-amber-50 px-4 py-3 font-(family-name:--font-dm-sans) text-sm leading-relaxed text-amber-900">
             {student.notes}
           </p>
         </SectionCard>

@@ -12,7 +12,7 @@ export function DashboardPageShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-(--brand-cream) font-[family-name:var(--font-dm-sans)]">
+    <div className="min-h-screen bg-(--brand-cream) font-(family-name:--font-dm-sans)">
       <div
         className={cn(
           dashboardPageClass,
@@ -20,13 +20,13 @@ export function DashboardPageShell({
         )}
       >
         <header className="mb-10 border-b border-[rgba(47,78,64,0.08)] pb-6">
-          <p className="font-[family-name:var(--font-dm-sans)] text-[0.68rem] font-bold uppercase tracking-[0.16em] text-(--brand-brown)">
+          <p className="font-(family-name:--font-dm-sans) text-[0.68rem] font-bold uppercase tracking-[0.16em] text-(--brand-brown)">
             Student portal
           </p>
           <h1 className="mt-2 font-[family-name:var(--font-playfair)] text-[clamp(1.5rem,3vw,1.85rem)] font-bold text-(--brand-green)">
             {title}
           </h1>
-          <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-[0.88rem] text-[rgba(47,78,64,0.5)]">
+          <p className="mt-1 font-(family-name:--font-dm-sans) text-[0.88rem] text-[rgba(47,78,64,0.5)]">
             {description ?? siteInfo.company.shortName}
           </p>
         </header>
@@ -34,7 +34,7 @@ export function DashboardPageShell({
         {children}
 
         <footer className="mt-14 border-t border-[rgba(47,78,64,0.08)] pt-6 text-center">
-          <p className="font-[family-name:var(--font-dm-sans)] text-[0.75rem] text-[rgba(47,78,64,0.38)]">
+          <p className="font-(family-name:--font-dm-sans) text-[0.75rem] text-[rgba(47,78,64,0.38)]">
             {siteInfo.company.name} · PAN {siteInfo.company.panNo}
           </p>
         </footer>

@@ -108,14 +108,14 @@ export default function PendingStatus() {
         }
         subtitle="Your application is with our admissions team. We'll notify you the moment a decision is ready — nothing else needed from you right now."
       >
-        <div className="inline-flex items-center gap-2 border border-[rgba(47,78,64,0.12)] bg-white px-4 py-2 font-[family-name:var(--font-dm-sans)] text-[0.84rem] text-[rgba(47,78,64,0.62)]">
+        <div className="inline-flex items-center gap-2 border border-[rgba(47,78,64,0.12)] bg-white px-4 py-2 font-(family-name:--font-dm-sans) text-[0.84rem] text-[rgba(47,78,64,0.62)]">
           <Calendar className="h-4 w-4 text-(--brand-brown)" strokeWidth={1.75} />
           Submitted {formatDate(data.submittedAt)}
         </div>
       </StatusHero>
 
       <div className="mb-10 border border-[rgba(47,78,64,0.1)] bg-white p-6 sm:p-8">
-        <p className="mb-6 font-[family-name:var(--font-dm-sans)] text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[rgba(47,78,64,0.4)]">
+        <p className="mb-6 font-(family-name:--font-dm-sans) text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[rgba(47,78,64,0.4)]">
           Application status
         </p>
         <TrackingStepper steps={steps} />

@@ -98,7 +98,7 @@ export default async function CoursePage({
   ] as const;
 
   return (
-    <main className="min-h-screen bg-(--brand-cream) font-[family-name:var(--font-dm-sans)] text-(--brand-ink)">
+    <main className="min-h-screen bg-(--brand-cream) font-(family-name:--font-dm-sans) text-(--brand-ink)">
       {/* ── Hero ── */}
       <section className="relative overflow-hidden bg-(--brand-green) px-6 pb-16 pt-28 sm:pb-20 sm:pt-32">
         <div
@@ -121,7 +121,7 @@ export default async function CoursePage({
         <div className={cn(courseContainerClass, "relative")}>
           <Link
             href="/#programs"
-            className="mb-8 inline-flex items-center gap-2 font-[family-name:var(--font-dm-sans)] text-[0.82rem] font-medium text-white/55 transition-colors hover:text-white"
+            className="mb-8 inline-flex items-center gap-2 font-(family-name:--font-dm-sans) text-[0.82rem] font-medium text-white/55 transition-colors hover:text-white"
           >
             <ArrowLeft size={15} strokeWidth={2} />
             All programs
@@ -139,7 +139,7 @@ export default async function CoursePage({
               <Icon size={20} strokeWidth={1.75} />
             </div>
             <span
-              className="border px-3 py-1 font-[family-name:var(--font-dm-sans)] text-[0.68rem] font-semibold uppercase tracking-[0.14em]"
+              className="border px-3 py-1 font-(family-name:--font-dm-sans) text-[0.68rem] font-semibold uppercase tracking-[0.14em]"
               style={{
                 borderColor: tone.border,
                 backgroundColor: tone.soft,
@@ -177,10 +177,10 @@ export default async function CoursePage({
                     className="mb-2 h-4 w-4 text-white/40"
                     strokeWidth={1.75}
                   />
-                  <p className="mb-0.5 font-[family-name:var(--font-dm-sans)] text-[0.68rem] uppercase tracking-widest text-white/40">
+                  <p className="mb-0.5 font-(family-name:--font-dm-sans) text-[0.68rem] uppercase tracking-widest text-white/40">
                     {label}
                   </p>
-                  <p className="font-[family-name:var(--font-dm-sans)] text-[0.88rem] font-semibold text-white">
+                  <p className="font-(family-name:--font-dm-sans) text-[0.88rem] font-semibold text-white">
                     {value}
                   </p>
                 </div>
@@ -222,7 +222,7 @@ export default async function CoursePage({
                 ].map((item) => (
                   <li
                     key={item}
-                    className="flex items-start gap-2.5 font-[family-name:var(--font-dm-sans)] text-[0.88rem] text-[rgba(47,78,64,0.65)]"
+                    className="flex items-start gap-2.5 font-(family-name:--font-dm-sans) text-[0.88rem] text-[rgba(47,78,64,0.65)]"
                   >
                     <CheckCircle2
                       className="mt-0.5 h-4 w-4 shrink-0 text-(--brand-brown)"
@@ -269,14 +269,14 @@ export default async function CoursePage({
                   }}
                 >
                   <div className="flex items-baseline gap-2">
-                    <span className="font-[family-name:var(--font-dm-sans)] text-sm text-[rgba(47,78,64,0.5)]">
+                    <span className="font-(family-name:--font-dm-sans) text-sm text-[rgba(47,78,64,0.5)]">
                       NPR
                     </span>
-                    <span className="font-[family-name:var(--font-lora)] text-[2rem] font-bold tracking-tight text-(--brand-green)">
+                    <span className="font-(family-name:--font-lora) text-[2rem] font-bold tracking-tight text-(--brand-green)">
                       {formatter.format(courseFee)}
                     </span>
                   </div>
-                  <span className="font-[family-name:var(--font-dm-sans)] text-[0.8rem] text-[rgba(47,78,64,0.5)]">
+                  <span className="font-(family-name:--font-dm-sans) text-[0.8rem] text-[rgba(47,78,64,0.5)]">
                     Full program · materials included
                   </span>
                 </div>
@@ -290,7 +290,7 @@ export default async function CoursePage({
                   className="h-4 w-4 text-(--brand-green)"
                   strokeWidth={1.75}
                 />
-                <h3 className="font-[family-name:var(--font-dm-sans)] text-[0.95rem] font-semibold text-(--brand-green)">
+                <h3 className="font-(family-name:--font-dm-sans) text-[0.95rem] font-semibold text-(--brand-green)">
                   Learning Outcomes
                 </h3>
               </div>
@@ -298,7 +298,7 @@ export default async function CoursePage({
                 {course.outcomes.map((outcome) => (
                   <li
                     key={outcome}
-                    className="flex items-start gap-3 font-[family-name:var(--font-dm-sans)] text-[0.875rem] leading-[1.6] text-[rgba(47,78,64,0.65)]"
+                    className="flex items-start gap-3 font-(family-name:--font-dm-sans) text-[0.875rem] leading-[1.6] text-[rgba(47,78,64,0.65)]"
                   >
                     <CheckCircle2
                       className="mt-0.5 h-4 w-4 shrink-0"
@@ -311,14 +311,14 @@ export default async function CoursePage({
               </ul>
 
               <div className="mt-7 border-t border-[rgba(47,78,64,0.08)] pt-6">
-                <p className="mb-3 font-[family-name:var(--font-dm-sans)] text-[0.72rem] font-semibold uppercase tracking-widest text-[rgba(47,78,64,0.4)]">
+                <p className="mb-3 font-(family-name:--font-dm-sans) text-[0.72rem] font-semibold uppercase tracking-widest text-[rgba(47,78,64,0.4)]">
                   Upcoming start dates
                 </p>
                 <ul className="flex flex-col gap-2">
                   {course.startDates.map((date, i) => (
                     <li
                       key={date}
-                      className="flex items-start justify-between gap-3 font-[family-name:var(--font-dm-sans)] text-[0.875rem]"
+                      className="flex items-start justify-between gap-3 font-(family-name:--font-dm-sans) text-[0.875rem]"
                     >
                       <span className="min-w-0 flex-1 leading-snug text-[rgba(47,78,64,0.65)]">
                         {date}
@@ -392,7 +392,7 @@ export default async function CoursePage({
                     {course.course} journey?
                   </em>
                 </h2>
-                <p className="mt-2 font-[family-name:var(--font-dm-sans)] text-[0.9rem] text-white/55">
+                <p className="mt-2 font-(family-name:--font-dm-sans) text-[0.9rem] text-white/55">
                   Next cohort starts {course.startDates[0]} · Only{" "}
                   {course.seats} seats per intake.
                 </p>

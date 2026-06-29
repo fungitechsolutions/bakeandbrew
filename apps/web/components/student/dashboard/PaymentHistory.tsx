@@ -81,24 +81,24 @@ function PaymentRow({
   return (
     <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4 p-4 transition-colors duration-150 hover:bg-[rgba(47,78,64,0.02)] sm:grid-cols-[2.5rem_1fr_auto]">
       <div className="hidden h-8 w-8 shrink-0 items-center justify-center bg-[#f4f1ec] sm:flex">
-        <span className="font-[family-name:var(--font-dm-sans)] text-[0.68rem] font-bold text-[rgba(47,78,64,0.35)]">
+        <span className="font-(family-name:--font-dm-sans) text-[0.68rem] font-bold text-[rgba(47,78,64,0.35)]">
           {String(index + 1).padStart(2, "0")}
         </span>
       </div>
 
       <div className="min-w-0">
         <div className="mb-0.5 flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 border border-[rgba(47,78,64,0.08)] bg-[#f4f1ec] px-2 py-0.5 font-[family-name:var(--font-dm-sans)] text-[0.72rem] font-medium text-[rgba(47,78,64,0.55)]">
+          <span className="inline-flex items-center gap-1.5 border border-[rgba(47,78,64,0.08)] bg-[#f4f1ec] px-2 py-0.5 font-(family-name:--font-dm-sans) text-[0.72rem] font-medium text-[rgba(47,78,64,0.55)]">
             {mode.icon}
             {mode.label}
           </span>
           {payment.remarks ? (
-            <span className="max-w-[160px] truncate font-[family-name:var(--font-dm-sans)] text-[0.72rem] text-[rgba(47,78,64,0.38)]">
+            <span className="max-w-[160px] truncate font-(family-name:--font-dm-sans) text-[0.72rem] text-[rgba(47,78,64,0.38)]">
               {payment.remarks}
             </span>
           ) : null}
         </div>
-        <p className="font-[family-name:var(--font-dm-sans)] text-[0.72rem] font-medium text-[rgba(47,78,64,0.38)]">
+        <p className="font-(family-name:--font-dm-sans) text-[0.72rem] font-medium text-[rgba(47,78,64,0.38)]">
           {date}&nbsp;·&nbsp;{time}
         </p>
       </div>
@@ -119,7 +119,7 @@ function EmptyPayments() {
       <p className="font-[family-name:var(--font-playfair)] text-[0.92rem] font-semibold text-[rgba(47,78,64,0.45)]">
         No payments recorded
       </p>
-      <p className="mt-1 max-w-[220px] font-[family-name:var(--font-dm-sans)] text-[0.75rem] leading-relaxed text-[rgba(47,78,64,0.35)]">
+      <p className="mt-1 max-w-[220px] font-(family-name:--font-dm-sans) text-[0.75rem] leading-relaxed text-[rgba(47,78,64,0.35)]">
         Payments added by the administration will appear here once processed.
       </p>
     </div>
@@ -171,10 +171,10 @@ function PaymentHistoryError({
       >
         <AlertCircle className="h-5 w-5 text-red-400" strokeWidth={1.75} />
         <div>
-          <p className="font-[family-name:var(--font-dm-sans)] text-[0.9rem] font-semibold text-(--brand-green)">
+          <p className="font-(family-name:--font-dm-sans) text-[0.9rem] font-semibold text-(--brand-green)">
             Couldn&apos;t load payment history
           </p>
-          <p className="mx-auto mt-1 max-w-xs font-[family-name:var(--font-dm-sans)] text-[0.8rem] leading-relaxed text-[rgba(47,78,64,0.5)]">
+          <p className="mx-auto mt-1 max-w-xs font-(family-name:--font-dm-sans) text-[0.8rem] leading-relaxed text-[rgba(47,78,64,0.5)]">
             {message ?? "Something went wrong fetching your payments."}
           </p>
         </div>

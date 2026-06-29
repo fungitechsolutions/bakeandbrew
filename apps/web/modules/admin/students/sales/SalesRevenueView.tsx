@@ -22,7 +22,7 @@ import { adminSecondaryButtonClass, adminTableClass } from "@/components/admin/a
 import { parseStudentFinanceFilters } from "../shared/student-date-filter-utils";
 
 const thClass =
-  "px-5 py-3.5 text-right font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.1em] text-[rgba(47,78,64,0.45)] bg-[rgba(47,78,64,0.03)] border-b border-[rgba(47,78,64,0.12)] whitespace-nowrap first:text-left";
+  "px-5 py-3.5 text-right font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-widest text-[rgba(47,78,64,0.45)] bg-[rgba(47,78,64,0.03)] border-b border-[rgba(47,78,64,0.12)] whitespace-nowrap first:text-left";
 
 export function SalesRevenueView() {
   const searchParams = useSearchParams();
@@ -124,10 +124,10 @@ export function SalesRevenueView() {
                         <div className="mb-3 flex items-center gap-3">
                           <StudentInitialsAvatar name={student.name} />
                           <div>
-                            <div className="font-[family-name:var(--font-dm-sans)] text-sm font-semibold text-(--brand-ink)">
+                            <div className="font-(family-name:--font-dm-sans) text-sm font-semibold text-(--brand-ink)">
                               {student.name}
                             </div>
-                            <div className="mt-0.5 font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.5)]">
+                            <div className="mt-0.5 font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.5)]">
                               {student.email}
                             </div>
                           </div>
@@ -144,10 +144,10 @@ export function SalesRevenueView() {
                               key={label as string}
                               className="mb-1.5 flex items-center justify-between"
                             >
-                              <span className="font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.5)]">
+                              <span className="font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.5)]">
                                 {label}
                               </span>
-                              <span className="font-[family-name:var(--font-dm-sans)] text-[13px] font-medium tabular-nums text-[rgba(47,78,64,0.75)]">
+                              <span className="font-(family-name:--font-dm-sans) text-[13px] font-medium tabular-nums text-[rgba(47,78,64,0.75)]">
                                 {formatNpr((value as number) / 100)}
                               </span>
                             </div>
@@ -161,11 +161,11 @@ export function SalesRevenueView() {
                           </div>
 
                           <div className="flex items-center justify-between">
-                            <span className="font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.5)]">
+                            <span className="font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.5)]">
                               Remaining
                             </span>
                             <span
-                              className={`font-[family-name:var(--font-dm-sans)] text-[13px] tabular-nums ${
+                              className={`font-(family-name:--font-dm-sans) text-[13px] tabular-nums ${
                                 student.outstanding <= 0
                                   ? "font-semibold text-emerald-800"
                                   : "font-bold text-[#9a3412]"

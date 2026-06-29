@@ -44,7 +44,7 @@ function CourseCard({ course }: { course: CourseItem }) {
           <p className="truncate font-[family-name:var(--font-playfair)] text-[0.92rem] font-semibold leading-snug text-(--brand-green)">
             {course.name}
           </p>
-          <p className="mt-0.5 font-[family-name:var(--font-dm-sans)] text-[0.75rem] font-medium text-[rgba(47,78,64,0.42)]">
+          <p className="mt-0.5 font-(family-name:--font-dm-sans) text-[0.75rem] font-medium text-[rgba(47,78,64,0.42)]">
             {formatNPR(course.feeAtEnrollment / 100)} enrolled fee
           </p>
         </div>
@@ -96,10 +96,10 @@ function EnrolledCoursesError({
       >
         <AlertCircle className="h-5 w-5 text-red-400" strokeWidth={1.75} />
         <div>
-          <p className="font-[family-name:var(--font-dm-sans)] text-[0.9rem] font-semibold text-(--brand-green)">
+          <p className="font-(family-name:--font-dm-sans) text-[0.9rem] font-semibold text-(--brand-green)">
             Couldn&apos;t load courses
           </p>
-          <p className="mx-auto mt-1 max-w-xs font-[family-name:var(--font-dm-sans)] text-[0.8rem] leading-relaxed text-[rgba(47,78,64,0.5)]">
+          <p className="mx-auto mt-1 max-w-xs font-(family-name:--font-dm-sans) text-[0.8rem] leading-relaxed text-[rgba(47,78,64,0.5)]">
             {message ?? "Something went wrong fetching your enrolled courses."}
           </p>
         </div>
@@ -127,7 +127,7 @@ function EnrolledCoursesEmpty() {
         <p className="font-[family-name:var(--font-playfair)] text-[0.92rem] font-semibold text-[rgba(47,78,64,0.45)]">
           No courses enrolled
         </p>
-        <p className="mx-auto mt-1 max-w-[200px] font-[family-name:var(--font-dm-sans)] text-[0.75rem] leading-relaxed text-[rgba(47,78,64,0.35)]">
+        <p className="mx-auto mt-1 max-w-[200px] font-(family-name:--font-dm-sans) text-[0.75rem] leading-relaxed text-[rgba(47,78,64,0.35)]">
           Your enrolled courses will appear here once confirmed.
         </p>
       </div>

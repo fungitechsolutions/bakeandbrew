@@ -184,14 +184,14 @@ export function ScholarshipSection({
           <div className="flex items-start justify-between gap-2">
             <div className="flex flex-col gap-1">
               <div className="flex items-baseline gap-2">
-                <span className="font-[family-name:var(--font-lora)] text-2xl font-bold text-(--brand-green)">
+                <span className="font-(family-name:--font-lora) text-2xl font-bold text-(--brand-green)">
                   {scholarship.percent}%
                 </span>
-                <span className="font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.5)]">
+                <span className="font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.5)]">
                   scholarship
                 </span>
               </div>
-              <span className="font-[family-name:var(--font-dm-sans)] text-sm font-semibold tabular-nums text-[#9a3412]">
+              <span className="font-(family-name:--font-dm-sans) text-sm font-semibold tabular-nums text-[#9a3412]">
                 −{" "}
                 {(scholarship.amount / 100).toLocaleString("en-NP", {
                   style: "currency",
@@ -220,12 +220,12 @@ export function ScholarshipSection({
           </div>
 
           {scholarship.note ? (
-            <p className="mt-3 border border-amber-200 bg-amber-50 px-3 py-2 font-[family-name:var(--font-dm-sans)] text-xs italic leading-relaxed text-amber-900">
+            <p className="mt-3 border border-amber-200 bg-amber-50 px-3 py-2 font-(family-name:--font-dm-sans) text-xs italic leading-relaxed text-amber-900">
               {scholarship.note}
             </p>
           ) : null}
 
-          <p className="mt-3 font-[family-name:var(--font-dm-sans)] text-[11px] text-[rgba(47,78,64,0.45)]">
+          <p className="mt-3 font-(family-name:--font-dm-sans) text-[11px] text-[rgba(47,78,64,0.45)]">
             Awarded by{" "}
             <span className="font-semibold text-[rgba(47,78,64,0.65)]">
               {scholarship.addedByName}

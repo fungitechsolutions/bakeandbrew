@@ -67,7 +67,7 @@ function StatCard({ label, value, sub, icon, accent }: StatCardProps) {
             {value}
           </p>
           {sub ? (
-            <p className="mt-2 font-[family-name:var(--font-dm-sans)] text-[0.75rem] font-medium text-[rgba(47,78,64,0.42)]">
+            <p className="mt-2 font-(family-name:--font-dm-sans) text-[0.75rem] font-medium text-[rgba(47,78,64,0.42)]">
               {sub}
             </p>
           ) : null}
@@ -126,10 +126,10 @@ function FinancialSummaryError({
       >
         <AlertCircle className="h-5 w-5 text-red-400" strokeWidth={1.75} />
         <div>
-          <p className="font-[family-name:var(--font-dm-sans)] text-[0.9rem] font-semibold text-(--brand-green)">
+          <p className="font-(family-name:--font-dm-sans) text-[0.9rem] font-semibold text-(--brand-green)">
             Couldn&apos;t load financial data
           </p>
-          <p className="mx-auto mt-1 max-w-xs font-[family-name:var(--font-dm-sans)] text-[0.8rem] leading-relaxed text-[rgba(47,78,64,0.5)]">
+          <p className="mx-auto mt-1 max-w-xs font-(family-name:--font-dm-sans) text-[0.8rem] leading-relaxed text-[rgba(47,78,64,0.5)]">
             {message ?? "Something went wrong fetching your fee summary."}
           </p>
         </div>
@@ -201,10 +201,10 @@ export function FinancialSummary() {
 
       <div className="pt-1">
         <div className="mb-2 flex items-center justify-between">
-          <span className="font-[family-name:var(--font-dm-sans)] text-[0.75rem] font-medium text-[rgba(47,78,64,0.45)]">
+          <span className="font-(family-name:--font-dm-sans) text-[0.75rem] font-medium text-[rgba(47,78,64,0.45)]">
             Payment progress
           </span>
-          <span className="font-[family-name:var(--font-dm-sans)] text-[0.75rem] font-semibold text-(--brand-green)">
+          <span className="font-(family-name:--font-dm-sans) text-[0.75rem] font-semibold text-(--brand-green)">
             {Math.round(paidPercent)}%
           </span>
         </div>

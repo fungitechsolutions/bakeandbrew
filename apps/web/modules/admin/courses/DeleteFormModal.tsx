@@ -27,7 +27,7 @@ export function DeleteConfirmModal({
           <div className="text-[#9a3412]">
             <AlertTriangle size={18} />
           </div>
-          <h2 className="flex-1 font-[family-name:var(--font-lora)] text-base font-bold text-(--brand-green)">
+          <h2 className="flex-1 font-(family-name:--font-lora) text-base font-bold text-(--brand-green)">
             Delete Course
           </h2>
           <button
@@ -39,7 +39,7 @@ export function DeleteConfirmModal({
         </div>
 
         <div className="px-5 py-5">
-          <p className="font-[family-name:var(--font-dm-sans)] text-sm leading-relaxed text-[rgba(47,78,64,0.55)]">
+          <p className="font-(family-name:--font-dm-sans) text-sm leading-relaxed text-[rgba(47,78,64,0.55)]">
             Are you sure you want to delete{" "}
             <strong className="text-(--brand-ink)">{courseName}</strong>? This
             action cannot be undone.
@@ -51,7 +51,7 @@ export function DeleteConfirmModal({
             Cancel
           </button>
           <button
-            className="inline-flex items-center gap-2 border border-[#9a3412] bg-[#9a3412] px-4 py-2 font-[family-name:var(--font-dm-sans)] text-xs font-semibold uppercase tracking-[0.08em] text-white transition-colors hover:bg-[#7c2d12]"
+            className="inline-flex items-center gap-2 border border-[#9a3412] bg-[#9a3412] px-4 py-2 font-(family-name:--font-dm-sans) text-xs font-semibold uppercase tracking-[0.08em] text-white transition-colors hover:bg-[#7c2d12]"
             onClick={() => {
               onConfirm();
               onClose();

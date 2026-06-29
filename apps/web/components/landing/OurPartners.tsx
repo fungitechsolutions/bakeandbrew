@@ -108,10 +108,10 @@ export default function OurPartners() {
           {stats.map((stat, i) => (
             <div key={stat.label} className="flex items-center gap-10 sm:gap-14">
               <div>
-                <p className="font-[family-name:var(--font-lora)] text-[2.2rem] font-bold leading-none tracking-tight text-(--brand-green)">
+                <p className="font-(family-name:--font-lora) text-[2.2rem] font-bold leading-none tracking-tight text-(--brand-green)">
                   {stat.value}
                 </p>
-                <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-[0.75rem] uppercase tracking-widest text-[rgba(26,26,26,0.4)]">
+                <p className="mt-1 font-(family-name:--font-dm-sans) text-[0.75rem] uppercase tracking-widest text-[rgba(26,26,26,0.4)]">
                   {stat.label}
                 </p>
               </div>

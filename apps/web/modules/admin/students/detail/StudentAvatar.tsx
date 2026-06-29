@@ -38,7 +38,7 @@ export function StudentAvatar({
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-[rgba(47,78,64,0.08)]">
-            <span className="font-[family-name:var(--font-lora)] text-xl font-bold text-(--brand-green)">
+            <span className="font-(family-name:--font-lora) text-xl font-bold text-(--brand-green)">
               {initials}
             </span>
           </div>

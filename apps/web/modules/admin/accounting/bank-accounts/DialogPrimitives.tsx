@@ -67,7 +67,7 @@ export function DialogHeader({
     <div className="flex items-center justify-between px-6 pt-5 pb-0">
       <h2
         id={id}
-        className="font-[family-name:var(--font-lora)] text-[1.05rem] font-semibold text-[#1a1a1a]"
+        className="font-(family-name:--font-lora) text-[1.05rem] font-semibold text-[#1a1a1a]"
       >
         {title}
       </h2>
@@ -103,7 +103,7 @@ export function GhostButton({
   return (
     <button
       {...props}
-      className="px-4 py-2 rounded-lg border border-stone-200 text-stone-500 text-sm font-[family-name:var(--font-dm-sans)] hover:border-stone-400 hover:text-stone-800 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+      className="px-4 py-2 rounded-lg border border-stone-200 text-stone-500 text-sm font-(family-name:--font-dm-sans) hover:border-stone-400 hover:text-stone-800 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {children}
     </button>
@@ -119,7 +119,7 @@ export function PrimaryButton({
   return (
     <button
       {...props}
-      className="px-4 py-2 rounded-lg bg-[#2f4e40] text-[#fbfaf7] text-sm font-medium font-[family-name:var(--font-dm-sans)] hover:bg-[#3a5a49] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+      className="px-4 py-2 rounded-lg bg-[#2f4e40] text-[#fbfaf7] text-sm font-medium font-(family-name:--font-dm-sans) hover:bg-[#3a5a49] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {children}
     </button>
@@ -157,7 +157,7 @@ export function DialogField({
     <div className="flex flex-col gap-1.5">
       <label
         htmlFor={id}
-        className="text-[0.8125rem] font-medium text-stone-600 font-[family-name:var(--font-dm-sans)]"
+        className="text-[0.8125rem] font-medium text-stone-600 font-(family-name:--font-dm-sans)"
       >
         {label}
       </label>
@@ -173,7 +173,7 @@ export function DialogField({
         maxLength={120}
         autoFocus={autoFocus}
         className={[
-          "w-full px-3.5 py-2.5 rounded-lg border text-sm text-[#1a1a1a] bg-stone-50 font-[family-name:var(--font-dm-sans)]",
+          "w-full px-3.5 py-2.5 rounded-lg border text-sm text-[#1a1a1a] bg-stone-50 font-(family-name:--font-dm-sans)",
           "outline-none transition-all",
           "focus:ring-2 focus:ring-[#2f4e40]/20 focus:border-[#2f4e40]",
           "disabled:opacity-60 disabled:cursor-not-allowed",
@@ -181,7 +181,7 @@ export function DialogField({
         ].join(" ")}
       />
       {error && (
-        <p className="text-xs text-red-500 font-[family-name:var(--font-dm-sans)]">
+        <p className="text-xs text-red-500 font-(family-name:--font-dm-sans)">
           {error}
         </p>
       )}
@@ -214,7 +214,7 @@ export function BankSelectField({
     <div className="flex flex-col gap-1.5">
       <label
         htmlFor={id}
-        className="text-[0.8125rem] font-medium text-stone-600 font-[family-name:var(--font-dm-sans)]"
+        className="text-[0.8125rem] font-medium text-stone-600 font-(family-name:--font-dm-sans)"
       >
         {label}
       </label>
@@ -224,7 +224,7 @@ export function BankSelectField({
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled || loadingOptions}
         className={[
-          "w-full px-3.5 py-2.5 rounded-lg border text-sm text-[#1a1a1a] bg-stone-50 font-[family-name:var(--font-dm-sans)]",
+          "w-full px-3.5 py-2.5 rounded-lg border text-sm text-[#1a1a1a] bg-stone-50 font-(family-name:--font-dm-sans)",
           "outline-none transition-all appearance-none cursor-pointer",
           "focus:ring-2 focus:ring-[#2f4e40]/20 focus:border-[#2f4e40]",
           "disabled:opacity-60 disabled:cursor-not-allowed",
@@ -241,7 +241,7 @@ export function BankSelectField({
         ))}
       </select>
       {error && (
-        <p className="text-xs text-red-500 font-[family-name:var(--font-dm-sans)]">
+        <p className="text-xs text-red-500 font-(family-name:--font-dm-sans)">
           {error}
         </p>
       )}

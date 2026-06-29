@@ -68,11 +68,11 @@ export function LedgerSummaryCards({
               <Icon size={18} className={card.iconClass} />
             </div>
             <div>
-              <p className="font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.1em] text-[rgba(47,78,64,0.55)]">
+              <p className="font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-widest text-[rgba(47,78,64,0.55)]">
                 {card.label}
               </p>
               <p
-                className={`mt-1 font-[family-name:var(--font-lora)] text-xl font-bold tabular-nums ${card.valueClass}`}
+                className={`mt-1 font-(family-name:--font-lora) text-xl font-bold tabular-nums ${card.valueClass}`}
               >
                 {card.value}
               </p>

@@ -5,10 +5,10 @@ export const adminInputClass =
   "w-full rounded-none border border-[rgba(47,78,64,0.18)] bg-white px-3 py-2 text-sm text-(--brand-ink) outline-none transition-colors focus:border-(--brand-green)";
 
 export const adminPrimaryButtonClass =
-  "inline-flex cursor-pointer items-center gap-2 border border-(--brand-green) bg-(--brand-green) px-4 py-2 font-[family-name:var(--font-dm-sans)] text-xs font-semibold uppercase tracking-[0.08em] text-white transition-colors hover:bg-(--brand-green-2)";
+  "inline-flex cursor-pointer items-center gap-2 border border-(--brand-green) bg-(--brand-green) px-4 py-2 font-(family-name:--font-dm-sans) text-xs font-semibold uppercase tracking-[0.08em] text-white transition-colors hover:bg-(--brand-green-2)";
 
 export const adminSecondaryButtonClass =
-  "inline-flex items-center gap-2 border border-[rgba(47,78,64,0.18)] bg-white px-4 py-2 font-[family-name:var(--font-dm-sans)] text-xs font-semibold uppercase tracking-[0.08em] text-(--brand-green) transition-colors hover:border-(--brand-green) hover:bg-[rgba(47,78,64,0.03)]";
+  "inline-flex items-center gap-2 border border-[rgba(47,78,64,0.18)] bg-white px-4 py-2 font-(family-name:--font-dm-sans) text-xs font-semibold uppercase tracking-[0.08em] text-(--brand-green) transition-colors hover:border-(--brand-green) hover:bg-[rgba(47,78,64,0.03)]";
 
 export const adminIconButtonClass =
   "grid h-8 w-8 cursor-pointer place-items-center border border-[rgba(47,78,64,0.18)] bg-white text-[rgba(47,78,64,0.55)] transition-colors hover:border-(--brand-brown) hover:text-(--brand-brown)";

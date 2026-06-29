@@ -124,7 +124,7 @@ export function BankAccountEditDialog({
           <AccountingFormField label="Bank" htmlFor="edit-bank-readonly">
             <div
               id="edit-bank-readonly"
-              className="inline-flex items-center border border-[rgba(47,78,64,0.12)] bg-[rgba(47,78,64,0.04)] px-3 py-2 font-[family-name:var(--font-dm-sans)] text-sm text-[rgba(47,78,64,0.7)]"
+              className="inline-flex items-center border border-[rgba(47,78,64,0.12)] bg-[rgba(47,78,64,0.04)] px-3 py-2 font-(family-name:--font-dm-sans) text-sm text-[rgba(47,78,64,0.7)]"
             >
               {account?.bankName}
             </div>

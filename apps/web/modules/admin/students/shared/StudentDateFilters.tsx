@@ -17,7 +17,7 @@ type StudentDateFiltersProps = {
 };
 
 const labelClass =
-  "font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.1em] text-[rgba(47,78,64,0.55)]";
+  "font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-widest text-[rgba(47,78,64,0.55)]";
 
 export function StudentDateFilters({
   isPending,

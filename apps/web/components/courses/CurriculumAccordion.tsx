@@ -21,7 +21,7 @@ export function CurriculumAccordion({
           title={
             <div className="flex min-w-0 items-center gap-3 sm:gap-4">
               <span
-                className="shrink-0 border px-2.5 py-1 font-[family-name:var(--font-dm-sans)] text-[0.68rem] font-semibold uppercase tracking-widest"
+                className="shrink-0 border px-2.5 py-1 font-(family-name:--font-dm-sans) text-[0.68rem] font-semibold uppercase tracking-widest"
                 style={{
                   borderColor: courseAccentAlpha(accent, 28),
                   backgroundColor: courseAccentAlpha(accent, 10),
@@ -41,7 +41,7 @@ export function CurriculumAccordion({
               {mod.topics.map((topic) => (
                 <li
                   key={topic}
-                  className="flex items-start gap-2.5 font-[family-name:var(--font-dm-sans)] text-[0.875rem] leading-[1.6] text-[rgba(47,78,64,0.62)]"
+                  className="flex items-start gap-2.5 font-(family-name:--font-dm-sans) text-[0.875rem] leading-[1.6] text-[rgba(47,78,64,0.62)]"
                 >
                   <Check
                     className="mt-0.5 h-3.5 w-3.5 shrink-0"

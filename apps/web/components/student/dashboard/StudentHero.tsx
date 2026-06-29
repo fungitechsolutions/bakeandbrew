@@ -77,7 +77,7 @@ function InfoCell({
         />
         <p className={dashboardLabelClass}>{label}</p>
       </div>
-      <p className="font-[family-name:var(--font-dm-sans)] text-[0.9rem] font-medium leading-snug text-(--brand-green)">
+      <p className="font-(family-name:--font-dm-sans) text-[0.9rem] font-medium leading-snug text-(--brand-green)">
         {value}
       </p>
     </div>
@@ -94,7 +94,7 @@ function StatusBadge({ status }: { status: StudentStatus }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 border px-2.5 py-1 font-[family-name:var(--font-dm-sans)] text-[0.68rem] font-bold uppercase tracking-[0.1em]",
+        "inline-flex items-center gap-1.5 border px-2.5 py-1 font-(family-name:--font-dm-sans) text-[0.68rem] font-bold uppercase tracking-widest",
         map[status],
       )}
     >
@@ -152,7 +152,7 @@ function HeroErrorState({
       <p className="font-[family-name:var(--font-playfair)] text-[1.1rem] font-semibold text-(--brand-green)">
         Couldn&apos;t load your profile
       </p>
-      <p className="mx-auto mt-2 max-w-sm font-[family-name:var(--font-dm-sans)] text-[0.86rem] text-[rgba(47,78,64,0.5)]">
+      <p className="mx-auto mt-2 max-w-sm font-(family-name:--font-dm-sans) text-[0.86rem] text-[rgba(47,78,64,0.5)]">
         {message ?? "Something went wrong while fetching your details."}
       </p>
       <button type="button" onClick={onRetry} className={cn(dashboardPrimaryBtnClass, "mt-6")}>
@@ -233,11 +233,11 @@ export function StudentHero() {
           </div>
 
           <div className="flex flex-wrap gap-2 sm:justify-end">
-            <span className="inline-flex items-center gap-1.5 border border-[rgba(47,78,64,0.1)] bg-white px-3 py-1.5 font-[family-name:var(--font-dm-sans)] text-[0.75rem] font-medium text-[rgba(47,78,64,0.55)]">
+            <span className="inline-flex items-center gap-1.5 border border-[rgba(47,78,64,0.1)] bg-white px-3 py-1.5 font-(family-name:--font-dm-sans) text-[0.75rem] font-medium text-[rgba(47,78,64,0.55)]">
               <Hash className="h-3.5 w-3.5 text-(--brand-brown)" strokeWidth={2} />
               {student.referenceNo}
             </span>
-            <span className="inline-flex items-center gap-1.5 border border-[rgba(47,78,64,0.1)] bg-white px-3 py-1.5 font-[family-name:var(--font-dm-sans)] text-[0.75rem] font-medium text-[rgba(47,78,64,0.55)]">
+            <span className="inline-flex items-center gap-1.5 border border-[rgba(47,78,64,0.1)] bg-white px-3 py-1.5 font-(family-name:--font-dm-sans) text-[0.75rem] font-medium text-[rgba(47,78,64,0.55)]">
               <Sparkles className="h-3.5 w-3.5 text-(--brand-green)" strokeWidth={2} />
               FY {student.fiscalYear}
             </span>

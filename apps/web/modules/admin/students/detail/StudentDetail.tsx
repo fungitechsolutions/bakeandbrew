@@ -182,7 +182,7 @@ export default function StudentDetailPage({
         {showInvoice ? (
           <div className={detailPanelClass}>
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[rgba(47,78,64,0.12)] px-5 py-4">
-              <h2 className="font-[family-name:var(--font-lora)] text-base font-bold text-(--brand-green)">
+              <h2 className="font-(family-name:--font-lora) text-base font-bold text-(--brand-green)">
                 Invoice Preview
               </h2>
               <button
@@ -204,10 +204,10 @@ export default function StudentDetailPage({
           <div className={detailPanelClass}>
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[rgba(47,78,64,0.12)] px-5 py-4">
               <div>
-                <h2 className="font-[family-name:var(--font-lora)] text-base font-bold text-(--brand-green)">
+                <h2 className="font-(family-name:--font-lora) text-base font-bold text-(--brand-green)">
                   Certificate Preview
                 </h2>
-                <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-[0.72rem] text-[rgba(47,78,64,0.45)]">
+                <p className="mt-1 font-(family-name:--font-dm-sans) text-[0.72rem] text-[rgba(47,78,64,0.45)]">
                   Print: turn off Headers &amp; footers, turn on Background graphics
                 </p>
               </div>
@@ -253,10 +253,10 @@ export default function StudentDetailPage({
           <div className={detailPanelClass}>
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[rgba(47,78,64,0.12)] px-5 py-4">
               <div>
-                <h2 className="font-[family-name:var(--font-lora)] text-base font-bold text-(--brand-green)">
+                <h2 className="font-(family-name:--font-lora) text-base font-bold text-(--brand-green)">
                   Workshop Certificate Preview
                 </h2>
-                <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-[0.72rem] text-[rgba(47,78,64,0.45)]">
+                <p className="mt-1 font-(family-name:--font-dm-sans) text-[0.72rem] text-[rgba(47,78,64,0.45)]">
                   Print: turn off Headers &amp; footers, turn on Background graphics
                 </p>
               </div>

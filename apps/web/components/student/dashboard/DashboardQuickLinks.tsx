@@ -13,7 +13,7 @@ export function DashboardQuickLinks() {
         <h2 className="font-[family-name:var(--font-playfair)] text-[1.05rem] font-semibold text-(--brand-green)">
           Quick links
         </h2>
-        <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-[0.84rem] text-[rgba(47,78,64,0.48)]">
+        <p className="mt-1 font-(family-name:--font-dm-sans) text-[0.84rem] text-[rgba(47,78,64,0.48)]">
           Jump to a section of your portal
         </p>
       </div>
@@ -38,7 +38,7 @@ export function DashboardQuickLinks() {
               <p className="font-[family-name:var(--font-playfair)] text-[0.95rem] font-semibold text-(--brand-green)">
                 {title}
               </p>
-              <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-[0.78rem] leading-relaxed text-[rgba(47,78,64,0.48)]">
+              <p className="mt-1 font-(family-name:--font-dm-sans) text-[0.78rem] leading-relaxed text-[rgba(47,78,64,0.48)]">
                 {description}
               </p>
             </div>

@@ -211,7 +211,7 @@ export function DiscountSection({ discounts, studentID, currentStatus }: Props) 
       ) : (
         <>
           <div className="mb-3 flex flex-col items-center gap-3 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
-            <p className="font-[family-name:var(--font-dm-sans)] text-sm text-[rgba(47,78,64,0.5)]">
+            <p className="font-(family-name:--font-dm-sans) text-sm text-[rgba(47,78,64,0.5)]">
               {discounts.length} discount{discounts.length !== 1 ? "s" : ""}
             </p>
             {renderAddDiscountButton()}
@@ -231,10 +231,10 @@ export function DiscountSection({ discounts, studentID, currentStatus }: Props) 
           </div>
 
           <div className="mt-3 flex items-center justify-between border-t border-[rgba(47,78,64,0.12)] pt-3">
-            <span className="font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.1em] text-[rgba(47,78,64,0.45)]">
+            <span className="font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-widest text-[rgba(47,78,64,0.45)]">
               Total Saved
             </span>
-            <span className="font-[family-name:var(--font-lora)] text-base font-bold text-[#9a3412]">
+            <span className="font-(family-name:--font-lora) text-base font-bold text-[#9a3412]">
               −{" "}
               {discounts
                 .reduce((sum, d) => sum + d.amount / 100, 0)

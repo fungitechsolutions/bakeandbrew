@@ -51,7 +51,7 @@ export function TrackingStepper({ steps }: { steps: TrackingStep[] }) {
                 </div>
                 <p
                   className={cn(
-                    "mt-3 font-[family-name:var(--font-dm-sans)] text-[0.72rem] font-semibold leading-tight",
+                    "mt-3 font-(family-name:--font-dm-sans) text-[0.72rem] font-semibold leading-tight",
                     step.state === "active"
                       ? "text-(--brand-green)"
                       : step.state === "done"
@@ -62,7 +62,7 @@ export function TrackingStepper({ steps }: { steps: TrackingStep[] }) {
                   {step.label}
                 </p>
                 {step.description ? (
-                  <p className="mt-1 hidden max-w-[9rem] font-[family-name:var(--font-dm-sans)] text-[0.68rem] leading-snug text-[rgba(47,78,64,0.45)] lg:block">
+                  <p className="mt-1 hidden max-w-[9rem] font-(family-name:--font-dm-sans) text-[0.68rem] leading-snug text-[rgba(47,78,64,0.45)] lg:block">
                     {step.description}
                   </p>
                 ) : null}
@@ -109,7 +109,7 @@ export function TrackingStepper({ steps }: { steps: TrackingStep[] }) {
               <div className={cn("pb-5", isLast && "pb-0")}>
                 <p
                   className={cn(
-                    "font-[family-name:var(--font-dm-sans)] text-[0.84rem] font-semibold",
+                    "font-(family-name:--font-dm-sans) text-[0.84rem] font-semibold",
                     step.state === "active"
                       ? "text-(--brand-green)"
                       : step.state === "done"
@@ -125,7 +125,7 @@ export function TrackingStepper({ steps }: { steps: TrackingStep[] }) {
                   ) : null}
                 </p>
                 {step.description ? (
-                  <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-[0.8rem] leading-relaxed text-[rgba(47,78,64,0.5)]">
+                  <p className="mt-1 font-(family-name:--font-dm-sans) text-[0.8rem] leading-relaxed text-[rgba(47,78,64,0.5)]">
                     {step.description}
                   </p>
                 ) : null}

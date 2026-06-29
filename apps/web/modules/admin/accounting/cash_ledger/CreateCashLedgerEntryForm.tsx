@@ -205,7 +205,7 @@ export function CreateCashLedgerEntryForm({
                       mergedError && "border-[#9a3412]",
                     )}
                   />
-                  <span className="font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.45)]">
+                  <span className="font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.45)]">
                     Auto-generated from BS date
                   </span>
                 </AccountingFormField>
@@ -252,7 +252,7 @@ export function CreateCashLedgerEntryForm({
                   error={mergedError}
                 >
                   <div className="relative">
-                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 font-[family-name:var(--font-dm-sans)] text-sm text-[rgba(47,78,64,0.45)]">
+                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 font-(family-name:--font-dm-sans) text-sm text-[rgba(47,78,64,0.45)]">
                       Rs.
                     </span>
                     <input

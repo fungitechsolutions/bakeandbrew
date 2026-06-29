@@ -28,7 +28,7 @@ export function InventoryFilterShell({
         <span
           className={cn(
             inventoryLabelClass,
-            "flex items-center gap-1.5 normal-case tracking-[0.1em]",
+            "flex items-center gap-1.5 normal-case tracking-widest",
           )}
         >
           <SlidersHorizontal size={13} />

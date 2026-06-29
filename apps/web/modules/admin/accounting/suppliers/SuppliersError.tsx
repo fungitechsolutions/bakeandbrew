@@ -14,17 +14,17 @@ export function SuppliersError({ message, onRetry }: SuppliersErrorProps) {
         <AlertCircle size={20} strokeWidth={1.75} />
       </div>
       <div>
-        <p className="font-[family-name:var(--font-lora)] text-base font-semibold text-[#1a1a1a]">
+        <p className="font-(family-name:--font-lora) text-base font-semibold text-[#1a1a1a]">
           Failed to load suppliers
         </p>
-        <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-sm text-[rgba(47,78,64,0.55)]">
+        <p className="mt-1 font-(family-name:--font-dm-sans) text-sm text-[rgba(47,78,64,0.55)]">
           {message}
         </p>
       </div>
       <button
         type="button"
         onClick={onRetry}
-        className="border border-[rgba(47,78,64,0.2)] px-4 py-2 font-[family-name:var(--font-dm-sans)] text-sm font-medium text-(--brand-green) transition-colors hover:bg-[rgba(47,78,64,0.04)]"
+        className="border border-[rgba(47,78,64,0.2)] px-4 py-2 font-(family-name:--font-dm-sans) text-sm font-medium text-(--brand-green) transition-colors hover:bg-[rgba(47,78,64,0.04)]"
       >
         Try again
       </button>

@@ -17,10 +17,10 @@ export function UsersEmptyState({ onCreateUser, role }: UsersEmptyStateProps) {
       </div>
 
       <div className="max-w-xs space-y-2">
-        <h3 className="font-[family-name:var(--font-lora)] text-base font-bold text-(--brand-green)">
+        <h3 className="font-(family-name:--font-lora) text-base font-bold text-(--brand-green)">
           No {role} found
         </h3>
-        <p className="font-[family-name:var(--font-dm-sans)] text-sm leading-relaxed text-[rgba(47,78,64,0.55)]">
+        <p className="font-(family-name:--font-dm-sans) text-sm leading-relaxed text-[rgba(47,78,64,0.55)]">
           There are no {role} in the system yet. Create the first one to get
           started.
         </p>

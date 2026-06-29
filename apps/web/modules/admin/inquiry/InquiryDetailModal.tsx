@@ -84,20 +84,20 @@ export default function InquiryDetailModal({
       <div className="fixed inset-y-0 right-0 z-50 flex w-full flex-col border-l border-[rgba(47,78,64,0.18)] bg-(--brand-cream) shadow-[0_0_40px_rgba(0,0,0,0.12)] sm:w-[480px]">
         <div className="flex items-center justify-between border-b border-[rgba(47,78,64,0.12)] bg-white px-6 py-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center bg-(--brand-green) font-[family-name:var(--font-dm-sans)] text-base font-bold text-white">
+            <div className="flex h-10 w-10 items-center justify-center bg-(--brand-green) font-(family-name:--font-dm-sans) text-base font-bold text-white">
               {inquiry.fullName[0]?.toUpperCase() ?? "?"}
             </div>
             <div>
-              <h2 className="font-[family-name:var(--font-lora)] text-base font-bold leading-tight text-(--brand-green)">
+              <h2 className="font-(family-name:--font-lora) text-base font-bold leading-tight text-(--brand-green)">
                 {inquiry.fullName}
               </h2>
               <div className="mt-0.5 flex items-center gap-1.5">
                 {inquiry.isRead ? (
-                  <span className="flex items-center gap-1 font-[family-name:var(--font-dm-sans)] text-xs text-[#3a5a49]">
+                  <span className="flex items-center gap-1 font-(family-name:--font-dm-sans) text-xs text-[#3a5a49]">
                     <CheckCircle2 className="h-3 w-3" /> Read
                   </span>
                 ) : (
-                  <span className="flex items-center gap-1 font-[family-name:var(--font-dm-sans)] text-xs font-semibold text-(--brand-brown)">
+                  <span className="flex items-center gap-1 font-(family-name:--font-dm-sans) text-xs font-semibold text-(--brand-brown)">
                     <Clock className="h-3 w-3" /> Unread
                   </span>
                 )}
@@ -116,11 +116,11 @@ export default function InquiryDetailModal({
         <div className="flex-1 space-y-5 overflow-y-auto px-6 py-6">
           <div className="flex items-center gap-2">
             <Globe className="h-3.5 w-3.5 text-[rgba(47,78,64,0.45)]" />
-            <span className="font-[family-name:var(--font-dm-sans)] text-xs font-medium text-[rgba(47,78,64,0.45)]">
+            <span className="font-(family-name:--font-dm-sans) text-xs font-medium text-[rgba(47,78,64,0.45)]">
               Source
             </span>
             <span
-              className="ml-auto border px-3 py-1 font-[family-name:var(--font-dm-sans)] text-xs font-semibold capitalize"
+              className="ml-auto border px-3 py-1 font-(family-name:--font-dm-sans) text-xs font-semibold capitalize"
               style={{
                 backgroundColor: sc.bg,
                 color: sc.text,
@@ -134,7 +134,7 @@ export default function InquiryDetailModal({
           <hr className="border-[rgba(47,78,64,0.12)]" />
 
           <div className="space-y-3">
-            <p className="font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold tracking-[0.12em] text-[rgba(47,78,64,0.45)] uppercase">
+            <p className="font-(family-name:--font-dm-sans) text-[10px] font-semibold tracking-[0.12em] text-[rgba(47,78,64,0.45)] uppercase">
               Contact Details
             </p>
             <div className="space-y-3 border border-[rgba(47,78,64,0.12)] bg-white p-4">
@@ -143,12 +143,12 @@ export default function InquiryDetailModal({
                   <Phone className="h-3.5 w-3.5 text-(--brand-green)" />
                 </div>
                 <div>
-                  <p className="font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.45)]">
+                  <p className="font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.45)]">
                     Phone
                   </p>
                   <a
                     href={`tel:${inquiry.phone}`}
-                    className="font-[family-name:var(--font-dm-sans)] text-sm font-semibold text-(--brand-green) hover:underline"
+                    className="font-(family-name:--font-dm-sans) text-sm font-semibold text-(--brand-green) hover:underline"
                   >
                     {inquiry.phone}
                   </a>
@@ -161,12 +161,12 @@ export default function InquiryDetailModal({
                     <Mail className="h-3.5 w-3.5 text-(--brand-green)" />
                   </div>
                   <div>
-                    <p className="font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.45)]">
+                    <p className="font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.45)]">
                       Email
                     </p>
                     <a
                       href={`mailto:${inquiry.email}`}
-                      className="font-[family-name:var(--font-dm-sans)] text-sm font-semibold text-(--brand-green) hover:underline"
+                      className="font-(family-name:--font-dm-sans) text-sm font-semibold text-(--brand-green) hover:underline"
                     >
                       {inquiry.email}
                     </a>
@@ -179,18 +179,18 @@ export default function InquiryDetailModal({
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <MessageSquare className="h-3.5 w-3.5 text-[rgba(47,78,64,0.45)]" />
-              <p className="font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold tracking-[0.12em] text-[rgba(47,78,64,0.45)] uppercase">
+              <p className="font-(family-name:--font-dm-sans) text-[10px] font-semibold tracking-[0.12em] text-[rgba(47,78,64,0.45)] uppercase">
                 Message
               </p>
             </div>
-            <div className="border border-[rgba(47,78,64,0.12)] bg-white p-5 font-[family-name:var(--font-dm-sans)] text-sm leading-relaxed whitespace-pre-wrap text-(--brand-ink)">
+            <div className="border border-[rgba(47,78,64,0.12)] bg-white p-5 font-(family-name:--font-dm-sans) text-sm leading-relaxed whitespace-pre-wrap text-(--brand-ink)">
               {inquiry.message}
             </div>
           </div>
 
           <div className="flex items-center gap-2 pt-1">
             <Calendar className="h-3.5 w-3.5 text-[rgba(47,78,64,0.45)]" />
-            <p className="font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.45)]">
+            <p className="font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.45)]">
               Received: {formatDate(String(inquiry.createdAt))}
             </p>
           </div>

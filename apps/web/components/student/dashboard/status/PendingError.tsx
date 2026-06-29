@@ -22,7 +22,7 @@ export default function PendingError({ message, reset }: PendingErrorProps) {
   return (
     <StudentStatusPage variant="pending">
       <div className={cn(studentStatusBentoClass, "p-8 text-center sm:p-10")}>
-        <p className="font-[family-name:var(--font-dm-sans)] text-[0.68rem] font-bold uppercase tracking-[0.14em] text-(--brand-brown)">
+        <p className="font-(family-name:--font-dm-sans) text-[0.68rem] font-bold uppercase tracking-[0.14em] text-(--brand-brown)">
           Something went wrong
         </p>
         <h1 className={cn(studentStatusTitleClass, "mt-3")}>
@@ -32,7 +32,7 @@ export default function PendingError({ message, reset }: PendingErrorProps) {
           We had trouble fetching your application status. This is usually
           temporary.
         </p>
-        <p className="mt-3 font-[family-name:var(--font-dm-sans)] text-[0.78rem] text-[rgba(47,78,64,0.4)]">
+        <p className="mt-3 font-(family-name:--font-dm-sans) text-[0.78rem] text-[rgba(47,78,64,0.4)]">
           {message}
         </p>
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">

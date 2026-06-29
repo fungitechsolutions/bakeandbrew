@@ -95,13 +95,13 @@ export function SourceBreakdown({
                   className="h-2.5 w-2.5 shrink-0"
                   style={{ backgroundColor: color }}
                 />
-                <span className="flex-1 font-[family-name:var(--font-dm-sans)] text-sm text-[rgba(47,78,64,0.7)]">
+                <span className="flex-1 font-(family-name:--font-dm-sans) text-sm text-[rgba(47,78,64,0.7)]">
                   {formatSourceLabel(entry.source)}
                 </span>
-                <span className="font-[family-name:var(--font-dm-sans)] text-sm font-semibold text-(--brand-ink)">
+                <span className="font-(family-name:--font-dm-sans) text-sm font-semibold text-(--brand-ink)">
                   {entry.count}
                 </span>
-                <span className="w-8 text-right font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.45)]">
+                <span className="w-8 text-right font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.45)]">
                   {percentage}%
                 </span>
               </div>

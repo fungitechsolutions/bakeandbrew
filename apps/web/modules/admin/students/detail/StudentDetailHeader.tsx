@@ -165,7 +165,7 @@ export function StudentDetailHeader({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <Link
             href="/admin/students"
-            className="inline-flex shrink-0 items-center gap-2 font-[family-name:var(--font-dm-sans)] text-xs font-semibold uppercase tracking-[0.08em] text-[rgba(47,78,64,0.55)] transition-colors hover:text-(--brand-green)"
+            className="inline-flex shrink-0 items-center gap-2 font-(family-name:--font-dm-sans) text-xs font-semibold uppercase tracking-[0.08em] text-[rgba(47,78,64,0.55)] transition-colors hover:text-(--brand-green)"
           >
             <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
             All Students
@@ -216,7 +216,7 @@ export function StudentDetailHeader({
             </div>
 
             {showStatusNotice ? (
-              <p className="flex items-start gap-2 border border-amber-200 bg-amber-50 px-3 py-2 font-[family-name:var(--font-dm-sans)] text-[11px] leading-relaxed text-amber-900 md:hidden">
+              <p className="flex items-start gap-2 border border-amber-200 bg-amber-50 px-3 py-2 font-(family-name:--font-dm-sans) text-[11px] leading-relaxed text-amber-900 md:hidden">
                 <Info
                   className="mt-0.5 h-3.5 w-3.5 shrink-0"
                   strokeWidth={2}
@@ -237,24 +237,24 @@ export function StudentDetailHeader({
         />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="font-[family-name:var(--font-lora)] text-2xl font-bold tracking-tight text-(--brand-green)">
+            <h1 className="font-(family-name:--font-lora) text-2xl font-bold tracking-tight text-(--brand-green)">
               {fullName}
             </h1>
             <StudentStatusBadge status={status} />
           </div>
-          <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-sm text-[rgba(47,78,64,0.5)]">
+          <p className="mt-1 font-(family-name:--font-dm-sans) text-sm text-[rgba(47,78,64,0.5)]">
             {referenceNo}
             {email ? ` · ${email}` : ""}
           </p>
           {(batch || shift) && (
             <div className="mt-3 flex flex-wrap gap-2">
               {batch ? (
-                <span className="border border-[rgba(47,78,64,0.14)] px-2 py-0.5 font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.08em] text-[rgba(47,78,64,0.55)]">
+                <span className="border border-[rgba(47,78,64,0.14)] px-2 py-0.5 font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.08em] text-[rgba(47,78,64,0.55)]">
                   Batch {batch}
                 </span>
               ) : null}
               {shift ? (
-                <span className="border border-[rgba(47,78,64,0.14)] px-2 py-0.5 font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.08em] text-[rgba(47,78,64,0.55)]">
+                <span className="border border-[rgba(47,78,64,0.14)] px-2 py-0.5 font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.08em] text-[rgba(47,78,64,0.55)]">
                   {shift} shift
                 </span>
               ) : null}

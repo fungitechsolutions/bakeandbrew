@@ -137,7 +137,7 @@ export function StatusEditor({ current, onUpdate }: StatusEditorProps) {
               type="button"
               onClick={() => handleSelectStatus(s)}
               className={cn(
-                "flex min-w-0 items-center justify-center gap-1 border px-2 py-1.5 font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase leading-tight tracking-[0.04em] transition-colors sm:gap-2 sm:px-3 sm:py-2 sm:text-xs sm:tracking-[0.06em]",
+                "flex min-w-0 items-center justify-center gap-1 border px-2 py-1.5 font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase leading-tight tracking-[0.04em] transition-colors sm:gap-2 sm:px-3 sm:py-2 sm:text-xs sm:tracking-[0.06em]",
                 isSelected
                   ? meta.activeClass
                   : "border-[rgba(47,78,64,0.12)] bg-white hover:bg-[rgba(47,78,64,0.03)]",
@@ -155,7 +155,7 @@ export function StatusEditor({ current, onUpdate }: StatusEditorProps) {
           <div className="space-y-3 border border-red-200 bg-red-50/40 p-3 sm:p-4">
             <label
               htmlFor="rejection-reason"
-              className="font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.1em] text-red-700"
+              className="font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-widest text-red-700"
             >
               Rejection reason (required)
             </label>
@@ -176,7 +176,7 @@ export function StatusEditor({ current, onUpdate }: StatusEditorProps) {
                 onClick={handleUpdate}
                 disabled={isUpdateDisabled}
                 className={cn(
-                  "inline-flex items-center gap-1.5 border border-red-700 bg-red-700 px-2.5 py-1.5 font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.06em] text-white transition-colors hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-50 sm:gap-2 sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.08em]",
+                  "inline-flex items-center gap-1.5 border border-red-700 bg-red-700 px-2.5 py-1.5 font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.06em] text-white transition-colors hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-50 sm:gap-2 sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.08em]",
                 )}
               >
                 <CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" strokeWidth={2} />
@@ -187,7 +187,7 @@ export function StatusEditor({ current, onUpdate }: StatusEditorProps) {
                   {loading ? "Updating…" : "Confirm Rejection"}
                 </span>
               </button>
-              <p className="font-[family-name:var(--font-dm-sans)] text-[11px] text-[rgba(47,78,64,0.45)]">
+              <p className="font-(family-name:--font-dm-sans) text-[11px] text-[rgba(47,78,64,0.45)]">
                 This reason will be shown to the student.
               </p>
             </div>

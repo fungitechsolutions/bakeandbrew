@@ -397,11 +397,11 @@ export default function AdminInquiryPage() {
               className="flex items-start justify-between bg-white p-5"
             >
               <div>
-                <p className="font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.45)]">
+                <p className="font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.45)]">
                   {s.label}
                 </p>
                 <p
-                  className="mt-2 font-[family-name:var(--font-lora)] text-2xl font-bold"
+                  className="mt-2 font-(family-name:--font-lora) text-2xl font-bold"
                   style={{ color: s.color }}
                 >
                   {s.value}
@@ -429,7 +429,7 @@ export default function AdminInquiryPage() {
                 onClick={() =>
                   updateParams({ is_read: readFilterToParam(f) })
                 }
-                className={`px-3.5 py-2 font-[family-name:var(--font-dm-sans)] text-xs font-semibold capitalize transition-colors ${
+                className={`px-3.5 py-2 font-(family-name:--font-dm-sans) text-xs font-semibold capitalize transition-colors ${
                   filter === f
                     ? adminSegmentActiveClass
                     : adminSegmentInactiveClass
@@ -448,7 +448,7 @@ export default function AdminInquiryPage() {
             <div className="flex flex-wrap gap-px border border-[rgba(47,78,64,0.18)] bg-[rgba(47,78,64,0.08)] p-px">
               <button
                 onClick={() => updateParams({ source: null })}
-                className={`px-3 py-2 font-[family-name:var(--font-dm-sans)] text-xs font-semibold transition-colors ${
+                className={`px-3 py-2 font-(family-name:--font-dm-sans) text-xs font-semibold transition-colors ${
                   sourceFilter === "all"
                     ? adminSegmentActiveClass
                     : adminSegmentInactiveClass
@@ -460,7 +460,7 @@ export default function AdminInquiryPage() {
                 <button
                   key={src}
                   onClick={() => updateParams({ source: src })}
-                  className={`px-3 py-2 font-[family-name:var(--font-dm-sans)] text-xs font-semibold capitalize transition-colors ${
+                  className={`px-3 py-2 font-(family-name:--font-dm-sans) text-xs font-semibold capitalize transition-colors ${
                     sourceFilter === src
                       ? adminSegmentActiveClass
                       : adminSegmentInactiveClass
@@ -511,7 +511,7 @@ export default function AdminInquiryPage() {
                     {tableColumns.map((col) => (
                       <th
                         key={col.label}
-                        className={`${col.width} whitespace-nowrap px-4 py-3 text-left font-[family-name:var(--font-dm-sans)] text-[10px] font-bold tracking-[0.1em] text-[rgba(47,78,64,0.45)] uppercase select-none ${col.field ? "cursor-pointer hover:text-(--brand-green)" : ""}`}
+                        className={`${col.width} whitespace-nowrap px-4 py-3 text-left font-(family-name:--font-dm-sans) text-[10px] font-bold tracking-widest text-[rgba(47,78,64,0.45)] uppercase select-none ${col.field ? "cursor-pointer hover:text-(--brand-green)" : ""}`}
                         onClick={
                           col.field
                             ? () => handleSort(col.field as SortableField)
@@ -554,21 +554,21 @@ export default function AdminInquiryPage() {
                       >
                         <td className="whitespace-nowrap px-4 py-4">
                           <div className="flex items-center gap-2.5">
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center bg-(--brand-green) font-[family-name:var(--font-dm-sans)] text-xs font-bold text-white">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center bg-(--brand-green) font-(family-name:--font-dm-sans) text-xs font-bold text-white">
                               {inq.fullName[0].toUpperCase()}
                             </div>
-                            <span className="max-w-[120px] truncate font-[family-name:var(--font-dm-sans)] text-sm font-semibold text-(--brand-green)">
+                            <span className="max-w-[120px] truncate font-(family-name:--font-dm-sans) text-sm font-semibold text-(--brand-green)">
                               {inq.fullName}
                             </span>
                           </div>
                         </td>
                         <td className="whitespace-nowrap px-4 py-4">
-                          <span className="font-[family-name:var(--font-dm-sans)] text-xs text-(--brand-ink)">
+                          <span className="font-(family-name:--font-dm-sans) text-xs text-(--brand-ink)">
                             {inq.phone}
                           </span>
                         </td>
                         <td className="whitespace-nowrap px-4 py-4">
-                          <span className="block max-w-[140px] truncate font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.55)]">
+                          <span className="block max-w-[140px] truncate font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.55)]">
                             {inq.email ?? (
                               <span className="italic opacity-50">—</span>
                             )}
@@ -576,7 +576,7 @@ export default function AdminInquiryPage() {
                         </td>
                         <td className="whitespace-nowrap px-4 py-4">
                           <span
-                            className="border px-2.5 py-1 font-[family-name:var(--font-dm-sans)] text-xs font-semibold capitalize"
+                            className="border px-2.5 py-1 font-(family-name:--font-dm-sans) text-xs font-semibold capitalize"
                             style={{
                               backgroundColor: sc.bg,
                               color: sc.text,
@@ -587,23 +587,23 @@ export default function AdminInquiryPage() {
                           </span>
                         </td>
                         <td className="whitespace-nowrap px-4 py-4">
-                          <p className="max-w-[160px] truncate font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.55)]">
+                          <p className="max-w-[160px] truncate font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.55)]">
                             {inq.message}
                           </p>
                         </td>
                         <td className="whitespace-nowrap px-4 py-4">
                           {inq.isRead ? (
-                            <span className="inline-flex items-center gap-1 border border-[rgba(58,90,73,0.2)] bg-[rgba(58,90,73,0.08)] px-2 py-0.5 font-[family-name:var(--font-dm-sans)] text-xs font-medium text-[#3a5a49]">
+                            <span className="inline-flex items-center gap-1 border border-[rgba(58,90,73,0.2)] bg-[rgba(58,90,73,0.08)] px-2 py-0.5 font-(family-name:--font-dm-sans) text-xs font-medium text-[#3a5a49]">
                               <CheckCircle2 className="h-3 w-3" /> Read
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 border border-[rgba(194,138,79,0.25)] bg-[rgba(194,138,79,0.1)] px-2 py-0.5 font-[family-name:var(--font-dm-sans)] text-xs font-semibold text-(--brand-brown)">
+                            <span className="inline-flex items-center gap-1 border border-[rgba(194,138,79,0.25)] bg-[rgba(194,138,79,0.1)] px-2 py-0.5 font-(family-name:--font-dm-sans) text-xs font-semibold text-(--brand-brown)">
                               <Clock className="h-3 w-3" /> New
                             </span>
                           )}
                         </td>
                         <td className="whitespace-nowrap px-4 py-4">
-                          <span className="font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.55)]">
+                          <span className="font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.55)]">
                             {timeAgo(String(inq.createdAt))}
                           </span>
                         </td>
@@ -660,21 +660,21 @@ export default function AdminInquiryPage() {
                   >
                     <div className="mb-3 flex items-start justify-between gap-3">
                       <div className="flex items-center gap-2.5">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-(--brand-green) font-[family-name:var(--font-dm-sans)] text-sm font-bold text-white">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-(--brand-green) font-(family-name:--font-dm-sans) text-sm font-bold text-white">
                           {inq.fullName[0].toUpperCase()}
                         </div>
                         <div>
-                          <p className="font-[family-name:var(--font-dm-sans)] text-sm font-semibold text-(--brand-green)">
+                          <p className="font-(family-name:--font-dm-sans) text-sm font-semibold text-(--brand-green)">
                             {inq.fullName}
                           </p>
-                          <p className="font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.55)]">
+                          <p className="font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.55)]">
                             {inq.phone}
                           </p>
                         </div>
                       </div>
                       <div className="flex shrink-0 items-center gap-1.5">
                         <span
-                          className="border px-2 py-0.5 font-[family-name:var(--font-dm-sans)] text-xs font-semibold capitalize"
+                          className="border px-2 py-0.5 font-(family-name:--font-dm-sans) text-xs font-semibold capitalize"
                           style={{
                             backgroundColor: sc.bg,
                             color: sc.text,
@@ -689,12 +689,12 @@ export default function AdminInquiryPage() {
                       </div>
                     </div>
 
-                    <p className="mb-3 line-clamp-2 font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.55)]">
+                    <p className="mb-3 line-clamp-2 font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.55)]">
                       {inq.message}
                     </p>
 
                     <div className="flex items-center justify-between">
-                      <span className="font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.55)]">
+                      <span className="font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.55)]">
                         {timeAgo(String(inq.createdAt))}
                       </span>
                       <div
@@ -732,7 +732,7 @@ export default function AdminInquiryPage() {
 
         {totalPages > 1 && (
           <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
-            <p className="font-[family-name:var(--font-dm-sans)] text-sm text-[rgba(47,78,64,0.55)]">
+            <p className="font-(family-name:--font-dm-sans) text-sm text-[rgba(47,78,64,0.55)]">
               Showing {(page - 1) * limit + 1}–
               {Math.min((page - 1) * limit + paged.length, total)} of {total}{" "}
               results
@@ -749,7 +749,7 @@ export default function AdminInquiryPage() {
                 <button
                   key={i}
                   onClick={() => updateParams({ page: String(i + 1) })}
-                  className={`h-9 w-9 border font-[family-name:var(--font-dm-sans)] text-sm font-semibold transition-colors ${
+                  className={`h-9 w-9 border font-(family-name:--font-dm-sans) text-sm font-semibold transition-colors ${
                     page === i + 1
                       ? "border-(--brand-green) bg-(--brand-green) text-white"
                       : "border-[rgba(47,78,64,0.18)] bg-white text-(--brand-green) hover:border-(--brand-green)"
@@ -770,7 +770,7 @@ export default function AdminInquiryPage() {
         )}
 
         {totalPages <= 1 && paged.length > 0 && (
-          <p className="font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.55)]">
+          <p className="font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.55)]">
             {total} {total === 1 ? "inquiry" : "inquiries"} found
           </p>
         )}

@@ -37,13 +37,13 @@ export function NeedHelpCard({ showTitle = true }: { showTitle?: boolean }) {
           {"href" in rest && rest.href ? (
             <a
               href={rest.href}
-              className="mt-1 inline-flex items-center gap-2 font-[family-name:var(--font-dm-sans)] text-[0.9rem] font-medium text-(--brand-green) transition-colors hover:text-(--brand-brown)"
+              className="mt-1 inline-flex items-center gap-2 font-(family-name:--font-dm-sans) text-[0.9rem] font-medium text-(--brand-green) transition-colors hover:text-(--brand-brown)"
             >
               <Icon className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
               {value}
             </a>
           ) : (
-            <p className="mt-1 flex items-start gap-2 font-[family-name:var(--font-dm-sans)] text-[0.9rem] leading-relaxed text-[rgba(47,78,64,0.62)]">
+            <p className="mt-1 flex items-start gap-2 font-(family-name:--font-dm-sans) text-[0.9rem] leading-relaxed text-[rgba(47,78,64,0.62)]">
               <Icon
                 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-(--brand-brown)"
                 strokeWidth={1.75}

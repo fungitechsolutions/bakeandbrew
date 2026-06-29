@@ -270,7 +270,7 @@ function StepRow({
       </span>
       {/* Content */}
       <div className="pb-7 pt-0.5">
-        <p className="font-dm-sans text-[13px] font-bold uppercase tracking-[0.1em] text-[#1a1a1a]">
+        <p className="font-dm-sans text-[13px] font-bold uppercase tracking-widest text-[#1a1a1a]">
           {label}
         </p>
         <p className="mt-1.5 font-dm-sans text-sm leading-relaxed text-[#1a1a1a]/50">

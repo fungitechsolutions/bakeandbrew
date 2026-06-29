@@ -40,10 +40,10 @@ export function PaymentRow({
           <CheckCircle2 className="h-4 w-4" strokeWidth={2} />
         </div>
         <div className="min-w-0">
-          <p className="font-[family-name:var(--font-dm-sans)] text-sm font-semibold tabular-nums text-(--brand-green)">
+          <p className="font-(family-name:--font-dm-sans) text-sm font-semibold tabular-nums text-(--brand-green)">
             {formatNpr(payment.amount / 100)}
           </p>
-          <p className="truncate font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.5)]">
+          <p className="truncate font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.5)]">
             {payment.remarks ?? "Payment"}
             {payment.paymentMode ? ` · ${payment.paymentMode}` : ""}
             {" · "}
@@ -57,7 +57,7 @@ export function PaymentRow({
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
-        <span className="hidden font-[family-name:var(--font-dm-sans)] text-[11px] text-[rgba(47,78,64,0.4)] sm:inline">
+        <span className="hidden font-(family-name:--font-dm-sans) text-[11px] text-[rgba(47,78,64,0.4)] sm:inline">
           by {payment.addedByName}
         </span>
         <button

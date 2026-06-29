@@ -132,18 +132,18 @@ export function InstructorProfileDrawer({
 
             <div className="min-w-0 flex-1 pb-1">
               {profile?.headline ? (
-                <p className="mb-1 truncate font-[family-name:var(--font-dm-sans)] text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-white/55">
+                <p className="mb-1 truncate font-(family-name:--font-dm-sans) text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-white/55">
                   {profile.headline}
                 </p>
               ) : null}
               <h2 className="font-[family-name:var(--font-playfair)] text-[1.2rem] font-bold leading-snug text-white">
                 {instructor.name}
               </h2>
-              <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-[0.8rem] text-white/55">
+              <p className="mt-1 font-(family-name:--font-dm-sans) text-[0.8rem] text-white/55">
                 {instructor.title}
               </p>
               <span
-                className="mt-3 inline-flex border border-[rgba(255,255,255,0.2)] bg-[rgba(255,255,255,0.08)] px-2.5 py-1 font-[family-name:var(--font-dm-sans)] text-[0.68rem] font-semibold uppercase tracking-wide text-white"
+                className="mt-3 inline-flex border border-[rgba(255,255,255,0.2)] bg-[rgba(255,255,255,0.08)] px-2.5 py-1 font-(family-name:--font-dm-sans) text-[0.68rem] font-semibold uppercase tracking-wide text-white"
               >
                 {instructor.yearsExp} yrs experience
               </span>
@@ -191,16 +191,16 @@ export function InstructorProfileDrawer({
                           className="absolute top-1.5 -left-5 h-2.5 w-2.5 border-2 border-(--brand-cream)"
                           style={{ backgroundColor: accent }}
                         />
-                        <p className="font-[family-name:var(--font-dm-sans)] text-[0.88rem] font-semibold text-(--brand-green)">
+                        <p className="font-(family-name:--font-dm-sans) text-[0.88rem] font-semibold text-(--brand-green)">
                           {exp.role}
                         </p>
                         <div className="mt-1 flex flex-wrap items-center gap-2">
-                          <span className="font-[family-name:var(--font-dm-sans)] text-[0.8rem] text-[rgba(47,78,64,0.55)]">
+                          <span className="font-(family-name:--font-dm-sans) text-[0.8rem] text-[rgba(47,78,64,0.55)]">
                             {exp.place}
                           </span>
                           {exp.period ? (
                             <span
-                              className="border px-2 py-0.5 font-[family-name:var(--font-dm-sans)] text-[0.68rem] font-medium"
+                              className="border px-2 py-0.5 font-(family-name:--font-dm-sans) text-[0.68rem] font-medium"
                               style={{
                                 borderColor: courseAccentAlpha(accent, 35),
                                 backgroundColor: courseAccentAlpha(accent, 10),
@@ -234,7 +234,7 @@ export function InstructorProfileDrawer({
                   {profile.expertise.map((skill) => (
                     <span
                       key={skill}
-                      className="border px-3 py-1.5 font-[family-name:var(--font-dm-sans)] text-[0.78rem] font-medium text-(--brand-green)"
+                      className="border px-3 py-1.5 font-(family-name:--font-dm-sans) text-[0.78rem] font-medium text-(--brand-green)"
                       style={{
                         borderColor: courseAccentAlpha(accent, 30),
                         backgroundColor: courseAccentAlpha(accent, 8),

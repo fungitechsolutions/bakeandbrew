@@ -69,10 +69,10 @@ export function MultiTileGroup({
                 <Check className="h-3 w-3" strokeWidth={2.5} />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block font-[family-name:var(--font-dm-sans)] text-[0.92rem] font-semibold capitalize text-(--brand-green)">
+                <span className="block font-(family-name:--font-dm-sans) text-[0.92rem] font-semibold capitalize text-(--brand-green)">
                   {o.label}
                 </span>
-                <span className="mt-0.5 block font-[family-name:var(--font-dm-sans)] text-[0.76rem] text-[rgba(47,78,64,0.45)]">
+                <span className="mt-0.5 block font-(family-name:--font-dm-sans) text-[0.76rem] text-[rgba(47,78,64,0.45)]">
                   {selected ? "Selected" : "Tap to select"}
                 </span>
               </span>

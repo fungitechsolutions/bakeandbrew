@@ -6,10 +6,10 @@ import { UserAvatar } from "./UserAvatar";
 import { adminTableClass, adminTableScrollClass } from "@/components/admin/admin-styles";
 
 const thClass =
-  "whitespace-nowrap px-4 py-3 text-left font-[family-name:var(--font-dm-sans)] text-[10px] font-bold tracking-[0.1em] text-[rgba(47,78,64,0.45)] uppercase";
+  "whitespace-nowrap px-4 py-3 text-left font-(family-name:--font-dm-sans) text-[10px] font-bold tracking-widest text-[rgba(47,78,64,0.45)] uppercase";
 
 const tdClass =
-  "whitespace-nowrap px-4 py-3 font-[family-name:var(--font-dm-sans)] text-sm text-[rgba(47,78,64,0.65)]";
+  "whitespace-nowrap px-4 py-3 font-(family-name:--font-dm-sans) text-sm text-[rgba(47,78,64,0.65)]";
 
 interface UsersTableProps {
   users: User[];

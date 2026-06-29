@@ -28,11 +28,11 @@ export function AnalyticsPanel({
     >
       <div className="flex flex-col gap-2 border-b border-[rgba(47,78,64,0.12)] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="font-[family-name:var(--font-lora)] text-base font-bold text-(--brand-green)">
+          <h3 className="font-(family-name:--font-lora) text-base font-bold text-(--brand-green)">
             {title}
           </h3>
           {description && (
-            <p className="mt-0.5 font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.5)]">
+            <p className="mt-0.5 font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.5)]">
               {description}
             </p>
           )}
@@ -58,11 +58,11 @@ export function AnalyticsSection({
   return (
     <section className="space-y-4">
       <div>
-        <h2 className="font-[family-name:var(--font-lora)] text-lg font-bold text-(--brand-green)">
+        <h2 className="font-(family-name:--font-lora) text-lg font-bold text-(--brand-green)">
           {title}
         </h2>
         {description && (
-          <p className="mt-0.5 font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.5)]">
+          <p className="mt-0.5 font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.5)]">
             {description}
           </p>
         )}

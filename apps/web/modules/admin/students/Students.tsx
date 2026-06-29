@@ -35,7 +35,7 @@ const SHIFTS = ["morning", "day", "evening"] as const;
 
 const filterSelectClass = (active: boolean) =>
   cn(
-    "appearance-none cursor-pointer border py-2 pl-3 pr-8 font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.08em] outline-none transition-colors",
+    "appearance-none cursor-pointer border py-2 pl-3 pr-8 font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.08em] outline-none transition-colors",
     active
       ? "border-(--brand-green) bg-(--brand-green) text-white"
       : "border-[rgba(47,78,64,0.18)] bg-white text-[rgba(47,78,64,0.55)] hover:border-(--brand-green) hover:text-(--brand-green)",
@@ -181,26 +181,26 @@ export default function StudentsPage() {
         {!isPending && isSuccess ? (
           <div className="grid grid-cols-1 border border-[rgba(47,78,64,0.18)] bg-[rgba(47,78,64,0.18)] sm:grid-cols-3">
             <div className="bg-white px-5 py-4">
-              <p className="font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.45)]">
+              <p className="font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.45)]">
                 Total Enrolled
               </p>
-              <p className="mt-2 font-[family-name:var(--font-lora)] text-2xl font-bold text-(--brand-green)">
+              <p className="mt-2 font-(family-name:--font-lora) text-2xl font-bold text-(--brand-green)">
                 {totalStudents}
               </p>
             </div>
             <div className="bg-white px-5 py-4">
-              <p className="font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.45)]">
+              <p className="font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.45)]">
                 On This Page
               </p>
-              <p className="mt-2 font-[family-name:var(--font-lora)] text-2xl font-bold text-(--brand-green)">
+              <p className="mt-2 font-(family-name:--font-lora) text-2xl font-bold text-(--brand-green)">
                 {students.length}
               </p>
             </div>
             <div className="bg-white px-5 py-4">
-              <p className="font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.45)]">
+              <p className="font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.45)]">
                 Active Filters
               </p>
-              <p className="mt-2 font-[family-name:var(--font-lora)] text-2xl font-bold text-(--brand-green)">
+              <p className="mt-2 font-(family-name:--font-lora) text-2xl font-bold text-(--brand-green)">
                 {activeFilterCount}
               </p>
             </div>
@@ -315,7 +315,7 @@ export default function StudentsPage() {
                     ? batchesError.message
                     : "Failed to load batches"
                 }
-                className="border border-red-200 bg-red-50 px-3 py-2 font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.08em] text-red-600 transition-colors hover:bg-red-100"
+                className="border border-red-200 bg-red-50 px-3 py-2 font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.08em] text-red-600 transition-colors hover:bg-red-100"
               >
                 Batches failed · Retry
               </button>
@@ -348,7 +348,7 @@ export default function StudentsPage() {
                 <button
                   type="button"
                   onClick={clearFilters}
-                  className="font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.08em] text-(--brand-brown) underline-offset-2 hover:underline"
+                  className="font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.08em] text-(--brand-brown) underline-offset-2 hover:underline"
                 >
                   Clear all
                 </button>
@@ -409,13 +409,13 @@ export default function StudentsPage() {
               className="mb-4 h-10 w-10 text-[rgba(47,78,64,0.2)]"
               strokeWidth={1.25}
             />
-            <p className="font-[family-name:var(--font-lora)] text-lg font-bold text-[rgba(47,78,64,0.45)]">
+            <p className="font-(family-name:--font-lora) text-lg font-bold text-[rgba(47,78,64,0.45)]">
               No students match your filters
             </p>
             <button
               type="button"
               onClick={clearFilters}
-              className="mt-3 font-[family-name:var(--font-dm-sans)] text-sm font-medium text-(--brand-brown) underline-offset-2 hover:underline"
+              className="mt-3 font-(family-name:--font-dm-sans) text-sm font-medium text-(--brand-brown) underline-offset-2 hover:underline"
             >
               Clear filters
             </button>
@@ -430,7 +430,7 @@ export default function StudentsPage() {
 
         {!isPending && totalPages > 1 ? (
           <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-            <p className="font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.55)]">
+            <p className="font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.55)]">
               {students.length > 0
                 ? `Showing ${start}–${end} of ${totalStudents} students`
                 : `Page ${page} of ${totalPages}`}

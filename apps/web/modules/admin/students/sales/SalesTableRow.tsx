@@ -15,7 +15,7 @@ function CollectedCell({
 }) {
   return (
     <div className="inline-flex flex-col items-end gap-1.5">
-      <span className="font-[family-name:var(--font-dm-sans)] text-sm font-semibold tabular-nums text-(--brand-green)">
+      <span className="font-(family-name:--font-dm-sans) text-sm font-semibold tabular-nums text-(--brand-green)">
         {formatNpr(amount)}
       </span>
       <div className="h-1 w-20 overflow-hidden bg-[rgba(47,78,64,0.1)]">
@@ -24,7 +24,7 @@ function CollectedCell({
           style={{ width: `${progressPct}%` }}
         />
       </div>
-      <span className="font-[family-name:var(--font-dm-sans)] text-[11px] tabular-nums text-[rgba(47,78,64,0.45)]">
+      <span className="font-(family-name:--font-dm-sans) text-[11px] tabular-nums text-[rgba(47,78,64,0.45)]">
         {Math.round(progressPct)}%
       </span>
     </div>
@@ -34,14 +34,14 @@ function CollectedCell({
 function RemainingCell({ amount }: { amount: number }) {
   if (amount <= 0) {
     return (
-      <span className="font-[family-name:var(--font-dm-sans)] text-sm font-semibold text-emerald-800">
+      <span className="font-(family-name:--font-dm-sans) text-sm font-semibold text-emerald-800">
         Cleared
       </span>
     );
   }
 
   return (
-    <span className="font-[family-name:var(--font-dm-sans)] text-sm font-bold tabular-nums text-[#9a3412]">
+    <span className="font-(family-name:--font-dm-sans) text-sm font-bold tabular-nums text-[#9a3412]">
       {formatNpr(amount)}
     </span>
   );
@@ -96,10 +96,10 @@ export function SalesTableRow({ student }: SalesTableRowProps) {
         <div className="flex items-center gap-3">
           <StudentInitialsAvatar name={student.name} />
           <div className="flex flex-col gap-0.5">
-            <span className="whitespace-nowrap font-[family-name:var(--font-dm-sans)] text-sm font-semibold text-(--brand-ink)">
+            <span className="whitespace-nowrap font-(family-name:--font-dm-sans) text-sm font-semibold text-(--brand-ink)">
               {student.name}
             </span>
-            <span className="font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.5)]">
+            <span className="font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.5)]">
               {student.email}
             </span>
           </div>
@@ -107,7 +107,7 @@ export function SalesTableRow({ student }: SalesTableRowProps) {
       </td>
 
       <td className={tdRightClass}>
-        <span className="font-[family-name:var(--font-dm-sans)] text-sm tabular-nums text-[rgba(47,78,64,0.75)]">
+        <span className="font-(family-name:--font-dm-sans) text-sm tabular-nums text-[rgba(47,78,64,0.75)]">
           {formatNpr(student.totalCourseFee / 100)}
         </span>
       </td>
@@ -120,13 +120,13 @@ export function SalesTableRow({ student }: SalesTableRowProps) {
       </td>
 
       <td className={tdRightClass}>
-        <span className="font-[family-name:var(--font-dm-sans)] text-sm tabular-nums text-[rgba(47,78,64,0.75)]">
+        <span className="font-(family-name:--font-dm-sans) text-sm tabular-nums text-[rgba(47,78,64,0.75)]">
           {formatNpr(student.totalDiscount / 100)}
         </span>
       </td>
 
       <td className={tdRightClass}>
-        <span className="font-[family-name:var(--font-dm-sans)] text-sm tabular-nums text-[rgba(47,78,64,0.75)]">
+        <span className="font-(family-name:--font-dm-sans) text-sm tabular-nums text-[rgba(47,78,64,0.75)]">
           {formatNpr(student.totalScholarship / 100)}
         </span>
       </td>

@@ -39,7 +39,7 @@ export function AdmissionSidePanel({ currentStep }: { currentStep: number }) {
             <Icon className="h-4 w-4 lg:h-5 lg:w-5" strokeWidth={1.75} />
           </div>
           <div className="min-w-0 lg:mt-0">
-            <p className="font-[family-name:var(--font-dm-sans)] text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-[rgba(255,255,255,0.42)]">
+            <p className="font-(family-name:--font-dm-sans) text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-[rgba(255,255,255,0.42)]">
               Step {currentStep + 1} of {ADMISSION_STEP_META.length}
             </p>
             <h1 className="mt-1 font-[family-name:var(--font-playfair)] text-[1.35rem] font-bold leading-tight tracking-[-0.02em] sm:text-[1.5rem] lg:mt-2 lg:text-[1.75rem]">
@@ -48,7 +48,7 @@ export function AdmissionSidePanel({ currentStep }: { currentStep: number }) {
           </div>
         </div>
 
-        <p className="hidden max-w-[240px] font-[family-name:var(--font-dm-sans)] text-[0.84rem] leading-[1.65] text-[rgba(255,255,255,0.58)] lg:block">
+        <p className="hidden max-w-[240px] font-(family-name:--font-dm-sans) text-[0.84rem] leading-[1.65] text-[rgba(255,255,255,0.58)] lg:block">
           {meta.description}
         </p>
 
@@ -68,7 +68,7 @@ export function AdmissionSidePanel({ currentStep }: { currentStep: number }) {
             <li
               key={step.label}
               className={cn(
-                "flex items-center gap-2.5 font-[family-name:var(--font-dm-sans)] text-[0.8rem] transition-colors",
+                "flex items-center gap-2.5 font-(family-name:--font-dm-sans) text-[0.8rem] transition-colors",
                 active
                   ? "font-medium text-white"
                   : done
@@ -94,7 +94,7 @@ export function AdmissionSidePanel({ currentStep }: { currentStep: number }) {
         })}
       </ol>
 
-      <p className="relative z-1 mt-6 hidden font-[family-name:var(--font-dm-sans)] text-[0.74rem] leading-relaxed text-[rgba(255,255,255,0.38)] lg:block">
+      <p className="relative z-1 mt-6 hidden font-(family-name:--font-dm-sans) text-[0.74rem] leading-relaxed text-[rgba(255,255,255,0.38)] lg:block">
         Questions? {siteInfo.contact.phone}
       </p>
     </aside>

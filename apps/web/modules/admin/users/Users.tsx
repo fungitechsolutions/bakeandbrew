@@ -178,7 +178,7 @@ export function UsersPageClient() {
                     <button
                       key={r.value}
                       onClick={() => handleRoleSelect(r.value)}
-                      className={`w-full px-4 py-2.5 text-left font-[family-name:var(--font-dm-sans)] text-xs font-semibold uppercase tracking-[0.06em] transition-colors hover:bg-[rgba(47,78,64,0.04)] ${
+                      className={`w-full px-4 py-2.5 text-left font-(family-name:--font-dm-sans) text-xs font-semibold uppercase tracking-[0.06em] transition-colors hover:bg-[rgba(47,78,64,0.04)] ${
                         role === r.value
                           ? "bg-[rgba(47,78,64,0.06)] text-(--brand-green)"
                           : "text-[rgba(47,78,64,0.7)]"
@@ -195,11 +195,11 @@ export function UsersPageClient() {
 
         {hasActiveFilters && (
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.45)]">
+            <span className="font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.45)]">
               Filters
             </span>
             {role !== "all" && (
-              <span className="inline-flex items-center gap-1.5 border border-[rgba(47,78,64,0.18)] bg-white px-2.5 py-1 font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.08em] text-(--brand-green)">
+              <span className="inline-flex items-center gap-1.5 border border-[rgba(47,78,64,0.18)] bg-white px-2.5 py-1 font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.08em] text-(--brand-green)">
                 Role: {currentRoleLabel}
                 <button
                   onClick={() => handleRoleSelect("all")}
@@ -210,7 +210,7 @@ export function UsersPageClient() {
               </span>
             )}
             {search && (
-              <span className="inline-flex items-center gap-1.5 border border-[rgba(47,78,64,0.18)] bg-white px-2.5 py-1 font-[family-name:var(--font-dm-sans)] text-[10px] text-(--brand-green)">
+              <span className="inline-flex items-center gap-1.5 border border-[rgba(47,78,64,0.18)] bg-white px-2.5 py-1 font-(family-name:--font-dm-sans) text-[10px] text-(--brand-green)">
                 &ldquo;{search}&rdquo;
                 <button
                   onClick={clearSearch}
@@ -225,7 +225,7 @@ export function UsersPageClient() {
                 setSearchInput("");
                 updateParams({ search: null, role: null });
               }}
-              className="font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.08em] text-[rgba(47,78,64,0.45)] underline underline-offset-2 transition-colors hover:text-(--brand-green)"
+              className="font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.08em] text-[rgba(47,78,64,0.45)] underline underline-offset-2 transition-colors hover:text-(--brand-green)"
             >
               Clear all
             </button>
@@ -250,7 +250,7 @@ export function UsersPageClient() {
             <UsersTable users={users} onRowClick={setSelectedUser} />
 
             <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-              <p className="font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.55)]">
+              <p className="font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.55)]">
                 Showing {start}&ndash;{end} of {totalUsers} users
               </p>
               {totalPages > 1 && (

@@ -3,7 +3,7 @@ import { siteInfo } from "@/utils/site-info";
 export function StudentStatusHelp({ className }: { className?: string }) {
   return (
     <p
-      className={`font-[family-name:var(--font-dm-sans)] text-[0.78rem] leading-relaxed text-[rgba(47,78,64,0.45)] ${className ?? ""}`}
+      className={`font-(family-name:--font-dm-sans) text-[0.78rem] leading-relaxed text-[rgba(47,78,64,0.45)] ${className ?? ""}`}
     >
       Questions?{" "}
       <a

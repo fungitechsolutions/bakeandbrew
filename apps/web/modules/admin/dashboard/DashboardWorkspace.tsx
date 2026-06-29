@@ -25,10 +25,10 @@ export function DashboardWorkspace({ groups }: DashboardWorkspaceProps) {
       {groups.map((group) => (
         <section key={group.title} className="bg-white">
           <div className="border-b border-[rgba(47,78,64,0.12)] px-5 py-4">
-            <h3 className="font-[family-name:var(--font-lora)] text-base font-bold text-(--brand-green)">
+            <h3 className="font-(family-name:--font-lora) text-base font-bold text-(--brand-green)">
               {group.title}
             </h3>
-            <p className="mt-0.5 font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.5)]">
+            <p className="mt-0.5 font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.5)]">
               {group.description}
             </p>
           </div>
@@ -50,10 +50,10 @@ export function DashboardWorkspace({ groups }: DashboardWorkspaceProps) {
                     <link.icon className="h-4 w-4" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block font-[family-name:var(--font-dm-sans)] text-sm font-semibold text-(--brand-ink)">
+                    <span className="block font-(family-name:--font-dm-sans) text-sm font-semibold text-(--brand-ink)">
                       {link.title}
                     </span>
-                    <span className="mt-0.5 block truncate font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.5)]">
+                    <span className="mt-0.5 block truncate font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.5)]">
                       {link.description}
                     </span>
                   </span>
