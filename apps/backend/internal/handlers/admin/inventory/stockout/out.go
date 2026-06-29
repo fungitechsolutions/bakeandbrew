@@ -1,8 +1,11 @@
 package out
 
 import (
+	"log/slog"
 	"math"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
@@ -13,12 +16,16 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/validator"
 )
 
+const handlerCreateStockOut = "CreateStockOut"
+
 func CreateStockOut(queries repository.InventoryRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 
 		var req types.CreateStockOutRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
+			applog.Warn(c, handlerCreateStockOut, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid request data",
@@ -32,6 +39,8 @@ func CreateStockOut(queries repository.InventoryRepository) gin.HandlerFunc {
 
 		productID, err := utils.ConvertToUUID(req.ProductID)
 		if err != nil {
+			applog.Warn(c, handlerCreateStockOut, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid product ID format",
@@ -50,6 +59,8 @@ func CreateStockOut(queries repository.InventoryRepository) gin.HandlerFunc {
 		})
 
 		if err != nil {
+			applog.Error(c, handlerCreateStockOut, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -58,6 +69,7 @@ func CreateStockOut(queries repository.InventoryRepository) gin.HandlerFunc {
 			return
 		}
 
+		applog.Info(c, handlerCreateStockOut, "stock out created")
 		c.JSON(http.StatusCreated, types.APIResponse{
 			Success: true,
 			Message: "Stock out created",

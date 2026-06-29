@@ -1,7 +1,10 @@
 package summary
 
 import (
+	"log/slog"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
@@ -10,6 +13,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/types"
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
+
+const handlerGetInventorySummary = "GetInventorySummary"
 
 type GetInventorySummaryParams struct {
 	From string `form:"from"`
@@ -22,6 +27,8 @@ func GetInventorySummary(queries repository.InventoryRepository) gin.HandlerFunc
 
 		var filter GetInventorySummaryParams
 		if err := c.ShouldBindQuery(&filter); err != nil {
+			applog.Warn(c, handlerGetInventorySummary, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid query parameters",
@@ -35,6 +42,8 @@ func GetInventorySummary(queries repository.InventoryRepository) gin.HandlerFunc
 			To:   utils.ToNullableText(filter.To),
 		})
 		if err != nil {
+			applog.Error(c, handlerGetInventorySummary, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to get inventory summary",

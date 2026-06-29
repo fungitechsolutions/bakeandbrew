@@ -2,17 +2,21 @@ package profile
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
 	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 	"github.com/suprimkhatri77/sms/backend/internal/repository"
 	"github.com/suprimkhatri77/sms/backend/internal/types"
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 	"golang.org/x/crypto/bcrypt"
 )
+
+const handlerUpdatePassword = "UpdatePassword"
 
 type UpdatePasswordRequest struct {
 	CurrentPassword string `json:"current_password" binding:"required,min=8"`
@@ -26,6 +30,10 @@ func UpdatePassword(queries repository.AdminRepository) gin.HandlerFunc {
 		userIDFromContext := c.MustGet("userID").(string)
 		userID, err := utils.ConvertToUUID(userIDFromContext)
 		if err != nil {
+			applog.Warn(c, handlerUpdatePassword, "invalid user id format",
+				slog.String("user_id_raw", userIDFromContext),
+				slog.Any(applog.AttrError, err),
+			)
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid user ID format",
@@ -36,6 +44,9 @@ func UpdatePassword(queries repository.AdminRepository) gin.HandlerFunc {
 
 		var req UpdatePasswordRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
+			applog.Warn(c, handlerUpdatePassword, "invalid request data",
+				slog.Any(applog.AttrError, err),
+			)
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid request data",
@@ -47,6 +58,9 @@ func UpdatePassword(queries repository.AdminRepository) gin.HandlerFunc {
 		user, err := queries.GetUserByID(ctx, userID)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
+				applog.Warn(c, handlerUpdatePassword, "user not found",
+					slog.String(applog.AttrUserID, userIDFromContext),
+				)
 				c.JSON(http.StatusNotFound, types.APIResponse{
 					Success: false,
 					Message: "User not found",
@@ -54,6 +68,10 @@ func UpdatePassword(queries repository.AdminRepository) gin.HandlerFunc {
 				})
 				return
 			}
+			applog.Error(c, handlerUpdatePassword, "failed to get user",
+				slog.String(applog.AttrUserID, userIDFromContext),
+				slog.Any(applog.AttrError, err),
+			)
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to get user",
@@ -63,6 +81,9 @@ func UpdatePassword(queries repository.AdminRepository) gin.HandlerFunc {
 		}
 
 		if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.CurrentPassword)); err != nil {
+			applog.Warn(c, handlerUpdatePassword, "invalid current password",
+				slog.String(applog.AttrUserID, userIDFromContext),
+			)
 			c.JSON(http.StatusUnprocessableEntity, types.APIResponse{
 				Success: false,
 				Message: "Invalid current password",
@@ -72,6 +93,9 @@ func UpdatePassword(queries repository.AdminRepository) gin.HandlerFunc {
 		}
 
 		if req.NewPassword == req.CurrentPassword {
+			applog.Warn(c, handlerUpdatePassword, "new password matches current password",
+				slog.String(applog.AttrUserID, userIDFromContext),
+			)
 			c.JSON(http.StatusUnprocessableEntity, types.APIResponse{
 				Success: false,
 				Message: "New password cannot be the same as the current password",
@@ -82,6 +106,10 @@ func UpdatePassword(queries repository.AdminRepository) gin.HandlerFunc {
 
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 		if err != nil {
+			applog.Error(c, handlerUpdatePassword, "failed to hash password",
+				slog.String(applog.AttrUserID, userIDFromContext),
+				slog.Any(applog.AttrError, err),
+			)
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to hash password",
@@ -96,6 +124,10 @@ func UpdatePassword(queries repository.AdminRepository) gin.HandlerFunc {
 		})
 
 		if err != nil {
+			applog.Error(c, handlerUpdatePassword, "failed to update password",
+				slog.String(applog.AttrUserID, userIDFromContext),
+				slog.Any(applog.AttrError, err),
+			)
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to update password",
@@ -103,6 +135,10 @@ func UpdatePassword(queries repository.AdminRepository) gin.HandlerFunc {
 			})
 			return
 		}
+
+		applog.Info(c, handlerUpdatePassword, "password updated successfully",
+			slog.String(applog.AttrUserID, userIDFromContext),
+		)
 
 		c.JSON(http.StatusOK, types.APIResponse{
 			Success: true,

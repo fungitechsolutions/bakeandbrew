@@ -2,7 +2,10 @@ package bankaccounts
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
@@ -13,6 +16,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
 
+const handlerDeleteBankAccount = "DeleteBankAccount"
+
 func DeleteBankAccount(queries accountingRepository.BankAccountRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
@@ -20,6 +25,8 @@ func DeleteBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 		accountIDFromParam := c.Param("accountID")
 		accountID, err := utils.ConvertToUUID(accountIDFromParam)
 		if err != nil {
+			applog.Warn(c, handlerDeleteBankAccount, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid ID format",
@@ -31,6 +38,8 @@ func DeleteBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 		isDefault, err := queries.IsBankAccountDefault(ctx, accountID)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
+				applog.Warn(c, handlerDeleteBankAccount, "resource not found",
+					slog.Any(applog.AttrError, err))
 				c.JSON(http.StatusNotFound, types.APIResponse{
 					Success: false,
 					Message: "Bank account not found",
@@ -38,6 +47,9 @@ func DeleteBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 				})
 				return
 			}
+			applog.Error(c, handlerDeleteBankAccount, "failed to process request",
+				slog.Any(applog.AttrError, err),
+			)
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -47,6 +59,7 @@ func DeleteBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 		}
 
 		if isDefault {
+			applog.Warn(c, handlerDeleteBankAccount, "conflict")
 			c.JSON(http.StatusConflict, types.APIResponse{
 				Success: false,
 				Message: "Cannot delete default bank account. Set another account as default first.",
@@ -61,6 +74,8 @@ func DeleteBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 			if errors.As(err, &pgErr) {
 				switch pgErr.Code {
 				case "23503":
+					applog.Warn(c, handlerDeleteBankAccount, "conflict",
+						slog.Any(applog.AttrError, err))
 					c.JSON(http.StatusConflict, types.APIResponse{
 						Success: false,
 						Message: "Cannot delete account with existing ledger entries",
@@ -68,6 +83,9 @@ func DeleteBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 					})
 					return
 				default:
+					applog.Error(c, handlerDeleteBankAccount, "failed to process request",
+						slog.Any(applog.AttrError, err),
+					)
 					c.JSON(http.StatusInternalServerError, types.APIResponse{
 						Success: false,
 						Message: "Failed to process requests",
@@ -76,6 +94,9 @@ func DeleteBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 					return
 				}
 			}
+			applog.Error(c, handlerDeleteBankAccount, "failed to process request",
+				slog.Any(applog.AttrError, err),
+			)
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -85,6 +106,7 @@ func DeleteBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 		}
 
 		if result.RowsAffected() == 0 {
+			applog.Warn(c, handlerDeleteBankAccount, "resource not found")
 			c.JSON(http.StatusNotFound, types.APIResponse{
 				Success: false,
 				Message: "Bank account not found",
@@ -93,6 +115,7 @@ func DeleteBankAccount(queries accountingRepository.BankAccountRepository) gin.H
 			return
 		}
 
+		applog.Info(c, handlerDeleteBankAccount, "bank account deleted")
 		c.JSON(http.StatusOK, types.APIResponse{
 			Success: true,
 			Message: "Bank account deleted",

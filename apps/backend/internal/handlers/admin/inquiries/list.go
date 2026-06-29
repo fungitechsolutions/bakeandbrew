@@ -1,8 +1,11 @@
 package inquiries
 
 import (
+	"log/slog"
 	"net/http"
 	"strconv"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
@@ -13,6 +16,8 @@ import (
 )
 
 const PAGE_LIMIT = 20
+
+const handlerListInquiries = "ListInquiries"
 
 type ListInquiriesParams struct {
 	Search string `form:"search" binding:"omitempty,min=1,max=100"`
@@ -26,6 +31,8 @@ func ListInquiries(queries repository.AdminRepository) gin.HandlerFunc {
 
 		pageFromParams, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 		if err != nil {
+			applog.Warn(c, handlerListInquiries, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid page parameter",
@@ -35,6 +42,7 @@ func ListInquiries(queries repository.AdminRepository) gin.HandlerFunc {
 		}
 
 		if pageFromParams <= 0 {
+			applog.Warn(c, handlerListInquiries, "invalid request")
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid page parameter",
@@ -45,6 +53,8 @@ func ListInquiries(queries repository.AdminRepository) gin.HandlerFunc {
 
 		var filter ListInquiriesParams
 		if err := c.ShouldBindQuery(&filter); err != nil {
+			applog.Warn(c, handlerListInquiries, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid query parameters",
@@ -55,6 +65,8 @@ func ListInquiries(queries repository.AdminRepository) gin.HandlerFunc {
 
 		sources, err := queries.ListInquirySources(ctx)
 		if err != nil {
+			applog.Error(c, handlerListInquiries, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -75,6 +87,8 @@ func ListInquiries(queries repository.AdminRepository) gin.HandlerFunc {
 			Source: sourceFilter,
 		})
 		if err != nil {
+			applog.Error(c, handlerListInquiries, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -105,6 +119,7 @@ func ListInquiries(queries repository.AdminRepository) gin.HandlerFunc {
 		totalPages := (total + PAGE_LIMIT - 1) / PAGE_LIMIT
 
 		if pageFromParams > int(totalPages) {
+			applog.Warn(c, handlerListInquiries, "invalid request")
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid page parameter",
@@ -124,6 +139,8 @@ func ListInquiries(queries repository.AdminRepository) gin.HandlerFunc {
 		})
 
 		if err != nil {
+			applog.Error(c, handlerListInquiries, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -135,6 +152,8 @@ func ListInquiries(queries repository.AdminRepository) gin.HandlerFunc {
 		unreadInquiriesCount, err := queries.CountUnreadInquiries(ctx)
 
 		if err != nil {
+			applog.Error(c, handlerListInquiries, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -146,6 +165,8 @@ func ListInquiries(queries repository.AdminRepository) gin.HandlerFunc {
 		readInquiriesCount, err := queries.CountReadInquiries(ctx)
 
 		if err != nil {
+			applog.Error(c, handlerListInquiries, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

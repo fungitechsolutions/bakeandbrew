@@ -1,7 +1,10 @@
 package discount
 
 import (
+	"log/slog"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
@@ -11,12 +14,16 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
 
+const handlerListDiscount = "ListDiscount"
+
 func ListDiscount(queries repository.StudentDiscounts) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 
 		studentIDFromParam := c.Param("studentID")
 		if studentIDFromParam == "" {
+			applog.Warn(c, handlerListDiscount, "invalid request",
+				applog.WithStudentID(studentIDFromParam))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Missing student ID",
@@ -27,6 +34,9 @@ func ListDiscount(queries repository.StudentDiscounts) gin.HandlerFunc {
 
 		studentID, err := utils.ConvertToUUID(studentIDFromParam)
 		if err != nil {
+			applog.Error(c, handlerListDiscount, "failed to process request",
+				applog.WithStudentID(studentIDFromParam),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -37,6 +47,9 @@ func ListDiscount(queries repository.StudentDiscounts) gin.HandlerFunc {
 
 		discounts, err := queries.ListDiscountsByStudent(ctx, studentID)
 		if err != nil {
+			applog.Error(c, handlerListDiscount, "failed to process request",
+				applog.WithStudentID(studentIDFromParam),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

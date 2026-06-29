@@ -1,8 +1,11 @@
 package cashledger
 
 import (
+	"log/slog"
 	"net/http"
 	"strconv"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
@@ -11,6 +14,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/types"
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
+
+const handlerListCashLedger = "ListCashLedger"
 
 type ListCashLedgerParams struct {
 	FromAD string `form:"from_ad"`
@@ -24,6 +29,8 @@ func ListCashLedger(queries accountingRepository.CashLedgerRepository) gin.Handl
 
 		var filter ListCashLedgerParams
 		if err := c.ShouldBindQuery(&filter); err != nil {
+			applog.Warn(c, handlerListCashLedger, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid query parameters",
@@ -34,6 +41,8 @@ func ListCashLedger(queries accountingRepository.CashLedgerRepository) gin.Handl
 
 		page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 		if err != nil || page <= 0 {
+			applog.Warn(c, handlerListCashLedger, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid query parameter",
@@ -47,6 +56,8 @@ func ListCashLedger(queries accountingRepository.CashLedgerRepository) gin.Handl
 			ToDate:   utils.ToNullableDate(filter.ToAD),
 		})
 		if err != nil {
+			applog.Error(c, handlerListCashLedger, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -71,6 +82,7 @@ func ListCashLedger(queries accountingRepository.CashLedgerRepository) gin.Handl
 
 		totalPages := (total + PAGE_LIMIT - 1) / PAGE_LIMIT
 		if page > int(totalPages) {
+			applog.Warn(c, handlerListCashLedger, "invalid request")
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid query parameter",
@@ -89,6 +101,8 @@ func ListCashLedger(queries accountingRepository.CashLedgerRepository) gin.Handl
 		})
 
 		if err != nil {
+			applog.Error(c, handlerListCashLedger, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

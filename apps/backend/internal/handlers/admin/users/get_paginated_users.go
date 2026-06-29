@@ -1,8 +1,11 @@
 package users
 
 import (
+	"log/slog"
 	"net/http"
 	"strconv"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -12,6 +15,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/types"
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
+
+const handlerGetPaginatedUsers = "GetPaginatedUsers"
 
 type GetPaginatedUsersParams struct {
 	Role  string `form:"role"`
@@ -40,6 +45,8 @@ func GetPaginatedUsers(queries repository.UserRepository) gin.HandlerFunc {
 
 		var filter GetPaginatedUsersParams
 		if err := c.ShouldBindQuery(&filter); err != nil {
+			applog.Warn(c, handlerGetPaginatedUsers, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid query parameters",
@@ -50,6 +57,8 @@ func GetPaginatedUsers(queries repository.UserRepository) gin.HandlerFunc {
 
 		pageFromParams, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 		if err != nil || pageFromParams <= 0 {
+			applog.Warn(c, handlerGetPaginatedUsers, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid page parameter",
@@ -67,6 +76,8 @@ func GetPaginatedUsers(queries repository.UserRepository) gin.HandlerFunc {
 
 		roleCounts, err := queries.GetUsersRoleCount(ctx)
 		if err != nil {
+			applog.Error(c, handlerGetPaginatedUsers, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -126,6 +137,7 @@ func GetPaginatedUsers(queries repository.UserRepository) gin.HandlerFunc {
 
 		totalPages := (filteredCount + PAGE_LIMIT - 1) / PAGE_LIMIT
 		if pageFromParams > int(totalPages) {
+			applog.Warn(c, handlerGetPaginatedUsers, "invalid request")
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid page parameter",
@@ -145,6 +157,8 @@ func GetPaginatedUsers(queries repository.UserRepository) gin.HandlerFunc {
 		})
 
 		if err != nil {
+			applog.Error(c, handlerGetPaginatedUsers, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

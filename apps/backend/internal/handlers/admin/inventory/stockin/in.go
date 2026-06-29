@@ -3,9 +3,12 @@ package in
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"math"
 	"net/http"
 	"time"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -18,6 +21,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 	"github.com/suprimkhatri77/sms/backend/internal/validator"
 )
+
+const handlerCreateStockIn = "CreateStockIn"
 
 type CreateStockInRequest struct {
 	ProductID  string  `json:"productID" binding:"required,uuid"`
@@ -36,6 +41,8 @@ func CreateStockIn(queries repository.InventoryTxRepository, pool *pgxpool.Pool)
 
 		var req CreateStockInRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
+			applog.Warn(c, handlerCreateStockIn, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid request data",
@@ -49,6 +56,8 @@ func CreateStockIn(queries repository.InventoryTxRepository, pool *pgxpool.Pool)
 
 		productID, err := utils.ConvertToUUID(req.ProductID)
 		if err != nil {
+			applog.Warn(c, handlerCreateStockIn, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid product ID format",
@@ -59,6 +68,8 @@ func CreateStockIn(queries repository.InventoryTxRepository, pool *pgxpool.Pool)
 
 		supplierID, err := utils.ConvertToUUID(req.SupplierID)
 		if err != nil {
+			applog.Warn(c, handlerCreateStockIn, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid supplier ID format",
@@ -69,6 +80,8 @@ func CreateStockIn(queries repository.InventoryTxRepository, pool *pgxpool.Pool)
 
 		adDate, err := time.Parse("2006-01-02", req.Date)
 		if err != nil {
+			applog.Warn(c, handlerCreateStockIn, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid date format",
@@ -78,6 +91,8 @@ func CreateStockIn(queries repository.InventoryTxRepository, pool *pgxpool.Pool)
 		}
 		tx, err := pool.Begin(ctx)
 		if err != nil {
+			applog.Error(c, handlerCreateStockIn, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to begin transaction",
@@ -102,6 +117,8 @@ func CreateStockIn(queries repository.InventoryTxRepository, pool *pgxpool.Pool)
 			if errors.As(err, &pgErr) && pgErr.Code == "23503" {
 				switch pgErr.ConstraintName {
 				case "stock_in_supplier_id_fkey":
+					applog.Warn(c, handlerCreateStockIn, "resource not found",
+						slog.Any(applog.AttrError, err))
 					c.JSON(http.StatusNotFound, types.APIResponse{
 						Success: false,
 						Message: "Supplier not found",
@@ -109,6 +126,7 @@ func CreateStockIn(queries repository.InventoryTxRepository, pool *pgxpool.Pool)
 					})
 					return
 				case "stock_in_product_id_fkey":
+					applog.Warn(c, handlerCreateStockIn, "resource not found")
 					c.JSON(http.StatusNotFound, types.APIResponse{
 						Success: false,
 						Message: "Product not found",
@@ -117,6 +135,9 @@ func CreateStockIn(queries repository.InventoryTxRepository, pool *pgxpool.Pool)
 					return
 				}
 			}
+			applog.Error(c, handlerCreateStockIn, "failed to process request",
+				slog.Any(applog.AttrError, err),
+			)
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -140,6 +161,8 @@ func CreateStockIn(queries repository.InventoryTxRepository, pool *pgxpool.Pool)
 			StockInID:   stockIn.ID,
 		})
 		if err != nil {
+			applog.Error(c, handlerCreateStockIn, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -150,6 +173,8 @@ func CreateStockIn(queries repository.InventoryTxRepository, pool *pgxpool.Pool)
 
 		if err := tx.Commit(ctx); err != nil {
 
+			applog.Error(c, handlerCreateStockIn, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to commit transaction",
@@ -158,6 +183,7 @@ func CreateStockIn(queries repository.InventoryTxRepository, pool *pgxpool.Pool)
 			return
 		}
 
+		applog.Info(c, handlerCreateStockIn, "stock created")
 		c.JSON(http.StatusCreated, types.APIResponse{
 			Success: true,
 			Message: "Stock created",

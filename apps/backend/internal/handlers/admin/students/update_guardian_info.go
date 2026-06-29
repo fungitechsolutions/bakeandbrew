@@ -1,7 +1,10 @@
 package students
 
 import (
+	"log/slog"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
@@ -11,6 +14,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 	"github.com/suprimkhatri77/sms/backend/internal/validator"
 )
+
+const handlerUpdateGuardianInfo = "UpdateGuardianInfo"
 
 type updateGuardianInfo struct {
 	GuardianName  string `json:"guardianName" binding:"required,notblank,min=5,max=100"`
@@ -24,6 +29,8 @@ func UpdateGuardianInfo(queries repository.AdminRepository) gin.HandlerFunc {
 		studentIDFromParams := c.Param("studentID")
 
 		if studentIDFromParams == "" {
+			applog.Warn(c, handlerUpdateGuardianInfo, "invalid request",
+				applog.WithStudentID(studentIDFromParams))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Missing student ID",
@@ -34,6 +41,9 @@ func UpdateGuardianInfo(queries repository.AdminRepository) gin.HandlerFunc {
 
 		studentID, err := utils.ConvertToUUID(studentIDFromParams)
 		if err != nil {
+			applog.Warn(c, handlerUpdateGuardianInfo, "invalid request",
+				applog.WithStudentID(studentIDFromParams),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid ID format",
@@ -44,6 +54,9 @@ func UpdateGuardianInfo(queries repository.AdminRepository) gin.HandlerFunc {
 
 		var req updateGuardianInfo
 		if err := c.ShouldBindJSON(&req); err != nil {
+			applog.Warn(c, handlerUpdateGuardianInfo, "invalid request",
+				applog.WithStudentID(studentIDFromParams),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid request data",
@@ -62,6 +75,8 @@ func UpdateGuardianInfo(queries repository.AdminRepository) gin.HandlerFunc {
 		})
 
 		if err != nil {
+			applog.Error(c, handlerUpdateGuardianInfo, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to update guardian info",
@@ -71,6 +86,7 @@ func UpdateGuardianInfo(queries repository.AdminRepository) gin.HandlerFunc {
 		}
 
 		if result.RowsAffected() == 0 {
+			applog.Warn(c, handlerUpdateGuardianInfo, "resource not found")
 			c.JSON(http.StatusNotFound, types.APIResponse{
 				Success: false,
 				Message: "Student not found",
@@ -79,6 +95,7 @@ func UpdateGuardianInfo(queries repository.AdminRepository) gin.HandlerFunc {
 			return
 		}
 
+		applog.Info(c, handlerUpdateGuardianInfo, "guardian info updated")
 		c.JSON(http.StatusOK, types.APIResponse{
 			Success: true,
 			Message: "Guardian info updated",

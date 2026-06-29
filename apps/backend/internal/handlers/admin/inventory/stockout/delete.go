@@ -1,7 +1,10 @@
 package out
 
 import (
+	"log/slog"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
@@ -10,12 +13,15 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
 
+const handlerDeleteStockOut = "DeleteStockOut"
+
 func DeleteStockOut(queries repository.InventoryRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 
 		stockOutIDFromParam := c.Param("stockOutID")
 		if stockOutIDFromParam == "" {
+			applog.Warn(c, handlerDeleteStockOut, "invalid request")
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Missing stock ID",
@@ -27,6 +33,8 @@ func DeleteStockOut(queries repository.InventoryRepository) gin.HandlerFunc {
 		stockOutID, err := utils.ConvertToUUID(stockOutIDFromParam)
 
 		if err != nil {
+			applog.Warn(c, handlerDeleteStockOut, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid ID format",
@@ -37,6 +45,8 @@ func DeleteStockOut(queries repository.InventoryRepository) gin.HandlerFunc {
 
 		err = queries.DeleteStockOut(ctx, stockOutID)
 		if err != nil {
+			applog.Error(c, handlerDeleteStockOut, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -45,6 +55,7 @@ func DeleteStockOut(queries repository.InventoryRepository) gin.HandlerFunc {
 			return
 		}
 
+		applog.Info(c, handlerDeleteStockOut, "stock deleted")
 		c.JSON(http.StatusOK, types.APIResponse{
 			Success: true,
 			Message: "Stock deleted",

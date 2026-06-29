@@ -1,7 +1,10 @@
 package studentPortal
 
 import (
+	"log/slog"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
@@ -11,6 +14,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
 
+const handlerGetStudentCourses = "GetStudentCourses"
+
 func GetStudentCourses(queries repository.StudentPortal) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
@@ -18,6 +23,9 @@ func GetStudentCourses(queries repository.StudentPortal) gin.HandlerFunc {
 		studentIDFromContext := c.MustGet("userID").(string)
 		studentID, err := utils.ConvertToUUID(studentIDFromContext)
 		if err != nil {
+			applog.Warn(c, handlerGetStudentCourses, "invalid request",
+				applog.WithStudentID(studentIDFromContext),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid ID format",
@@ -28,6 +36,9 @@ func GetStudentCourses(queries repository.StudentPortal) gin.HandlerFunc {
 
 		id, err := queries.GetStudentID(ctx, studentID)
 		if err != nil {
+			applog.Error(c, handlerGetStudentCourses, "failed to process request",
+				applog.WithStudentID(studentIDFromContext),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -38,6 +49,9 @@ func GetStudentCourses(queries repository.StudentPortal) gin.HandlerFunc {
 
 		courses, err := queries.GetStudentCourses(ctx, id)
 		if err != nil {
+			applog.Error(c, handlerGetStudentCourses, "failed to process request",
+				applog.WithStudentID(studentIDFromContext),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

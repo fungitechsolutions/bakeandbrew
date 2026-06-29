@@ -2,7 +2,10 @@ package studentPortal
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
@@ -12,6 +15,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
 
+const handlerGetStudentScholarship = "GetStudentScholarship"
+
 func GetStudentScholarship(queries repository.StudentPortal) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
@@ -20,6 +25,8 @@ func GetStudentScholarship(queries repository.StudentPortal) gin.HandlerFunc {
 
 		userID, err := utils.ConvertToUUID(userIDFromContext)
 		if err != nil {
+			applog.Warn(c, handlerGetStudentScholarship, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid ID format",
@@ -31,6 +38,8 @@ func GetStudentScholarship(queries repository.StudentPortal) gin.HandlerFunc {
 		studentID, err := queries.GetStudentID(ctx, userID)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
+				applog.Warn(c, handlerGetStudentScholarship, "resource not found",
+					slog.Any(applog.AttrError, err))
 				c.JSON(http.StatusNotFound, types.APIResponse{
 					Success: false,
 					Message: "Student not found",
@@ -38,6 +47,9 @@ func GetStudentScholarship(queries repository.StudentPortal) gin.HandlerFunc {
 				})
 				return
 			}
+			applog.Error(c, handlerGetStudentScholarship, "failed to process request",
+				slog.Any(applog.AttrError, err),
+			)
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -56,6 +68,8 @@ func GetStudentScholarship(queries repository.StudentPortal) gin.HandlerFunc {
 				})
 				return
 			}
+			applog.Error(c, handlerGetStudentScholarship, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

@@ -1,7 +1,10 @@
 package courses
 
 import (
+	"log/slog"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
@@ -10,12 +13,16 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
 
+const handlerDeleteCourse = "DeleteCourse"
+
 func DeleteCourse(queries repository.AdminRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 
 		courseIDFromParam := c.Param("courseID")
 		if courseIDFromParam == "" {
+			applog.Warn(c, handlerDeleteCourse, "invalid request",
+				slog.String("courseID_raw", courseIDFromParam))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Missing course ID",
@@ -27,6 +34,9 @@ func DeleteCourse(queries repository.AdminRepository) gin.HandlerFunc {
 		courseID, err := utils.ConvertToUUID(courseIDFromParam)
 
 		if err != nil {
+			applog.Warn(c, handlerDeleteCourse, "invalid request",
+				slog.String("courseID_raw", courseIDFromParam),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid ID format",
@@ -37,6 +47,9 @@ func DeleteCourse(queries repository.AdminRepository) gin.HandlerFunc {
 
 		result, err := queries.DeleteCourse(ctx, courseID)
 		if err != nil {
+			applog.Error(c, handlerDeleteCourse, "failed to process request",
+				slog.String("courseID_raw", courseIDFromParam),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -46,6 +59,7 @@ func DeleteCourse(queries repository.AdminRepository) gin.HandlerFunc {
 		}
 
 		if result.RowsAffected() == 0 {
+			applog.Warn(c, handlerDeleteCourse, "resource not found")
 			c.JSON(http.StatusNotFound, types.APIResponse{
 				Success: false,
 				Message: "Course not found",
@@ -54,6 +68,7 @@ func DeleteCourse(queries repository.AdminRepository) gin.HandlerFunc {
 			return
 		}
 
+		applog.Info(c, handlerDeleteCourse, "course deleted")
 		c.JSON(http.StatusOK, types.APIResponse{
 			Success: true,
 			Message: "Course deleted",

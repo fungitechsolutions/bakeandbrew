@@ -58,7 +58,7 @@ export const createSupplierLedger = async (
   supplierID: string,
   data: CreateSupplierLedgerEntryInput,
 ): Promise<CreateSupplierLedgerEntryResponse> => {
-  console.log("supplierID", supplierID);
+  // console.log("supplierID", supplierID);
   const res = await api.post<CreateSupplierLedgerEntryResponse>(
     `/admin/accounting/suppliers/${supplierID}/ledger`,
     data,

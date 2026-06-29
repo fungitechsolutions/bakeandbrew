@@ -21,7 +21,7 @@ func UpdateSetting(queries repository.AdminRepository) gin.HandlerFunc {
 		ctx := c.Request.Context()
 
 		settingKeyFromParam := c.Param("key")
-		slog.Debug("key", "", settingKeyFromParam)
+		slog.Debug("updating setting", slog.String("key", settingKeyFromParam))
 
 		if settingKeyFromParam == "" {
 			c.JSON(http.StatusBadRequest, types.APIResponse{

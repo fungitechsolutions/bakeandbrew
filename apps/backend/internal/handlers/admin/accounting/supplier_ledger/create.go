@@ -2,8 +2,11 @@ package supplierledger
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 	"time"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -15,6 +18,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 	"github.com/suprimkhatri77/sms/backend/internal/validator"
 )
+
+const handlerCreateSupplierLedgerEntry = "CreateSupplierLedgerEntry"
 
 type CreateSupplierLedgerEntryRequest struct {
 	Date        string  `json:"date" binding:"required,date_format"`
@@ -32,6 +37,8 @@ func CreateSupplierLedgerEntry(queries accountingRepository.SupplierLedgerReposi
 		supplierIDFromParam := c.Param("supplierID")
 		supplierID, err := utils.ConvertToUUID(supplierIDFromParam)
 		if err != nil {
+			applog.Warn(c, handlerCreateSupplierLedgerEntry, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Missing supplier ID",
@@ -42,6 +49,8 @@ func CreateSupplierLedgerEntry(queries accountingRepository.SupplierLedgerReposi
 
 		var req CreateSupplierLedgerEntryRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
+			applog.Warn(c, handlerCreateSupplierLedgerEntry, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid request body",
@@ -55,6 +64,8 @@ func CreateSupplierLedgerEntry(queries accountingRepository.SupplierLedgerReposi
 
 		adDate, err := time.Parse("2006-01-02", req.Date)
 		if err != nil {
+			applog.Warn(c, handlerCreateSupplierLedgerEntry, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid date format",
@@ -80,6 +91,8 @@ func CreateSupplierLedgerEntry(queries accountingRepository.SupplierLedgerReposi
 				case "23503":
 					switch pgErr.ConstraintName {
 					case "supplier_ledger_stock_in_id_fkey":
+						applog.Warn(c, handlerCreateSupplierLedgerEntry, "resource not found",
+							slog.Any(applog.AttrError, err))
 						c.JSON(http.StatusNotFound, types.APIResponse{
 							Success: false,
 							Message: "Stock not found",
@@ -87,6 +100,7 @@ func CreateSupplierLedgerEntry(queries accountingRepository.SupplierLedgerReposi
 						})
 						return
 					case "supplier_ledger_supplier_id_fkey":
+						applog.Warn(c, handlerCreateSupplierLedgerEntry, "resource not found")
 						c.JSON(http.StatusNotFound, types.APIResponse{
 							Success: false,
 							Message: "Supplier not found",
@@ -94,6 +108,9 @@ func CreateSupplierLedgerEntry(queries accountingRepository.SupplierLedgerReposi
 						})
 						return
 					default:
+						applog.Error(c, handlerCreateSupplierLedgerEntry, "failed to process request",
+							slog.Any(applog.AttrError, err),
+						)
 						c.JSON(http.StatusInternalServerError, types.APIResponse{
 							Success: false,
 							Message: "Failed to process request",
@@ -102,6 +119,9 @@ func CreateSupplierLedgerEntry(queries accountingRepository.SupplierLedgerReposi
 						return
 					}
 				}
+				applog.Error(c, handlerCreateSupplierLedgerEntry, "failed to process request",
+					slog.Any(applog.AttrError, err),
+				)
 				c.JSON(http.StatusInternalServerError, types.APIResponse{
 					Success: false,
 					Message: "Failed to process request",
@@ -112,6 +132,7 @@ func CreateSupplierLedgerEntry(queries accountingRepository.SupplierLedgerReposi
 
 		}
 
+		applog.Info(c, handlerCreateSupplierLedgerEntry, "ledger entry created")
 		c.JSON(http.StatusCreated, types.APIResponse{
 			Success: true,
 			Message: "Ledger entry created",

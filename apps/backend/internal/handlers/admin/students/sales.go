@@ -40,7 +40,7 @@ func ListSalesRevenueForStudents(queries repository.AdminRepository) gin.Handler
 			return
 		}
 
-		slog.Debug("params", "", params)
+		slog.Debug("sales query params", slog.Any("params", params))
 
 		if params.Page < 1 {
 			params.Page = 1

@@ -1,8 +1,11 @@
 package bankledger
 
 import (
+	"log/slog"
 	"net/http"
 	"strconv"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -12,6 +15,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/types"
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
+
+const handlerListBankLedger = "ListBankLedger"
 
 type ListBankLedgerParams struct {
 	BankAccountID string `form:"account_id"`
@@ -25,6 +30,8 @@ func ListBankLedger(queries accountingRepository.BankLedgerRepository) gin.Handl
 
 		var filter ListBankLedgerParams
 		if err := c.ShouldBindQuery(&filter); err != nil {
+			applog.Warn(c, handlerListBankLedger, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid query parameters",
@@ -37,6 +44,8 @@ func ListBankLedger(queries accountingRepository.BankLedgerRepository) gin.Handl
 		if filter.BankAccountID != "" {
 			id, err := utils.ConvertToUUID(filter.BankAccountID)
 			if err != nil {
+				applog.Warn(c, handlerListBankLedger, "invalid request",
+					slog.Any(applog.AttrError, err))
 				c.JSON(http.StatusBadRequest, types.APIResponse{
 					Success: false,
 					Message: "Invalid account ID format",
@@ -51,6 +60,8 @@ func ListBankLedger(queries accountingRepository.BankLedgerRepository) gin.Handl
 		if filter.BankID != "" {
 			id, err := utils.ConvertToUUID(filter.BankID)
 			if err != nil {
+				applog.Warn(c, handlerListBankLedger, "invalid request",
+					slog.Any(applog.AttrError, err))
 				c.JSON(http.StatusBadRequest, types.APIResponse{
 					Success: false,
 					Message: "Invalid bank ID format",
@@ -63,6 +74,8 @@ func ListBankLedger(queries accountingRepository.BankLedgerRepository) gin.Handl
 
 		page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 		if err != nil || page <= 0 {
+			applog.Warn(c, handlerListBankLedger, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid query parameter",
@@ -77,6 +90,8 @@ func ListBankLedger(queries accountingRepository.BankLedgerRepository) gin.Handl
 			BankID:        bankID,
 		})
 		if err != nil {
+			applog.Error(c, handlerListBankLedger, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -101,6 +116,7 @@ func ListBankLedger(queries accountingRepository.BankLedgerRepository) gin.Handl
 
 		totalPages := (total + PAGE_LIMIT - 1) / PAGE_LIMIT
 		if page > int(totalPages) {
+			applog.Warn(c, handlerListBankLedger, "invalid request")
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid query parameter",
@@ -119,6 +135,8 @@ func ListBankLedger(queries accountingRepository.BankLedgerRepository) gin.Handl
 		})
 
 		if err != nil {
+			applog.Error(c, handlerListBankLedger, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

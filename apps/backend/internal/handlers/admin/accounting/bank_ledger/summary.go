@@ -1,7 +1,10 @@
 package bankledger
 
 import (
+	"log/slog"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -11,6 +14,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/types"
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
+
+const handlerGetBankLedgerSummary = "GetBankLedgerSummary"
 
 type GetBankLedgerSummaryParams struct {
 	BankAccountID string `form:"bank_account_id"`
@@ -23,6 +28,8 @@ func GetBankLedgerSummary(queries accountingRepository.BankLedgerRepository) gin
 
 		var filter GetBankLedgerSummaryParams
 		if err := c.ShouldBindQuery(&filter); err != nil {
+			applog.Warn(c, handlerGetBankLedgerSummary, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid query parameters",
@@ -35,6 +42,8 @@ func GetBankLedgerSummary(queries accountingRepository.BankLedgerRepository) gin
 		if filter.BankAccountID != "" {
 			id, err := utils.ConvertToUUID(filter.BankAccountID)
 			if err != nil {
+				applog.Warn(c, handlerGetBankLedgerSummary, "invalid request",
+					slog.Any(applog.AttrError, err))
 				c.JSON(http.StatusBadRequest, types.APIResponse{
 					Success: false,
 					Message: "Invalid account ID format",
@@ -49,6 +58,8 @@ func GetBankLedgerSummary(queries accountingRepository.BankLedgerRepository) gin
 		if filter.BankID != "" {
 			id, err := utils.ConvertToUUID(filter.BankID)
 			if err != nil {
+				applog.Warn(c, handlerGetBankLedgerSummary, "invalid request",
+					slog.Any(applog.AttrError, err))
 				c.JSON(http.StatusBadRequest, types.APIResponse{
 					Success: false,
 					Message: "Invalid bank ID format",
@@ -65,6 +76,8 @@ func GetBankLedgerSummary(queries accountingRepository.BankLedgerRepository) gin
 		})
 
 		if err != nil {
+			applog.Error(c, handlerGetBankLedgerSummary, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

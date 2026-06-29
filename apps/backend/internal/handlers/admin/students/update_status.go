@@ -43,7 +43,7 @@ func UpdateStatus(queries repository.AdminRepository) gin.HandlerFunc {
 
 		var req types.UpdateStudentStatusRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
-			slog.Debug("req", "", req)
+			slog.Debug("update student status request", slog.Any("request", req))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid status",
