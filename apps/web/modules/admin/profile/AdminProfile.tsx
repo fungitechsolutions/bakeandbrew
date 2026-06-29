@@ -1,19 +1,29 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Camera, Check, Eye, EyeOff, Lock, Save, UserRound, X } from "lucide-react";
+import { Check, Eye, EyeOff, Loader2, Lock, Save, UserRound, X } from "lucide-react";
 import { toast } from "sonner";
+import z from "zod";
+import { useMutation } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 
 import { AdminPageLayout } from "@/components/admin/admin-page-layout";
 import {
   adminInputClass,
   adminPrimaryButtonClass,
-  adminSecondaryButtonClass,
 } from "@/components/admin/admin-styles";
 import { adminFieldErrorClass } from "@/components/admin/admin-drawer";
+import { useUpdatePassword } from "@/hooks/mutations/admin/profile/useUpdatePassword";
+import { useUpdateProfile } from "@/hooks/mutations/admin/profile/useUpdateProfile";
+import { uploadImage } from "@/lib/api/uploads";
 import { UserAvatar } from "@/modules/admin/users/UserAvatar";
 import { useAuthStore } from "@/store/auth";
 import { cn } from "@/lib/utils";
+import {
+  APIError,
+  updatePasswordFormSchema,
+  updateProfileInputSchema,
+} from "@repo/types";
 
 type ProfileErrors = { name?: string };
 type PasswordErrors = {
@@ -21,6 +31,23 @@ type PasswordErrors = {
   newPassword?: string;
   confirmPassword?: string;
 };
+
+const SAME_PASSWORD_MESSAGE =
+  "New password must be different from your current password";
+
+function syncSamePasswordError(
+  current: string,
+  newPassword: string,
+  prev: PasswordErrors,
+): PasswordErrors {
+  const next = { ...prev };
+  if (current && newPassword && current === newPassword) {
+    next.newPassword = SAME_PASSWORD_MESSAGE;
+  } else if (next.newPassword === SAME_PASSWORD_MESSAGE) {
+    next.newPassword = undefined;
+  }
+  return next;
+}
 
 function getInitials(name: string): string {
   return name
@@ -33,6 +60,9 @@ function getInitials(name: string): string {
 
 const profileLabelClass =
   "font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.5)]";
+
+const ALLOWED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
+const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024;
 
 const PASSWORD_TIPS = [
   {
@@ -62,8 +92,17 @@ const PASSWORD_TIPS = [
   },
 ] as const;
 
-function PasswordGuidance({ password }: { password: string }) {
+function PasswordGuidance({
+  password,
+  currentPassword,
+}: {
+  password: string;
+  currentPassword: string;
+}) {
   const metCount = PASSWORD_TIPS.filter((tip) => tip.test(password)).length;
+  const sameAsCurrent = Boolean(
+    currentPassword && password && currentPassword === password,
+  );
 
   return (
     <aside className="border border-[rgba(47,78,64,0.12)] bg-[rgba(47,78,64,0.03)] p-5 lg:sticky lg:top-24">
@@ -79,6 +118,19 @@ function PasswordGuidance({ password }: { password: string }) {
       </p>
 
       <ul className="mt-5 space-y-3">
+        {sameAsCurrent ? (
+          <li className="flex items-start gap-2.5">
+            <span
+              className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center border border-[#9a3412] bg-[#9a3412] text-white"
+              aria-hidden
+            >
+              <X size={10} strokeWidth={3} />
+            </span>
+            <span className="font-(family-name:--font-dm-sans) text-sm leading-snug text-[#9a3412]">
+              {SAME_PASSWORD_MESSAGE}
+            </span>
+          </li>
+        ) : null}
         {PASSWORD_TIPS.map((tip) => {
           const met = tip.test(password);
           return (
@@ -175,9 +227,9 @@ function PasswordInput({
 
 export function AdminProfile() {
   const user = useAuthStore((state) => state.user);
-  const setUser = useAuthStore((state) => state.setUser);
 
   const [name, setName] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -187,11 +239,44 @@ export function AdminProfile() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const objectUrlRef = useRef<string | null>(null);
+  const savedImageUrlRef = useRef("");
+
+  const { mutate: saveProfile, isPending: isSavingProfile } = useUpdateProfile();
+  const { mutate: savePassword, isPending: isSavingPassword } =
+    useUpdatePassword();
+
+  const { mutate: uploadProfileImage, isPending: isUploadingImage } =
+    useMutation({
+      mutationFn: uploadImage,
+      onSuccess: (result) => {
+        toast.success(result.message);
+        setImageUrl(result.data.imageUrl);
+        setImagePreview(result.data.imageUrl);
+        savedImageUrlRef.current = result.data.imageUrl;
+        if (objectUrlRef.current) {
+          URL.revokeObjectURL(objectUrlRef.current);
+          objectUrlRef.current = null;
+        }
+      },
+      onError: (error: AxiosError<APIError>) => {
+        toast.error(error.response?.data.message ?? "Failed to upload image");
+        if (objectUrlRef.current) {
+          URL.revokeObjectURL(objectUrlRef.current);
+          objectUrlRef.current = null;
+        }
+        const fallback = savedImageUrlRef.current;
+        setImagePreview(fallback || null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      },
+    });
 
   useEffect(() => {
     if (!user) return;
     setName(user.name);
-    setImagePreview(user.imageUrl ?? null);
+    const url = user.imageUrl ?? "";
+    setImageUrl(url);
+    setImagePreview(url || null);
+    savedImageUrlRef.current = url;
   }, [user]);
 
   useEffect(() => {
@@ -206,8 +291,16 @@ export function AdminProfile() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please choose an image file.");
+    const extension = `.${file.name.split(".").pop()?.toLowerCase() ?? ""}`;
+    if (!ALLOWED_IMAGE_EXTENSIONS.includes(extension)) {
+      toast.error("Only jpg, jpeg, png, and webp images are allowed.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      toast.error("Image must be under 2MB.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
@@ -218,6 +311,10 @@ export function AdminProfile() {
     const nextUrl = URL.createObjectURL(file);
     objectUrlRef.current = nextUrl;
     setImagePreview(nextUrl);
+
+    const formData = new FormData();
+    formData.append("image", file);
+    uploadProfileImage(formData);
   };
 
   const handleRemovePhoto = () => {
@@ -225,59 +322,74 @@ export function AdminProfile() {
       URL.revokeObjectURL(objectUrlRef.current);
       objectUrlRef.current = null;
     }
+    setImageUrl("");
     setImagePreview(null);
+    savedImageUrlRef.current = "";
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleProfileSave = (event: React.FormEvent) => {
     event.preventDefault();
-    if (!user) return;
+    if (!user || isUploadingImage) return;
 
-    const trimmedName = name.trim();
-    if (!trimmedName) {
-      setProfileErrors({ name: "Name is required." });
+    const payload = {
+      name: name.trim(),
+      imageUrl,
+    };
+
+    const validation = updateProfileInputSchema.safeParse(payload);
+    if (!validation.success) {
+      const tree = z.treeifyError(validation.error).properties;
+      setProfileErrors({
+        name: tree?.name?.errors[0],
+      });
       return;
     }
 
     setProfileErrors({});
-    setUser({
-      ...user,
-      name: trimmedName,
-      imageUrl: imagePreview ?? undefined,
-    });
-    toast.success("Profile updated locally.");
+    saveProfile(validation.data);
   };
 
   const handlePasswordSave = (event: React.FormEvent) => {
     event.preventDefault();
 
-    const nextErrors: PasswordErrors = {};
+    const validation = updatePasswordFormSchema.safeParse({
+      current_password: currentPassword,
+      new_password: newPassword,
+      confirmPassword,
+    });
 
-    if (!currentPassword) {
-      nextErrors.currentPassword = "Enter your current password.";
-    }
-    if (!newPassword) {
-      nextErrors.newPassword = "Enter a new password.";
-    } else if (newPassword.length < 8) {
-      nextErrors.newPassword = "Password must be at least 8 characters.";
-    }
-    if (!confirmPassword) {
-      nextErrors.confirmPassword = "Confirm your new password.";
-    } else if (newPassword !== confirmPassword) {
-      nextErrors.confirmPassword = "Passwords do not match.";
-    }
-
-    if (Object.keys(nextErrors).length > 0) {
-      setPasswordErrors(nextErrors);
+    if (!validation.success) {
+      const tree = z.treeifyError(validation.error).properties;
+      setPasswordErrors({
+        currentPassword: tree?.current_password?.errors[0],
+        newPassword: tree?.new_password?.errors[0],
+        confirmPassword: tree?.confirmPassword?.errors[0],
+      });
       return;
     }
 
     setPasswordErrors({});
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    toast.success(
-      "Password updated locally. Changes will apply once connected to the server.",
+    savePassword(
+      {
+        current_password: validation.data.current_password,
+        new_password: validation.data.new_password,
+      },
+      {
+        onSuccess: () => {
+          setCurrentPassword("");
+          setNewPassword("");
+          setConfirmPassword("");
+        },
+        onError: (error) => {
+          if (error.response?.status === 401) {
+            setPasswordErrors({
+              currentPassword:
+                error.response.data.message ?? "Invalid current password",
+            });
+          }
+        },
+      },
     );
   };
 
@@ -319,64 +431,101 @@ export function AdminProfile() {
                   </p>
                 </div>
               </div>
-              <button type="submit" className={cn(adminPrimaryButtonClass, "shrink-0")}>
+              <button
+                type="submit"
+                disabled={isSavingProfile || isUploadingImage}
+                className={cn(adminPrimaryButtonClass, "shrink-0")}
+              >
                 <Save size={14} />
-                Save profile
+                {isSavingProfile
+                  ? "Saving..."
+                  : isUploadingImage
+                    ? "Uploading..."
+                    : "Save profile"}
               </button>
             </div>
 
             <div className="grid gap-8 px-5 py-8 sm:px-6 lg:grid-cols-[auto_1fr] lg:items-start">
-              <div className="flex flex-col items-center gap-4 sm:items-start">
-                <div className="relative">
+              <div className="flex flex-col items-center gap-2 sm:items-start">
+                <div
+                  role="button"
+                  tabIndex={isUploadingImage ? -1 : 0}
+                  onClick={() => {
+                    if (!isUploadingImage) fileInputRef.current?.click();
+                  }}
+                  onKeyDown={(event) => {
+                    if (isUploadingImage) return;
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      fileInputRef.current?.click();
+                    }
+                  }}
+                  aria-label="Upload photo"
+                  aria-disabled={isUploadingImage}
+                  className="group relative cursor-pointer aria-disabled:cursor-not-allowed"
+                >
                   {imagePreview ? (
-                    <UserAvatar
-                      name={displayName}
-                      imageUrl={imagePreview}
-                      size="lg"
-                    />
+                    <div className="relative h-24 w-24">
+                      <UserAvatar
+                        name={displayName}
+                        imageUrl={imagePreview}
+                        size="xl"
+                        round
+                      />
+                      {isUploadingImage ? (
+                        <div
+                          className="absolute inset-0 grid place-items-center rounded-full bg-[rgba(47,78,64,0.45)]"
+                          aria-live="polite"
+                          aria-label="Uploading photo"
+                        >
+                          <Loader2
+                            size={24}
+                            strokeWidth={1.75}
+                            className="animate-spin text-white"
+                          />
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleRemovePhoto();
+                          }}
+                          className="absolute top-0 right-0 grid h-6 w-6 translate-x-1/4 -translate-y-1/4 cursor-pointer place-items-center rounded-full border border-[rgba(47,78,64,0.2)] bg-white text-[rgba(47,78,64,0.55)] shadow-sm transition-colors hover:bg-[#9a3412] hover:text-white"
+                          aria-label="Remove photo"
+                        >
+                          <X size={12} strokeWidth={2.5} />
+                        </button>
+                      )}
+                    </div>
                   ) : (
                     <div
-                      className="flex h-24 w-24 items-center justify-center border-2 border-[rgba(47,78,64,0.2)] bg-[rgba(47,78,64,0.06)] font-mono text-3xl font-bold text-(--brand-green)"
-                      aria-hidden
+                      className="relative flex h-24 w-24 items-center justify-center rounded-full border-2 border-[rgba(47,78,64,0.2)] bg-[rgba(47,78,64,0.06)] font-mono text-3xl font-bold text-(--brand-green) transition-colors group-hover:bg-[rgba(47,78,64,0.1)]"
+                      aria-hidden={!isUploadingImage}
                     >
-                      {getInitials(displayName)}
+                      {isUploadingImage ? (
+                        <Loader2
+                          size={24}
+                          strokeWidth={1.75}
+                          className="animate-spin text-[rgba(47,78,64,0.4)]"
+                          aria-label="Uploading photo"
+                        />
+                      ) : (
+                        getInitials(displayName)
+                      )}
                     </div>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="absolute -right-1 -bottom-1 grid h-8 w-8 cursor-pointer place-items-center border border-[rgba(47,78,64,0.2)] bg-white text-(--brand-green) shadow-sm transition-colors hover:bg-[rgba(47,78,64,0.04)]"
-                    aria-label="Change photo"
-                  >
-                    <Camera size={14} strokeWidth={1.75} />
-                  </button>
                 </div>
-
-                <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
-                  <button
-                    type="button"
-                    className={adminSecondaryButtonClass}
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    Upload photo
-                  </button>
-                  {imagePreview ? (
-                    <button
-                      type="button"
-                      className={adminSecondaryButtonClass}
-                      onClick={handleRemovePhoto}
-                    >
-                      <X size={14} />
-                      Remove
-                    </button>
-                  ) : null}
-                </div>
+                <p className="text-center font-(family-name:--font-dm-sans) text-[0.72rem] leading-snug text-[rgba(47,78,64,0.45)] sm:text-left">
+                  Click photo to update
+                </p>
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
                   className="hidden"
                   onChange={handlePhotoChange}
+                  disabled={isUploadingImage}
                 />
               </div>
 
@@ -425,9 +574,13 @@ export function AdminProfile() {
                   </p>
                 </div>
               </div>
-              <button type="submit" className={cn(adminPrimaryButtonClass, "shrink-0")}>
+              <button
+                type="submit"
+                disabled={isSavingPassword}
+                className={cn(adminPrimaryButtonClass, "shrink-0")}
+              >
                 <Lock size={14} />
-                Update password
+                {isSavingPassword ? "Updating..." : "Update password"}
               </button>
             </div>
 
@@ -442,10 +595,12 @@ export function AdminProfile() {
                     value={currentPassword}
                     onChange={(value) => {
                       setCurrentPassword(value);
-                      setPasswordErrors((prev) => ({
-                        ...prev,
-                        currentPassword: undefined,
-                      }));
+                      setPasswordErrors((prev) =>
+                        syncSamePasswordError(value, newPassword, {
+                          ...prev,
+                          currentPassword: undefined,
+                        }),
+                      );
                     }}
                     error={passwordErrors.currentPassword}
                     autoComplete="current-password"
@@ -462,10 +617,12 @@ export function AdminProfile() {
                     value={newPassword}
                     onChange={(value) => {
                       setNewPassword(value);
-                      setPasswordErrors((prev) => ({
-                        ...prev,
-                        newPassword: undefined,
-                      }));
+                      setPasswordErrors((prev) =>
+                        syncSamePasswordError(currentPassword, value, {
+                          ...prev,
+                          newPassword: undefined,
+                        }),
+                      );
                     }}
                     error={passwordErrors.newPassword}
                     autoComplete="new-password"
@@ -494,7 +651,10 @@ export function AdminProfile() {
                 </div>
               </div>
 
-              <PasswordGuidance password={newPassword} />
+              <PasswordGuidance
+                password={newPassword}
+                currentPassword={currentPassword}
+              />
             </div>
           </div>
         </form>

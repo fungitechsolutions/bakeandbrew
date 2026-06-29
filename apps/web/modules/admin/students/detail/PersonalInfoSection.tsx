@@ -34,6 +34,7 @@ import api from "@/lib/axios";
 import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
 import { mapFieldErrors } from "@/utils/api";
+import { formatPersonName } from "@/lib/format-person-name";
 import { FieldError } from "@/components/ui/field";
 import { useRouter } from "next/navigation";
 import "nepali-datepicker-reactjs/dist/index.css";
@@ -395,7 +396,11 @@ export function PersonalInfoSection({
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <InfoRow label="Full Name" value={student.fullName} icon={User} />
+          <InfoRow
+            label="Full Name"
+            value={formatPersonName(student.fullName)}
+            icon={User}
+          />
           <InfoRow label="Gender" value={student.gender} icon={User} />
           <InfoRow
             label="Date of Birth (BS)"

@@ -7,7 +7,7 @@ import {
   FileText,
   Info,
 } from "lucide-react";
-import { StudentAvatar } from "./StudentAvatar";
+import { StudentEditableAvatar } from "./StudentEditableAvatar";
 import type { Status } from "./StudentDetail";
 import {
   adminPrimaryButtonClass,
@@ -15,6 +15,7 @@ import {
 } from "@/components/admin/admin-styles";
 import { StudentStatusBadge } from "../shared/student-status";
 import { cn } from "@/lib/utils";
+import { formatPersonName } from "@/lib/format-person-name";
 import { StatusActionTooltip } from "./StatusActionTooltip";
 import {
   canPerformStudentActions,
@@ -22,6 +23,7 @@ import {
 } from "./student-status-actions";
 
 type StudentDetailHeaderProps = {
+  studentId: string;
   fullName: string;
   referenceNo: string;
   email?: string | null;
@@ -40,6 +42,7 @@ type StudentDetailHeaderProps = {
 };
 
 export function StudentDetailHeader({
+  studentId,
   fullName,
   referenceNo,
   email,
@@ -64,6 +67,8 @@ export function StudentDetailHeader({
     !actionsAllowed && !showWorkshopCertificate;
   const invoiceBlocked = !actionsAllowed && !showInvoice;
   const showStatusNotice = !actionsAllowed;
+
+  const displayName = formatPersonName(fullName);
 
   const actionButtonClass =
     "min-w-0 w-full justify-center gap-1 px-2 py-1.5 text-[10px] leading-snug tracking-[0.04em] sm:w-auto sm:gap-2 sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.08em]";
@@ -230,15 +235,16 @@ export function StudentDetailHeader({
       </div>
 
       <div className="flex flex-col gap-5 px-5 py-5 sm:flex-row sm:items-center">
-        <StudentAvatar
-          imageUrl={photoUrl}
-          fullName={fullName}
+        <StudentEditableAvatar
+          studentId={studentId}
+          photoUrl={photoUrl}
+          fullName={displayName}
           status={status}
         />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-(family-name:--font-lora) text-2xl font-bold tracking-tight text-(--brand-green)">
-              {fullName}
+              {displayName}
             </h1>
             <StudentStatusBadge status={status} />
           </div>

@@ -400,3 +400,7 @@ WHERE student_id = $1
  
 -- name: GetDistinctBatches :many
 SELECT DISTINCT batch FROM students WHERE batch IS NOT NULL ORDER BY batch;
+
+
+-- name: UpdateStudentImage :execresult
+UPDATE students SET photo_url = $2 WHERE id = $1;

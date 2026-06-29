@@ -935,6 +935,19 @@ func (q *Queries) UpdateStudentGuardianInfo(ctx context.Context, arg UpdateStude
 	return q.db.Exec(ctx, updateStudentGuardianInfo, arg.ID, arg.GuardianName, arg.GuardianPhone)
 }
 
+const updateStudentImage = `-- name: UpdateStudentImage :execresult
+UPDATE students SET photo_url = $2 WHERE id = $1
+`
+
+type UpdateStudentImageParams struct {
+	ID       pgtype.UUID `json:"id"`
+	PhotoUrl pgtype.Text `json:"photoUrl"`
+}
+
+func (q *Queries) UpdateStudentImage(ctx context.Context, arg UpdateStudentImageParams) (pgconn.CommandTag, error) {
+	return q.db.Exec(ctx, updateStudentImage, arg.ID, arg.PhotoUrl)
+}
+
 const updateStudentPersonalInfo = `-- name: UpdateStudentPersonalInfo :execresult
 UPDATE students
 SET
