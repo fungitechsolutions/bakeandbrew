@@ -131,6 +131,12 @@ export {
   type UpdateStudentInfoResponse,
 } from "./admin/students/personal-info";
 
+export {
+  updateStudentImageInputSchema,
+  type UpdateStudentImageInput,
+  type UpdateStudentImageResponse,
+} from "./admin/students/image";
+
 export { type GetStudentPendingOverviewResponse } from "./student_portal/pending-overview";
 export { type GetStudentRejectedOverviewResponse } from "./student_portal/rejected-overview";
 export { type GetStudentDiscountsResponse } from "./student_portal/discounts";
@@ -215,3 +221,14 @@ export {
   type BatchResponse,
   type GetDistinctBatchesResponse,
 } from "./admin/students/batch";
+
+export {
+  updateProfileInputSchema,
+  updatePasswordFormSchema,
+  updatePasswordInputSchema,
+  type UpdateProfileInput,
+  type UpdateProfileResponse,
+  type UpdatePasswordFormInput,
+  type UpdatePasswordInput,
+  type UpdatePasswordResponse,
+} from "./admin/profile";

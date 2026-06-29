@@ -34,4 +34,6 @@ func setupAdminStudentRoutes(admin *gin.RouterGroup, cfg config.Config) {
 	s.PUT("/:studentID/scholarships/:scholarshipID", adminStudentsScholarships.UpdateScholarship(cfg.Queries))
 	s.DELETE("/:studentID/scholarships/:scholarshipID", adminStudentsScholarships.DeleteScholarship(cfg.Queries))
 	s.GET("/:studentID/scholarships", adminStudentsScholarships.ListStudentScholarshipDetail(cfg.Queries))
+
+	s.PUT("/:studentID/image", adminStudents.UpdateStudentImage(cfg.Queries))
 }

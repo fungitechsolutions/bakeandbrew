@@ -17,6 +17,12 @@ ORDER BY created_at DESC;
 UPDATE users SET name = $2, email = $3, role = $4
 WHERE id = $1 RETURNING *;
 
+-- name: UpdateUserPassword :one
+UPDATE users SET password_hash = $2 WHERE id = $1 RETURNING *;
+
+-- name: UpdateUserProfile :one
+UPDATE users SET name = $2, image_url = $3 WHERE id = $1 RETURNING *;
+
 -- name: UpdateUserImage :exec
 UPDATE users SET image_url = $2 WHERE id = $1;
 

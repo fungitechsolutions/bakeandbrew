@@ -150,6 +150,7 @@ export default function StudentDetailPage({
 
       <div className="mx-auto max-w-8xl space-y-5">
         <StudentDetailHeader
+          studentId={student.id}
           fullName={student.fullName}
           referenceNo={student.referenceNo}
           email={student.email}
