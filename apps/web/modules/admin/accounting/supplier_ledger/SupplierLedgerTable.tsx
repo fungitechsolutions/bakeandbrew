@@ -121,7 +121,7 @@ export function SupplierLedgerTable({
             {isFetchingNextPage && (
               <tr className="bg-[rgba(47,78,64,0.03)]">
                 <td colSpan={colSpan} className="px-5 py-2 text-center">
-                  <span className="flex items-center justify-center gap-2 font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.45)]">
+                  <span className="flex items-center justify-center gap-2 font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.45)]">
                     <Loader2 size={13} className="animate-spin" />
                     Loading more entries...
                   </span>
@@ -131,7 +131,7 @@ export function SupplierLedgerTable({
             <tr className="border-t border-[rgba(47,78,64,0.12)] bg-[rgba(47,78,64,0.03)] text-xs font-semibold">
               <td
                 colSpan={showSupplierColumn ? 4 : 3}
-                className="px-5 py-2 text-right font-[family-name:var(--font-dm-sans)] uppercase tracking-[0.08em] text-[rgba(47,78,64,0.55)]"
+                className="px-5 py-2 text-right font-(family-name:--font-dm-sans) uppercase tracking-[0.08em] text-[rgba(47,78,64,0.55)]"
               >
                 Loaded Total ({entries.length} of {totalCount})
               </td>

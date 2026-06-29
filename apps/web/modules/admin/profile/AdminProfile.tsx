@@ -32,7 +32,7 @@ function getInitials(name: string): string {
 }
 
 const profileLabelClass =
-  "font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.5)]";
+  "font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.5)]";
 
 const PASSWORD_TIPS = [
   {
@@ -67,13 +67,13 @@ function PasswordGuidance({ password }: { password: string }) {
 
   return (
     <aside className="border border-[rgba(47,78,64,0.12)] bg-[rgba(47,78,64,0.03)] p-5 lg:sticky lg:top-24">
-      <p className="font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.45)]">
+      <p className="font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.45)]">
         Strong password
       </p>
-      <h3 className="mt-1 font-[family-name:var(--font-lora)] text-base font-bold text-(--brand-green)">
+      <h3 className="mt-1 font-(family-name:--font-lora) text-base font-bold text-(--brand-green)">
         What makes a good password
       </h3>
-      <p className="mt-2 font-[family-name:var(--font-dm-sans)] text-sm leading-relaxed text-[rgba(47,78,64,0.55)]">
+      <p className="mt-2 font-(family-name:--font-dm-sans) text-sm leading-relaxed text-[rgba(47,78,64,0.55)]">
         Use a unique password you do not reuse elsewhere. Avoid names, birthdays,
         or common words like &quot;password&quot;.
       </p>
@@ -96,7 +96,7 @@ function PasswordGuidance({ password }: { password: string }) {
               </span>
               <span
                 className={cn(
-                  "font-[family-name:var(--font-dm-sans)] text-sm leading-snug",
+                  "font-(family-name:--font-dm-sans) text-sm leading-snug",
                   met ? "text-(--brand-green)" : "text-[rgba(47,78,64,0.55)]",
                 )}
               >
@@ -107,7 +107,7 @@ function PasswordGuidance({ password }: { password: string }) {
         })}
       </ul>
 
-      <p className="mt-5 border-t border-[rgba(47,78,64,0.1)] pt-4 font-[family-name:var(--font-dm-sans)] text-xs leading-relaxed text-[rgba(47,78,64,0.45)]">
+      <p className="mt-5 border-t border-[rgba(47,78,64,0.1)] pt-4 font-(family-name:--font-dm-sans) text-xs leading-relaxed text-[rgba(47,78,64,0.45)]">
         {password.length === 0
           ? "Start typing your new password to see which tips you meet."
           : metCount >= 4
@@ -285,7 +285,7 @@ export function AdminProfile() {
     return (
       <AdminPageLayout title="Profile" description="Manage your account details.">
         <div className="border border-[rgba(47,78,64,0.18)] bg-white px-6 py-16 text-center">
-          <p className="font-[family-name:var(--font-dm-sans)] text-sm text-[rgba(47,78,64,0.55)]">
+          <p className="font-(family-name:--font-dm-sans) text-sm text-[rgba(47,78,64,0.55)]">
             Sign in to manage your profile.
           </p>
         </div>
@@ -310,10 +310,10 @@ export function AdminProfile() {
                   <UserRound size={16} strokeWidth={1.75} />
                 </div>
                 <div>
-                  <h2 className="font-[family-name:var(--font-lora)] text-lg font-bold text-(--brand-green)">
+                  <h2 className="font-(family-name:--font-lora) text-lg font-bold text-(--brand-green)">
                     Profile & photo
                   </h2>
-                  <p className="mt-0.5 max-w-md font-[family-name:var(--font-dm-sans)] text-sm text-[rgba(47,78,64,0.55)]">
+                  <p className="mt-0.5 max-w-md font-(family-name:--font-dm-sans) text-sm text-[rgba(47,78,64,0.55)]">
                     Your name and photo show in the sidebar and across the admin
                     panel.
                   </p>
@@ -416,10 +416,10 @@ export function AdminProfile() {
                   <Lock size={16} strokeWidth={1.75} />
                 </div>
                 <div>
-                  <h2 className="font-[family-name:var(--font-lora)] text-lg font-bold text-(--brand-green)">
+                  <h2 className="font-(family-name:--font-lora) text-lg font-bold text-(--brand-green)">
                     Password
                   </h2>
-                  <p className="mt-0.5 max-w-md font-[family-name:var(--font-dm-sans)] text-sm text-[rgba(47,78,64,0.55)]">
+                  <p className="mt-0.5 max-w-md font-(family-name:--font-dm-sans) text-sm text-[rgba(47,78,64,0.55)]">
                     Choose a strong password. You will need your current password
                     to confirm the change.
                   </p>

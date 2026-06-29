@@ -115,18 +115,18 @@ function EditUserForm({ user, onClose }: { user: User; onClose: () => void }) {
           size="lg"
         />
         <div className="text-center">
-          <p className="font-[family-name:var(--font-dm-sans)] text-xs font-semibold uppercase tracking-[0.08em] text-[rgba(47,78,64,0.55)]">
+          <p className="font-(family-name:--font-dm-sans) text-xs font-semibold uppercase tracking-[0.08em] text-[rgba(47,78,64,0.55)]">
             ID
           </p>
-          <p className="mt-0.5 font-[family-name:var(--font-dm-sans)] text-xs break-all text-[rgba(47,78,64,0.45)]">
+          <p className="mt-0.5 font-(family-name:--font-dm-sans) text-xs break-all text-[rgba(47,78,64,0.45)]">
             {user.id}
           </p>
         </div>
         <div className="text-center">
-          <p className="font-[family-name:var(--font-dm-sans)] text-xs font-semibold uppercase tracking-[0.08em] text-[rgba(47,78,64,0.55)]">
+          <p className="font-(family-name:--font-dm-sans) text-xs font-semibold uppercase tracking-[0.08em] text-[rgba(47,78,64,0.55)]">
             Joined
           </p>
-          <p className="mt-0.5 font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.65)]">
+          <p className="mt-0.5 font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.65)]">
             {joinDate}
           </p>
         </div>

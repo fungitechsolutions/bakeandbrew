@@ -86,10 +86,10 @@ function buildPrintData(student: SubmittedAdmission): PrintAdmissionData {
 function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start justify-between gap-4 border-b border-[rgba(47,78,64,0.08)] py-3 last:border-0">
-      <span className="font-[family-name:var(--font-dm-sans)] text-[0.68rem] font-bold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.42)]">
+      <span className="font-(family-name:--font-dm-sans) text-[0.68rem] font-bold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.42)]">
         {label}
       </span>
-      <span className="max-w-[58%] text-right font-[family-name:var(--font-dm-sans)] text-[0.88rem] font-medium leading-snug text-(--brand-green)">
+      <span className="max-w-[58%] text-right font-(family-name:--font-dm-sans) text-[0.88rem] font-medium leading-snug text-(--brand-green)">
         {value || "—"}
       </span>
     </div>
@@ -175,7 +175,7 @@ export default function AdmissionSuccessPage() {
             />
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 font-[family-name:var(--font-dm-sans)] text-[0.82rem] font-semibold text-[rgba(47,78,64,0.55)] transition-colors hover:text-(--brand-green)"
+              className="inline-flex items-center gap-1.5 font-(family-name:--font-dm-sans) text-[0.82rem] font-semibold text-[rgba(47,78,64,0.55)] transition-colors hover:text-(--brand-green)"
             >
               <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2.5} />
               Back to home
@@ -187,7 +187,7 @@ export default function AdmissionSuccessPage() {
           <div className="mx-auto max-w-6xl">
             {/* Hero */}
             <div className="mb-10 max-w-2xl lg:mb-12">
-              <div className="mb-5 inline-flex items-center gap-2 border border-[rgba(194,138,79,0.28)] bg-[rgba(194,138,79,0.08)] px-3 py-1.5 font-[family-name:var(--font-dm-sans)] text-[0.68rem] font-bold uppercase tracking-[0.14em] text-(--brand-brown)">
+              <div className="mb-5 inline-flex items-center gap-2 border border-[rgba(194,138,79,0.28)] bg-[rgba(194,138,79,0.08)] px-3 py-1.5 font-(family-name:--font-dm-sans) text-[0.68rem] font-bold uppercase tracking-[0.14em] text-(--brand-brown)">
                 <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2.5} />
                 Application received
               </div>
@@ -207,11 +207,11 @@ export default function AdmissionSuccessPage() {
               </p>
 
               <div className="mt-8 w-full max-w-md border border-[rgba(47,78,64,0.12)] bg-white px-6 py-5 shadow-[0_12px_40px_rgba(47,78,64,0.07)] sm:px-8">
-                <p className="font-[family-name:var(--font-dm-sans)] text-[0.65rem] font-bold uppercase tracking-[0.16em] text-[rgba(47,78,64,0.42)]">
+                <p className="font-(family-name:--font-dm-sans) text-[0.65rem] font-bold uppercase tracking-[0.16em] text-[rgba(47,78,64,0.42)]">
                   Your reference number
                 </p>
                 <div className="mt-2 flex items-center gap-3">
-                  <p className="font-[family-name:var(--font-dm-sans)] text-[1.35rem] font-bold tracking-wide text-(--brand-green) sm:text-[1.5rem]">
+                  <p className="font-(family-name:--font-dm-sans) text-[1.35rem] font-bold tracking-wide text-(--brand-green) sm:text-[1.5rem]">
                     {student.referenceNo}
                   </p>
                   <button
@@ -227,7 +227,7 @@ export default function AdmissionSuccessPage() {
                     )}
                   </button>
                 </div>
-                <p className="mt-2 font-[family-name:var(--font-dm-sans)] text-[0.78rem] text-[rgba(47,78,64,0.45)]">
+                <p className="mt-2 font-(family-name:--font-dm-sans) text-[0.78rem] text-[rgba(47,78,64,0.45)]">
                   Submitted {formatDate(student.createdAt)} · FY{" "}
                   {student.fiscalYear}
                 </p>
@@ -252,7 +252,7 @@ export default function AdmissionSuccessPage() {
                         <h2 className="font-[family-name:var(--font-playfair)] text-[1.2rem] font-semibold text-(--brand-green)">
                           Print or save as PDF
                         </h2>
-                        <p className="mt-1 max-w-md font-[family-name:var(--font-dm-sans)] text-[0.86rem] leading-relaxed text-[rgba(47,78,64,0.55)]">
+                        <p className="mt-1 max-w-md font-(family-name:--font-dm-sans) text-[0.86rem] leading-relaxed text-[rgba(47,78,64,0.55)]">
                           Download a copy now. Once you leave this page, printing
                           won&apos;t be available until your student dashboard is
                           activated.
@@ -276,7 +276,7 @@ export default function AdmissionSuccessPage() {
                         <button
                           type="button"
                           onClick={handlePrintOpen}
-                          className="font-[family-name:var(--font-dm-sans)] text-[0.78rem] font-semibold text-[rgba(47,78,64,0.45)] underline-offset-2 hover:text-(--brand-green) hover:underline"
+                          className="font-(family-name:--font-dm-sans) text-[0.78rem] font-semibold text-[rgba(47,78,64,0.45)] underline-offset-2 hover:text-(--brand-green) hover:underline"
                         >
                           Open print dialog again
                         </button>
@@ -290,7 +290,7 @@ export default function AdmissionSuccessPage() {
                         className="mt-0.5 h-4 w-4 shrink-0 text-amber-600"
                         strokeWidth={2}
                       />
-                      <p className="font-[family-name:var(--font-dm-sans)] text-[0.8rem] leading-relaxed text-amber-800">
+                      <p className="font-(family-name:--font-dm-sans) text-[0.8rem] leading-relaxed text-amber-800">
                         You&apos;ve opened the print dialog. Need another copy
                         later? Visit your student dashboard once it&apos;s
                         activated.
@@ -313,10 +313,10 @@ export default function AdmissionSuccessPage() {
                         <div className="mb-3 flex h-9 w-9 items-center justify-center bg-[rgba(47,78,64,0.08)] text-(--brand-green)">
                           <Icon className="h-4 w-4" strokeWidth={1.75} />
                         </div>
-                        <p className="font-[family-name:var(--font-dm-sans)] text-[0.88rem] font-semibold text-(--brand-green)">
+                        <p className="font-(family-name:--font-dm-sans) text-[0.88rem] font-semibold text-(--brand-green)">
                           {title}
                         </p>
-                        <p className="mt-1.5 font-[family-name:var(--font-dm-sans)] text-[0.8rem] leading-relaxed text-[rgba(47,78,64,0.52)]">
+                        <p className="mt-1.5 font-(family-name:--font-dm-sans) text-[0.8rem] leading-relaxed text-[rgba(47,78,64,0.52)]">
                           {index === 1
                             ? `Use ${student.referenceNo} for any communication with our office.`
                             : body}
@@ -356,10 +356,10 @@ export default function AdmissionSuccessPage() {
                     </div>
                   )}
                   <div className="min-w-0">
-                    <p className="truncate font-[family-name:var(--font-dm-sans)] text-[0.95rem] font-semibold text-white">
+                    <p className="truncate font-(family-name:--font-dm-sans) text-[0.95rem] font-semibold text-white">
                       {student.fullName}
                     </p>
-                    <p className="mt-0.5 font-[family-name:var(--font-dm-sans)] text-[0.75rem] text-white/55">
+                    <p className="mt-0.5 font-(family-name:--font-dm-sans) text-[0.75rem] text-white/55">
                       {capitalize(student.status)} · {capitalize(student.shift)}{" "}
                       shift
                     </p>
@@ -390,10 +390,10 @@ export default function AdmissionSuccessPage() {
                 </div>
 
                 <div className="mx-5 mb-5 flex items-center justify-between border border-[rgba(47,78,64,0.1)] bg-[#faf9f6] px-4 py-3">
-                  <span className="font-[family-name:var(--font-dm-sans)] text-[0.68rem] font-bold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.42)]">
+                  <span className="font-(family-name:--font-dm-sans) text-[0.68rem] font-bold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.42)]">
                     Fiscal year
                   </span>
-                  <span className="font-[family-name:var(--font-dm-sans)] text-[0.88rem] font-semibold text-(--brand-green)">
+                  <span className="font-(family-name:--font-dm-sans) text-[0.88rem] font-semibold text-(--brand-green)">
                     {student.fiscalYear}
                   </span>
                 </div>
@@ -406,7 +406,7 @@ export default function AdmissionSuccessPage() {
           <div
             className={cn(
               landingContainerClass,
-              "flex flex-col items-center justify-between gap-2 px-4 py-5 font-[family-name:var(--font-dm-sans)] text-[0.75rem] text-[rgba(47,78,64,0.4)] sm:flex-row sm:px-6",
+              "flex flex-col items-center justify-between gap-2 px-4 py-5 font-(family-name:--font-dm-sans) text-[0.75rem] text-[rgba(47,78,64,0.4)] sm:flex-row sm:px-6",
             )}
           >
             <span>

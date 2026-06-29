@@ -206,12 +206,12 @@ function ProgramMeta({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <span className="inline-flex items-center gap-1.5 font-[family-name:var(--font-dm-sans)] text-[0.75rem] text-[rgba(47,78,64,0.55)]">
+      <span className="inline-flex items-center gap-1.5 font-(family-name:--font-dm-sans) text-[0.75rem] text-[rgba(47,78,64,0.55)]">
         <Clock size={13} strokeWidth={2} />
         {duration}
       </span>
       <span className="h-3 w-px bg-[rgba(47,78,64,0.12)]" />
-      <span className="inline-flex items-center gap-1.5 font-[family-name:var(--font-dm-sans)] text-[0.75rem] text-[rgba(47,78,64,0.55)]">
+      <span className="inline-flex items-center gap-1.5 font-(family-name:--font-dm-sans) text-[0.75rem] text-[rgba(47,78,64,0.55)]">
         <Users size={13} strokeWidth={2} />
         Max {seats} students
       </span>
@@ -230,7 +230,7 @@ function ProgramPrice({
 }) {
   if (fee == null) {
     return (
-      <p className="font-[family-name:var(--font-dm-sans)] text-[0.8rem] text-[rgba(47,78,64,0.45)]">
+      <p className="font-(family-name:--font-dm-sans) text-[0.8rem] text-[rgba(47,78,64,0.45)]">
         Contact us for pricing
       </p>
     );
@@ -238,16 +238,16 @@ function ProgramPrice({
 
   return (
     <div>
-      <p className="mb-1 font-[family-name:var(--font-dm-sans)] text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-[rgba(47,78,64,0.4)]">
+      <p className="mb-1 font-(family-name:--font-dm-sans) text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-[rgba(47,78,64,0.4)]">
         Course fee
       </p>
       <div className="flex items-baseline gap-1.5">
-        <span className="font-[family-name:var(--font-dm-sans)] text-[0.78rem] font-medium text-[rgba(47,78,64,0.45)]">
+        <span className="font-(family-name:--font-dm-sans) text-[0.78rem] font-medium text-[rgba(47,78,64,0.45)]">
           NPR
         </span>
         <span
           className={cn(
-            "font-[family-name:var(--font-lora)] font-bold leading-none tracking-tight",
+            "font-(family-name:--font-lora) font-bold leading-none tracking-tight",
             size === "compact" ? "text-[1.5rem]" : "text-[2rem]",
             tone.price,
           )}
@@ -289,18 +289,18 @@ function FeaturedProgramCard({
             >
               <Icon size={24} strokeWidth={1.75} />
             </div>
-            <span className="font-[family-name:var(--font-dm-sans)] text-[0.65rem] font-semibold tracking-[0.2em] text-[rgba(47,78,64,0.25)]">
+            <span className="font-(family-name:--font-dm-sans) text-[0.65rem] font-semibold tracking-[0.2em] text-[rgba(47,78,64,0.25)]">
               {program.number}
             </span>
           </div>
 
-          <p className="mb-2 font-[family-name:var(--font-dm-sans)] text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-(--brand-brown)">
+          <p className="mb-2 font-(family-name:--font-dm-sans) text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-(--brand-brown)">
             Featured · {program.tagline}
           </p>
           <h3 className="mb-3 font-[family-name:var(--font-playfair)] text-[clamp(1.75rem,3vw,2.25rem)] font-bold leading-tight text-(--brand-green)">
             {program.course}
           </h3>
-          <p className="mb-6 max-w-2xl font-[family-name:var(--font-dm-sans)] text-[0.92rem] leading-[1.7] text-[rgba(47,78,64,0.58)]">
+          <p className="mb-6 max-w-2xl font-(family-name:--font-dm-sans) text-[0.92rem] leading-[1.7] text-[rgba(47,78,64,0.58)]">
             {program.description}
           </p>
 
@@ -315,7 +315,7 @@ function FeaturedProgramCard({
                 >
                   <Check size={11} strokeWidth={2.5} />
                 </span>
-                <span className="font-[family-name:var(--font-dm-sans)] text-[0.84rem] leading-snug text-[rgba(47,78,64,0.72)]">
+                <span className="font-(family-name:--font-dm-sans) text-[0.84rem] leading-snug text-[rgba(47,78,64,0.72)]">
                   {item}
                 </span>
               </li>
@@ -344,7 +344,7 @@ function FeaturedProgramCard({
           <Link
             href={`/courses/${program.slug}`}
             className={cn(
-              "group/btn mt-6 inline-flex w-full items-center justify-center gap-2 border px-4 py-3 font-[family-name:var(--font-dm-sans)] text-[0.84rem] font-semibold transition-all duration-200 active:scale-[0.99]",
+              "group/btn mt-6 inline-flex w-full items-center justify-center gap-2 border px-4 py-3 font-(family-name:--font-dm-sans) text-[0.84rem] font-semibold transition-all duration-200 active:scale-[0.99]",
               tone.cta,
             )}
           >
@@ -390,18 +390,18 @@ function CompactProgramCard({
           >
             <Icon size={18} strokeWidth={1.75} />
           </div>
-          <span className="font-[family-name:var(--font-dm-sans)] text-[0.65rem] font-semibold tracking-[0.2em] text-[rgba(47,78,64,0.25)]">
+          <span className="font-(family-name:--font-dm-sans) text-[0.65rem] font-semibold tracking-[0.2em] text-[rgba(47,78,64,0.25)]">
             {program.number}
           </span>
         </div>
 
-        <p className="mb-1 font-[family-name:var(--font-dm-sans)] text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-(--brand-brown)">
+        <p className="mb-1 font-(family-name:--font-dm-sans) text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-(--brand-brown)">
           {program.tagline}
         </p>
         <h3 className="mb-2 font-[family-name:var(--font-playfair)] text-[1.35rem] font-bold leading-tight text-(--brand-green)">
           {program.course}
         </h3>
-        <p className="mb-4 line-clamp-2 font-[family-name:var(--font-dm-sans)] text-[0.85rem] leading-[1.6] text-[rgba(47,78,64,0.55)]">
+        <p className="mb-4 line-clamp-2 font-(family-name:--font-dm-sans) text-[0.85rem] leading-[1.6] text-[rgba(47,78,64,0.55)]">
           {program.description}
         </p>
 
@@ -413,7 +413,7 @@ function CompactProgramCard({
                 strokeWidth={2.5}
                 className={cn("mt-0.5 shrink-0", tone.price)}
               />
-              <span className="font-[family-name:var(--font-dm-sans)] text-[0.8rem] leading-snug text-[rgba(47,78,64,0.65)]">
+              <span className="font-(family-name:--font-dm-sans) text-[0.8rem] leading-snug text-[rgba(47,78,64,0.65)]">
                 {item}
               </span>
             </li>
@@ -434,7 +434,7 @@ function CompactProgramCard({
           <Link
             href={`/courses/${program.slug}`}
             className={cn(
-              "group/btn inline-flex w-full items-center justify-center gap-2 border px-4 py-2.5 font-[family-name:var(--font-dm-sans)] text-[0.82rem] font-semibold transition-all duration-200 active:scale-[0.99]",
+              "group/btn inline-flex w-full items-center justify-center gap-2 border px-4 py-2.5 font-(family-name:--font-dm-sans) text-[0.82rem] font-semibold transition-all duration-200 active:scale-[0.99]",
               tone.cta,
             )}
           >

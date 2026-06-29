@@ -16,7 +16,7 @@ export function AnalyticsSkeleton() {
       description="Overview of your school's performance and metrics"
       maxWidth="wide"
       action={
-        <span className="inline-flex items-center border border-[rgba(194,138,79,0.3)] bg-[rgba(194,138,79,0.08)] px-3 py-1.5 font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.12em] text-(--brand-brown)">
+        <span className="inline-flex items-center border border-[rgba(194,138,79,0.3)] bg-[rgba(194,138,79,0.08)] px-3 py-1.5 font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.12em] text-(--brand-brown)">
           FY {FISCAL_YEAR}
         </span>
       }

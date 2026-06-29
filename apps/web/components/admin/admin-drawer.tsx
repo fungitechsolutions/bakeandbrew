@@ -74,7 +74,7 @@ export function AdminDrawer({
 
         <div className="flex h-full flex-col">
           <div className="flex shrink-0 items-center justify-between gap-2 border-b border-[rgba(47,78,64,0.12)] bg-white px-5 py-4">
-            <h2 className="font-[family-name:var(--font-lora)] text-base font-bold text-(--brand-green)">
+            <h2 className="font-(family-name:--font-lora) text-base font-bold text-(--brand-green)">
               {title}
             </h2>
             <button
@@ -102,7 +102,7 @@ export function AdminDrawer({
 }
 
 export const adminFieldLabelClass =
-  "flex flex-col gap-1.5 font-[family-name:var(--font-dm-sans)] text-xs font-semibold uppercase tracking-[0.08em] text-[rgba(47,78,64,0.55)]";
+  "flex flex-col gap-1.5 font-(family-name:--font-dm-sans) text-xs font-semibold uppercase tracking-[0.08em] text-[rgba(47,78,64,0.55)]";
 
 export const adminFieldErrorClass =
   "text-xs normal-case tracking-normal text-[#9a3412]";

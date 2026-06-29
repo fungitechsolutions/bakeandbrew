@@ -22,7 +22,7 @@ export function StepTitle({
             {title}
           </h2>
           {description ? (
-            <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-[0.84rem] leading-relaxed text-[rgba(47,78,64,0.52)]">
+            <p className="mt-1 font-(family-name:--font-dm-sans) text-[0.84rem] leading-relaxed text-[rgba(47,78,64,0.52)]">
               {description}
             </p>
           ) : null}

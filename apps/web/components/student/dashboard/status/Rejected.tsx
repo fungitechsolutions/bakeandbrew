@@ -67,7 +67,7 @@ export default function RejectedStatus() {
         }
         subtitle={`We gave your application careful consideration but aren't able to offer a place at ${siteInfo.company.shortName} this intake. That doesn't mean the door is closed.`}
       >
-        <div className="inline-flex items-center gap-2 border border-[rgba(47,78,64,0.12)] bg-white px-4 py-2 font-[family-name:var(--font-dm-sans)] text-[0.84rem] text-[rgba(47,78,64,0.62)]">
+        <div className="inline-flex items-center gap-2 border border-[rgba(47,78,64,0.12)] bg-white px-4 py-2 font-(family-name:--font-dm-sans) text-[0.84rem] text-[rgba(47,78,64,0.62)]">
           <Calendar className="h-4 w-4 text-(--brand-green)" strokeWidth={1.75} />
           Decision on {formatDate(data.decidedAt)}
         </div>
@@ -75,16 +75,16 @@ export default function RejectedStatus() {
 
       {data.rejectionReason ? (
         <div className="mb-8 border-l-[3px] border-(--brand-green) bg-[rgba(47,78,64,0.04)] px-5 py-4">
-          <p className="font-[family-name:var(--font-dm-sans)] text-[0.68rem] font-bold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.42)]">
+          <p className="font-(family-name:--font-dm-sans) text-[0.68rem] font-bold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.42)]">
             Note from admissions
           </p>
-          <p className="mt-2 font-[family-name:var(--font-dm-sans)] text-[0.9rem] leading-relaxed text-[rgba(47,78,64,0.65)]">
+          <p className="mt-2 font-(family-name:--font-dm-sans) text-[0.9rem] leading-relaxed text-[rgba(47,78,64,0.65)]">
             {data.rejectionReason}
           </p>
         </div>
       ) : null}
 
-      <p className="mb-5 font-[family-name:var(--font-dm-sans)] text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[rgba(47,78,64,0.4)]">
+      <p className="mb-5 font-(family-name:--font-dm-sans) text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[rgba(47,78,64,0.4)]">
         What you can do next
       </p>
 
@@ -123,11 +123,11 @@ export default function RejectedStatus() {
           className="mx-auto mb-4 h-5 w-5 text-(--brand-brown)"
           strokeWidth={1.75}
         />
-        <p className="font-[family-name:var(--font-lora)] text-[1rem] italic leading-relaxed text-[rgba(47,78,64,0.62)]">
+        <p className="font-(family-name:--font-lora) text-[1rem] italic leading-relaxed text-[rgba(47,78,64,0.62)]">
           &ldquo;Every great barista and baker started somewhere. This is a
           chapter, not the end of your story with us.&rdquo;
         </p>
-        <footer className="mt-3 font-[family-name:var(--font-dm-sans)] text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-[rgba(47,78,64,0.38)]">
+        <footer className="mt-3 font-(family-name:--font-dm-sans) text-[0.72rem] font-semibold uppercase tracking-widest text-[rgba(47,78,64,0.38)]">
           — {siteInfo.company.shortName} Admissions
         </footer>
       </blockquote>

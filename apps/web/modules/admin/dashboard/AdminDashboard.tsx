@@ -125,7 +125,7 @@ export function AdminDashboard() {
       action={
         <Link
           href="/admin/analytics"
-          className="inline-flex items-center gap-2 border border-[rgba(47,78,64,0.2)] bg-white px-4 py-2 font-[family-name:var(--font-dm-sans)] text-xs font-semibold uppercase tracking-[0.08em] text-(--brand-green) transition-colors hover:border-(--brand-green) hover:bg-[rgba(47,78,64,0.03)]"
+          className="inline-flex items-center gap-2 border border-[rgba(47,78,64,0.2)] bg-white px-4 py-2 font-(family-name:--font-dm-sans) text-xs font-semibold uppercase tracking-[0.08em] text-(--brand-green) transition-colors hover:border-(--brand-green) hover:bg-[rgba(47,78,64,0.03)]"
         >
           <BarChart3 className="h-3.5 w-3.5" />
           Full analytics
@@ -141,7 +141,7 @@ export function AdminDashboard() {
           />
         )}
         {!isPending && !showStats && (
-          <div className="border border-[rgba(47,78,64,0.18)] bg-white px-5 py-4 font-[family-name:var(--font-dm-sans)] text-sm text-[rgba(47,78,64,0.55)]">
+          <div className="border border-[rgba(47,78,64,0.18)] bg-white px-5 py-4 font-(family-name:--font-dm-sans) text-sm text-[rgba(47,78,64,0.55)]">
             Metrics are temporarily unavailable. Workspace links below are still
             available.
           </div>
@@ -150,7 +150,7 @@ export function AdminDashboard() {
         {hasPriorityItems && overview && (
           <section className="border border-[rgba(47,78,64,0.18)] bg-white">
             <div className="border-b border-[rgba(47,78,64,0.12)] px-5 py-3">
-              <h2 className="font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.14em] text-[rgba(47,78,64,0.45)]">
+              <h2 className="font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.14em] text-[rgba(47,78,64,0.45)]">
                 Needs attention
               </h2>
             </div>
@@ -161,16 +161,16 @@ export function AdminDashboard() {
                   className="flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-[rgba(47,78,64,0.02)]"
                 >
                   <div>
-                    <p className="font-[family-name:var(--font-dm-sans)] text-sm font-semibold text-(--brand-ink)">
+                    <p className="font-(family-name:--font-dm-sans) text-sm font-semibold text-(--brand-ink)">
                       {overview.pendingApprovals} student
                       {overview.pendingApprovals === 1 ? "" : "s"} awaiting
                       approval
                     </p>
-                    <p className="mt-0.5 font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.5)]">
+                    <p className="mt-0.5 font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.5)]">
                       Review pending enrollments
                     </p>
                   </div>
-                  <span className="font-[family-name:var(--font-lora)] text-lg font-bold text-(--brand-brown)">
+                  <span className="font-(family-name:--font-lora) text-lg font-bold text-(--brand-brown)">
                     {overview.pendingApprovals}
                   </span>
                 </Link>
@@ -181,11 +181,11 @@ export function AdminDashboard() {
                   className="flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-[rgba(47,78,64,0.02)]"
                 >
                   <div>
-                    <p className="font-[family-name:var(--font-dm-sans)] text-sm font-semibold text-(--brand-ink)">
+                    <p className="font-(family-name:--font-dm-sans) text-sm font-semibold text-(--brand-ink)">
                       {overview.studentsWithBalance} outstanding fee
                       {overview.studentsWithBalance === 1 ? "" : "s"}
                     </p>
-                    <p className="mt-0.5 font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.5)]">
+                    <p className="mt-0.5 font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.5)]">
                       Follow up on unpaid balances
                     </p>
                   </div>
@@ -199,10 +199,10 @@ export function AdminDashboard() {
         <section>
           <div className="mb-4 flex items-end justify-between gap-4">
             <div>
-              <h2 className="font-[family-name:var(--font-lora)] text-lg font-bold text-(--brand-green)">
+              <h2 className="font-(family-name:--font-lora) text-lg font-bold text-(--brand-green)">
                 Workspace
               </h2>
-              <p className="mt-0.5 font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.5)]">
+              <p className="mt-0.5 font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.5)]">
                 Browse admin areas by department
               </p>
             </div>

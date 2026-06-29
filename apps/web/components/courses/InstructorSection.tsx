@@ -65,7 +65,7 @@ export function InstructorSection({
               <p className="font-[family-name:var(--font-playfair)] text-[1.2rem] font-bold text-(--brand-green)">
                 {course.instructor.name}
               </p>
-              <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-[0.85rem] text-[rgba(47,78,64,0.5)]">
+              <p className="mt-1 font-(family-name:--font-dm-sans) text-[0.85rem] text-[rgba(47,78,64,0.5)]">
                 {course.instructor.title}
               </p>
             </div>
@@ -74,7 +74,7 @@ export function InstructorSection({
               <button
                 type="button"
                 onClick={() => setShowProfile(true)}
-                className="inline-flex items-center gap-2 border border-[rgba(47,78,64,0.18)] bg-white px-5 py-2.5 font-[family-name:var(--font-dm-sans)] text-sm font-semibold text-(--brand-green) transition-colors hover:bg-[rgba(47,78,64,0.04)]"
+                className="inline-flex items-center gap-2 border border-[rgba(47,78,64,0.18)] bg-white px-5 py-2.5 font-(family-name:--font-dm-sans) text-sm font-semibold text-(--brand-green) transition-colors hover:bg-[rgba(47,78,64,0.04)]"
               >
                 View full profile
                 <ArrowRight size={15} strokeWidth={2.5} />
@@ -91,7 +91,7 @@ export function InstructorSection({
                 className="h-4 w-4 text-(--brand-brown)"
                 strokeWidth={1.75}
               />
-              <span className="font-[family-name:var(--font-dm-sans)] text-[0.875rem] text-[rgba(47,78,64,0.62)]">
+              <span className="font-(family-name:--font-dm-sans) text-[0.875rem] text-[rgba(47,78,64,0.62)]">
                 <strong className="text-(--brand-green)">
                   {course.instructor.yearsExp} years
                 </strong>{" "}

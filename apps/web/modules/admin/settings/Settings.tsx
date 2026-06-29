@@ -91,13 +91,13 @@ export default function SettingsPage() {
     >
       <div className="overflow-hidden border border-[rgba(47,78,64,0.18)] bg-white">
         <div className="border-b border-[rgba(47,78,64,0.12)] px-5 py-3">
-          <span className="font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.45)]">
+          <span className="font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.45)]">
             {settings.length} {settings.length === 1 ? "entry" : "entries"}
           </span>
         </div>
 
         {settings.length === 0 ? (
-          <div className="px-6 py-12 text-center font-[family-name:var(--font-dm-sans)] text-sm text-[rgba(47,78,64,0.45)]">
+          <div className="px-6 py-12 text-center font-(family-name:--font-dm-sans) text-sm text-[rgba(47,78,64,0.45)]">
             No settings configured yet.
           </div>
         ) : (

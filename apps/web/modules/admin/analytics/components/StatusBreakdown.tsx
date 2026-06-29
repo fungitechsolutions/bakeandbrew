@@ -79,10 +79,10 @@ export function StatusBreakdown({
           </ResponsiveContainer>
           <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center">
             <div className="text-center">
-              <p className="font-[family-name:var(--font-lora)] text-xl font-bold text-(--brand-ink)">
+              <p className="font-(family-name:--font-lora) text-xl font-bold text-(--brand-ink)">
                 {total}
               </p>
-              <p className="font-[family-name:var(--font-dm-sans)] text-[10px] uppercase tracking-[0.1em] text-[rgba(47,78,64,0.45)]">
+              <p className="font-(family-name:--font-dm-sans) text-[10px] uppercase tracking-widest text-[rgba(47,78,64,0.45)]">
                 Total
               </p>
             </div>
@@ -104,15 +104,15 @@ export function StatusBreakdown({
                     className="h-2.5 w-2.5 shrink-0"
                     style={{ backgroundColor: slice.color }}
                   />
-                  <span className="font-[family-name:var(--font-dm-sans)] text-sm text-[rgba(47,78,64,0.7)]">
+                  <span className="font-(family-name:--font-dm-sans) text-sm text-[rgba(47,78,64,0.7)]">
                     {slice.name}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="font-[family-name:var(--font-dm-sans)] text-sm font-semibold text-(--brand-ink)">
+                  <span className="font-(family-name:--font-dm-sans) text-sm font-semibold text-(--brand-ink)">
                     {slice.value}
                   </span>
-                  <span className="w-8 text-right font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.45)]">
+                  <span className="w-8 text-right font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.45)]">
                     {percentage}%
                   </span>
                 </div>

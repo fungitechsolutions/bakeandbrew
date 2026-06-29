@@ -30,7 +30,7 @@ export function Pagination({ page, meta, onPageChange }: PaginationProps) {
 
   return (
     <div className="flex flex-col items-center justify-between gap-3 border-t border-[rgba(47,78,64,0.12)] px-5 py-4 sm:flex-row">
-      <span className="font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.5)]">
+      <span className="font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.5)]">
         {total === 0 ? "No records" : `Showing ${from}–${to} of ${total}`}
       </span>
 
@@ -52,7 +52,7 @@ export function Pagination({ page, meta, onPageChange }: PaginationProps) {
         >
           Prev
         </button>
-        <span className="px-2 font-[family-name:var(--font-dm-sans)] text-xs font-semibold tabular-nums text-(--brand-green)">
+        <span className="px-2 font-(family-name:--font-dm-sans) text-xs font-semibold tabular-nums text-(--brand-green)">
           {page} / {totalPages}
         </span>
         <button

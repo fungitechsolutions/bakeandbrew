@@ -277,7 +277,7 @@ export default function ImageGallery() {
                 >
                   <span
                     className={cn(
-                      "mb-2 inline-block border px-2.5 py-0.5 font-[family-name:var(--font-dm-sans)] text-[0.65rem] font-semibold uppercase tracking-[0.14em]",
+                      "mb-2 inline-block border px-2.5 py-0.5 font-(family-name:--font-dm-sans) text-[0.65rem] font-semibold uppercase tracking-[0.14em]",
                       categoryTone[active.category],
                     )}
                   >
@@ -312,10 +312,10 @@ export default function ImageGallery() {
             </div>
 
             <div className="flex items-center justify-between gap-4 px-0.5">
-              <p className="font-[family-name:var(--font-dm-sans)] text-[0.8rem] text-[rgba(47,78,64,0.5)]">
+              <p className="font-(family-name:--font-dm-sans) text-[0.8rem] text-[rgba(47,78,64,0.5)]">
                 Swipe or use arrow keys to browse
               </p>
-              <p className="font-[family-name:var(--font-dm-sans)] text-sm tabular-nums text-(--brand-green)">
+              <p className="font-(family-name:--font-dm-sans) text-sm tabular-nums text-(--brand-green)">
                 <span className="font-semibold text-(--brand-brown)">
                   {String(index + 1).padStart(2, "0")}
                 </span>
@@ -341,7 +341,7 @@ export default function ImageGallery() {
 
           <aside className="flex flex-col gap-5 lg:pt-1">
             <div className="border border-[rgba(47,78,64,0.1)] bg-white p-5">
-              <p className="mb-2 font-[family-name:var(--font-dm-sans)] text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-(--brand-brown)">
+              <p className="mb-2 font-(family-name:--font-dm-sans) text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-(--brand-brown)">
                 Now viewing
               </p>
               <AnimatePresence mode="wait">
@@ -355,7 +355,7 @@ export default function ImageGallery() {
                   <h3 className="mb-2 font-[family-name:var(--font-playfair)] text-[1.35rem] font-semibold leading-tight text-(--brand-green)">
                     {active.title}
                   </h3>
-                  <p className="font-[family-name:var(--font-dm-sans)] text-[0.88rem] leading-[1.65] text-[rgba(47,78,64,0.62)]">
+                  <p className="font-(family-name:--font-dm-sans) text-[0.88rem] leading-[1.65] text-[rgba(47,78,64,0.62)]">
                     {active.caption}
                   </p>
                 </motion.div>
@@ -363,7 +363,7 @@ export default function ImageGallery() {
             </div>
 
             <div className="hidden flex-col gap-2 lg:flex">
-              <p className="font-[family-name:var(--font-dm-sans)] text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[rgba(47,78,64,0.4)]">
+              <p className="font-(family-name:--font-dm-sans) text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[rgba(47,78,64,0.4)]">
                 All moments
               </p>
               <div className="gallery-thumbs grid max-h-[360px] grid-cols-2 gap-2 overflow-y-auto pr-1">

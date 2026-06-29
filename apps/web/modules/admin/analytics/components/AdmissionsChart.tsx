@@ -41,7 +41,7 @@ export function AdmissionsChart({
       description="New student enrollments per month"
       action={
         isEmpty ? undefined : (
-        <span className="font-[family-name:var(--font-dm-sans)] text-xs font-semibold uppercase tracking-[0.08em] text-[rgba(47,78,64,0.55)]">
+        <span className="font-(family-name:--font-dm-sans) text-xs font-semibold uppercase tracking-[0.08em] text-[rgba(47,78,64,0.55)]">
           Total {total}
         </span>
         )

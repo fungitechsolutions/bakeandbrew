@@ -73,7 +73,7 @@ const defaultPaymentModes: PaymentModeOption[] = [
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
   return (
-    <p className="mt-2 flex items-center gap-1.5 font-[family-name:var(--font-dm-sans)] text-xs text-[#9a3412]">
+    <p className="mt-2 flex items-center gap-1.5 font-(family-name:--font-dm-sans) text-xs text-[#9a3412]">
       <AlertCircle className="h-3.5 w-3.5 shrink-0" />
       {message}
     </p>
@@ -221,7 +221,7 @@ export function AddPaymentModal({
                 : "border-[rgba(47,78,64,0.15)] focus-within:border-(--brand-green)",
             )}
           >
-            <span className="font-[family-name:var(--font-lora)] text-lg text-(--brand-brown)">
+            <span className="font-(family-name:--font-lora) text-lg text-(--brand-brown)">
               NPR
             </span>
             <input
@@ -235,14 +235,14 @@ export function AddPaymentModal({
                 setAmount(e.target.value);
                 setError((prev) => ({ ...prev, amount: undefined }));
               }}
-              className="min-w-0 flex-1 border-0 bg-transparent font-[family-name:var(--font-lora)] text-3xl font-bold tracking-tight text-(--brand-green) outline-none placeholder:text-[rgba(47,78,64,0.18)] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              className="min-w-0 flex-1 border-0 bg-transparent font-(family-name:--font-lora) text-3xl font-bold tracking-tight text-(--brand-green) outline-none placeholder:text-[rgba(47,78,64,0.18)] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
           </div>
           {balanceDue !== undefined && balanceDue > 0 ? (
             <button
               type="button"
               onClick={handlePayFullBalance}
-              className="mt-4 font-[family-name:var(--font-dm-sans)] text-xs text-(--brand-brown) underline-offset-2 hover:underline"
+              className="mt-4 font-(family-name:--font-dm-sans) text-xs text-(--brand-brown) underline-offset-2 hover:underline"
             >
               Use full balance ({formatNpr(balanceDue)})
             </button>
@@ -299,7 +299,7 @@ export function AddPaymentModal({
                   </span>
                   <span
                     className={cn(
-                      "flex-1 font-[family-name:var(--font-dm-sans)] text-sm font-medium",
+                      "flex-1 font-(family-name:--font-dm-sans) text-sm font-medium",
                       selected ? "text-(--brand-green)" : "text-(--brand-ink)",
                     )}
                   >
@@ -361,7 +361,7 @@ export function AddPaymentModal({
             <button
               type="button"
               onClick={() => setIsAddingNewMode(true)}
-              className="mt-4 inline-flex items-center gap-1.5 font-[family-name:var(--font-dm-sans)] text-xs text-(--brand-brown) underline-offset-2 hover:underline"
+              className="mt-4 inline-flex items-center gap-1.5 font-(family-name:--font-dm-sans) text-xs text-(--brand-brown) underline-offset-2 hover:underline"
             >
               <Plus className="h-3.5 w-3.5" strokeWidth={2} />
               Add another method

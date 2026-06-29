@@ -10,16 +10,16 @@ export const admissionTitleClass =
   "font-[family-name:var(--font-playfair)] text-[clamp(2rem,4.5vw,2.75rem)] font-bold leading-[1.08] tracking-[-0.02em]";
 
 export const admissionLabelClass =
-  "font-[family-name:var(--font-dm-sans)] text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-[rgba(47,78,64,0.55)]";
+  "font-(family-name:--font-dm-sans) text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-[rgba(47,78,64,0.55)]";
 
 export const admissionHintClass =
-  "font-[family-name:var(--font-dm-sans)] text-[0.78rem] text-[rgba(47,78,64,0.45)]";
+  "font-(family-name:--font-dm-sans) text-[0.78rem] text-[rgba(47,78,64,0.45)]";
 
 export const admissionErrorClass =
-  "font-[family-name:var(--font-dm-sans)] text-[0.78rem] text-red-600";
+  "font-(family-name:--font-dm-sans) text-[0.78rem] text-red-600";
 
 export const admissionInputClass =
-  "w-full border border-[rgba(47,78,64,0.14)] bg-white py-3 pl-10 pr-4 font-[family-name:var(--font-dm-sans)] text-[0.92rem] text-(--brand-green) outline-none transition-colors duration-200 placeholder:text-[rgba(47,78,64,0.32)] focus:border-(--brand-brown) focus:ring-2 focus:ring-[rgba(194,138,79,0.1)] disabled:cursor-not-allowed disabled:border-[rgba(47,78,64,0.1)] disabled:bg-[#f4f1ec] disabled:text-[rgba(47,78,64,0.45)]";
+  "w-full border border-[rgba(47,78,64,0.14)] bg-white py-3 pl-10 pr-4 font-(family-name:--font-dm-sans) text-[0.92rem] text-(--brand-green) outline-none transition-colors duration-200 placeholder:text-[rgba(47,78,64,0.32)] focus:border-(--brand-brown) focus:ring-2 focus:ring-[rgba(194,138,79,0.1)] disabled:cursor-not-allowed disabled:border-[rgba(47,78,64,0.1)] disabled:bg-[#f4f1ec] disabled:text-[rgba(47,78,64,0.45)]";
 
 export const admissionBoxInputClass = admissionInputClass;
 
@@ -36,7 +36,7 @@ export const admissionPrimaryBtnClass = landingPrimaryButtonClass;
 export const admissionSecondaryBtnClass = `${landingSecondaryButtonClass} border-[rgba(47,78,64,0.18)]`;
 
 export const admissionSegmentBaseClass =
-  "flex-1 min-w-0 px-3 py-3 font-[family-name:var(--font-dm-sans)] text-[0.84rem] font-medium transition-all duration-200 text-center";
+  "flex-1 min-w-0 px-3 py-3 font-(family-name:--font-dm-sans) text-[0.84rem] font-medium transition-all duration-200 text-center";
 
 export const admissionSegmentActiveClass =
   "bg-(--brand-green) text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)]";
@@ -57,7 +57,7 @@ export const admissionReviewPanelClass =
   "overflow-hidden border border-[rgba(47,78,64,0.1)] bg-[#faf9f6]";
 
 export const admissionCalloutClass =
-  "border-l-[3px] border-(--brand-brown) bg-[rgba(194,138,79,0.06)] px-4 py-3.5 font-[family-name:var(--font-dm-sans)] text-[0.84rem] leading-[1.65] text-[rgba(47,78,64,0.62)]";
+  "border-l-[3px] border-(--brand-brown) bg-[rgba(194,138,79,0.06)] px-4 py-3.5 font-(family-name:--font-dm-sans) text-[0.84rem] leading-[1.65] text-[rgba(47,78,64,0.62)]";
 
 export const admissionSidePanelClass =
   "relative flex flex-col justify-between overflow-hidden bg-(--brand-green) text-white";

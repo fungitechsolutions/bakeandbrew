@@ -42,7 +42,7 @@ export function BankDefaultToggle({
 
       {isDefault ? (
         <div className="absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 group-hover:block">
-          <div className="whitespace-nowrap bg-[#1a1a1a] px-2 py-1 font-[family-name:var(--font-dm-sans)] text-[11px] text-white">
+          <div className="whitespace-nowrap bg-[#1a1a1a] px-2 py-1 font-(family-name:--font-dm-sans) text-[11px] text-white">
             Set another bank as default to change this
           </div>
         </div>

@@ -94,7 +94,7 @@ export function VideoPlayer({ course, className }: VideoPlayerProps) {
                 <Play size={28} strokeWidth={1.75} className="ml-0.5" />
               )}
             </span>
-            <span className="font-[family-name:var(--font-dm-sans)] text-[0.85rem] font-semibold tracking-wide text-white/90">
+            <span className="font-(family-name:--font-dm-sans) text-[0.85rem] font-semibold tracking-wide text-white/90">
               Watch Program Overview
             </span>
           </button>
@@ -103,14 +103,14 @@ export function VideoPlayer({ course, className }: VideoPlayerProps) {
             <span className="grid h-14 w-14 place-items-center border border-[rgba(255,255,255,0.3)] bg-[rgba(255,255,255,0.1)] text-white/80">
               <Play size={24} strokeWidth={1.75} />
             </span>
-            <p className="font-[family-name:var(--font-dm-sans)] text-sm font-medium text-white/85">
+            <p className="font-(family-name:--font-dm-sans) text-sm font-medium text-white/85">
               Program overview video coming soon
             </p>
           </div>
         )}
 
         <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between gap-3 border-t border-[rgba(255,255,255,0.12)] bg-[rgba(26,26,26,0.55)] px-4 py-3 backdrop-blur-sm">
-          <p className="font-[family-name:var(--font-dm-sans)] text-[0.78rem] font-medium text-white/85">
+          <p className="font-(family-name:--font-dm-sans) text-[0.78rem] font-medium text-white/85">
             {course.course} · {course.duration}
           </p>
           {hasVideo ? (
@@ -135,7 +135,7 @@ export function VideoPlayer({ course, className }: VideoPlayerProps) {
               <button
                 type="button"
                 onClick={toggle}
-                className="font-[family-name:var(--font-dm-sans)] text-[0.75rem] font-semibold uppercase tracking-wide text-white/90 transition-colors hover:text-white"
+                className="font-(family-name:--font-dm-sans) text-[0.75rem] font-semibold uppercase tracking-wide text-white/90 transition-colors hover:text-white"
               >
                 {playing ? "Pause" : "Play"}
               </button>

@@ -36,11 +36,11 @@ export default function InquiryEmpty({
         </span>
       )}
 
-      <h2 className="text-center font-[family-name:var(--font-lora)] text-xl font-bold text-(--brand-green)">
+      <h2 className="text-center font-(family-name:--font-lora) text-xl font-bold text-(--brand-green)">
         {isFiltered ? `No "${activeFilter}" inquiries` : "No inquiries yet"}
       </h2>
 
-      <p className="mt-2 max-w-md text-center font-[family-name:var(--font-dm-sans)] text-sm leading-relaxed text-[rgba(47,78,64,0.55)]">
+      <p className="mt-2 max-w-md text-center font-(family-name:--font-dm-sans) text-sm leading-relaxed text-[rgba(47,78,64,0.55)]">
         {message ??
           (isFiltered
             ? `There are no inquiries matching the "${activeFilter}" filter. Try a different filter or check back later.`

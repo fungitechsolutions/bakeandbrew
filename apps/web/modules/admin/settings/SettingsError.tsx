@@ -20,10 +20,10 @@ export function SettingsError({ onRetry }: SettingsErrorProps) {
           <WifiOff size={22} />
         </div>
         <div className="space-y-1">
-          <h2 className="font-[family-name:var(--font-lora)] text-base font-bold text-(--brand-green)">
+          <h2 className="font-(family-name:--font-lora) text-base font-bold text-(--brand-green)">
             Unable to reach the server
           </h2>
-          <p className="max-w-xs font-[family-name:var(--font-dm-sans)] text-sm text-[rgba(47,78,64,0.55)]">
+          <p className="max-w-xs font-(family-name:--font-dm-sans) text-sm text-[rgba(47,78,64,0.55)]">
             Check your internet connection or try again. The server may be
             temporarily unavailable.
           </p>

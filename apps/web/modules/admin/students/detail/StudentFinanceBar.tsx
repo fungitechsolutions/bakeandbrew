@@ -62,13 +62,13 @@ export function StudentFinanceBar({
             <p className={detailLabelClass}>{stat.label}</p>
             <p
               className={cn(
-                "mt-2 font-[family-name:var(--font-lora)] text-xl font-bold tracking-tight",
+                "mt-2 font-(family-name:--font-lora) text-xl font-bold tracking-tight",
                 stat.accent ? "text-[#9a3412]" : "text-(--brand-green)",
               )}
             >
               {stat.value}
             </p>
-            <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.45)]">
+            <p className="mt-1 font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.45)]">
               {stat.hint}
             </p>
           </div>
@@ -78,7 +78,7 @@ export function StudentFinanceBar({
       <div className="border border-[rgba(47,78,64,0.18)] bg-white px-5 py-4">
         <div className="mb-2 flex items-center justify-between gap-3">
           <p className={detailLabelClass}>Payment Progress</p>
-          <p className="font-[family-name:var(--font-dm-sans)] text-xs font-semibold tabular-nums text-(--brand-green)">
+          <p className="font-(family-name:--font-dm-sans) text-xs font-semibold tabular-nums text-(--brand-green)">
             {Math.round(progressPct)}% collected
           </p>
         </div>

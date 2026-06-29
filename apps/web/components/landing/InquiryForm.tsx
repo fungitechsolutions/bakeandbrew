@@ -120,10 +120,10 @@ const SendIcon = () => (
 );
 
 const floatingLabelClass =
-  "pointer-events-none absolute left-0 top-5 font-[family-name:var(--font-dm-sans)] text-[0.9rem] text-[rgba(47,78,64,0.5)] transition-all duration-200 peer-focus:top-0 peer-focus:text-[0.72rem] peer-focus:font-medium peer-focus:text-(--brand-brown) peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:text-[0.72rem] peer-[:not(:placeholder-shown)]:font-medium peer-[:not(:placeholder-shown)]:text-(--brand-green)";
+  "pointer-events-none absolute left-0 top-5 font-(family-name:--font-dm-sans) text-[0.9rem] text-[rgba(47,78,64,0.5)] transition-all duration-200 peer-focus:top-0 peer-focus:text-[0.72rem] peer-focus:font-medium peer-focus:text-(--brand-brown) peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:text-[0.72rem] peer-[:not(:placeholder-shown)]:font-medium peer-[:not(:placeholder-shown)]:text-(--brand-green)";
 
 const underlineFieldClass =
-  "peer w-full border-0 border-b bg-transparent px-0 pt-6 pb-2.5 font-[family-name:var(--font-dm-sans)] text-sm text-(--brand-ink) outline-none transition-[border-color] duration-200";
+  "peer w-full border-0 border-b bg-transparent px-0 pt-6 pb-2.5 font-(family-name:--font-dm-sans) text-sm text-(--brand-ink) outline-none transition-[border-color] duration-200";
 
 function fieldBorder(hasError: boolean) {
   return hasError
@@ -135,7 +135,7 @@ function FieldError({ message }: { message?: string }) {
   if (!message) return null;
   return (
     <p
-      className="mt-1.5 font-[family-name:var(--font-dm-sans)] text-[0.76rem] text-red-500"
+      className="mt-1.5 font-(family-name:--font-dm-sans) text-[0.76rem] text-red-500"
       role="alert"
     >
       {message}
@@ -238,7 +238,7 @@ function FloatingSelect({
       <div className="relative pt-1">
         <label
           htmlFor={id}
-          className="pointer-events-none absolute left-0 top-0 z-10 font-[family-name:var(--font-dm-sans)] text-[0.72rem] font-medium text-(--brand-brown)"
+          className="pointer-events-none absolute left-0 top-0 z-10 font-(family-name:--font-dm-sans) text-[0.72rem] font-medium text-(--brand-brown)"
         >
           {label}
           {required ? <span className="text-red-500"> *</span> : null}
@@ -253,7 +253,7 @@ function FloatingSelect({
             aria-invalid={!!error}
             className={cn(
               "flex h-auto min-h-14 w-full items-end justify-between gap-3 rounded-none border-0 border-b bg-transparent px-0 pt-6 pb-3 shadow-none ring-0 outline-none",
-              "font-[family-name:var(--font-dm-sans)] text-sm text-(--brand-ink)",
+              "font-(family-name:--font-dm-sans) text-sm text-(--brand-ink)",
               "data-[size=default]:h-auto data-[size=default]:min-h-14",
               "focus-visible:ring-0",
               fieldBorder(!!error),
@@ -300,10 +300,10 @@ function ContactCard({ icon, label, value }: ContactCardProps) {
     <div className="flex items-start gap-4 border-b border-[rgba(47,78,64,0.1)] pb-5 last:border-b-0 last:pb-0">
       <span className="mt-0.5 shrink-0 text-(--brand-brown)">{icon}</span>
       <div>
-        <div className="mb-0.5 font-[family-name:var(--font-dm-sans)] text-[0.72rem] font-semibold uppercase tracking-widest text-(--brand-brown)">
+        <div className="mb-0.5 font-(family-name:--font-dm-sans) text-[0.72rem] font-semibold uppercase tracking-widest text-(--brand-brown)">
           {label}
         </div>
-        <div className="font-[family-name:var(--font-dm-sans)] text-sm font-medium text-(--brand-green)">
+        <div className="font-(family-name:--font-dm-sans) text-sm font-medium text-(--brand-green)">
           {value}
         </div>
       </div>

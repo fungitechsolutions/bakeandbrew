@@ -37,7 +37,7 @@ export function SupplierRow({ supplier, onEdit, onDelete }: SupplierRowProps) {
             </span>
           </div>
         ) : (
-          <span className="font-[family-name:var(--font-dm-sans)] text-[0.8125rem] italic text-[rgba(47,78,64,0.3)]">
+          <span className="font-(family-name:--font-dm-sans) text-[0.8125rem] italic text-[rgba(47,78,64,0.3)]">
             —
           </span>
         )}
@@ -46,12 +46,12 @@ export function SupplierRow({ supplier, onEdit, onDelete }: SupplierRowProps) {
         {supplier.phone ? (
           <div className="flex items-center gap-1.5">
             <Phone size={11} className="shrink-0 text-[rgba(47,78,64,0.25)]" />
-            <span className="font-[family-name:var(--font-dm-sans)] text-[0.8125rem] text-[rgba(47,78,64,0.55)]">
+            <span className="font-(family-name:--font-dm-sans) text-[0.8125rem] text-[rgba(47,78,64,0.55)]">
               {supplier.phone}
             </span>
           </div>
         ) : (
-          <span className="font-[family-name:var(--font-dm-sans)] text-[0.8125rem] italic text-[rgba(47,78,64,0.3)]">
+          <span className="font-(family-name:--font-dm-sans) text-[0.8125rem] italic text-[rgba(47,78,64,0.3)]">
             —
           </span>
         )}

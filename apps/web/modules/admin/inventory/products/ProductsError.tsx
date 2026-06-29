@@ -24,10 +24,10 @@ export function ProductsError({ error, reset }: ProductsErrorProps) {
   return (
     <div className={inventoryTableWrapClass}>
       <div className="flex flex-col items-center justify-center gap-4 px-6 py-20 text-center">
-        <h2 className="font-[family-name:var(--font-lora)] text-lg font-bold text-(--brand-green)">
+        <h2 className="font-(family-name:--font-lora) text-lg font-bold text-(--brand-green)">
           Failed to load products
         </h2>
-        <p className="max-w-sm font-[family-name:var(--font-dm-sans)] text-sm text-[rgba(47,78,64,0.55)]">
+        <p className="max-w-sm font-(family-name:--font-dm-sans) text-sm text-[rgba(47,78,64,0.55)]">
           {resolveErrorMessage(error)}
         </p>
         <button type="button" onClick={reset} className={adminPrimaryButtonClass}>

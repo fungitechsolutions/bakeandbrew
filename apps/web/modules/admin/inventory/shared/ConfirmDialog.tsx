@@ -33,10 +33,10 @@ export function ConfirmDialog({
     <Dialog open={open} onOpenChange={(v) => !v && onCancel()}>
       <DialogContent className="max-w-sm gap-0 border border-[rgba(47,78,64,0.18)] bg-(--brand-cream) p-0">
         <DialogHeader className="border-b border-[rgba(47,78,64,0.12)] px-5 py-4 text-left">
-          <DialogTitle className="font-[family-name:var(--font-lora)] text-base font-bold text-(--brand-green)">
+          <DialogTitle className="font-(family-name:--font-lora) text-base font-bold text-(--brand-green)">
             Delete {itemName}?
           </DialogTitle>
-          <DialogDescription className="font-[family-name:var(--font-dm-sans)] text-sm text-[rgba(47,78,64,0.55)]">
+          <DialogDescription className="font-(family-name:--font-dm-sans) text-sm text-[rgba(47,78,64,0.55)]">
             This action cannot be undone. The record will be permanently removed.
           </DialogDescription>
         </DialogHeader>

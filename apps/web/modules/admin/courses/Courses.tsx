@@ -386,10 +386,10 @@ export default function CoursesPage() {
             },
           ].map(({ value, label }) => (
             <div key={label} className="bg-white px-5 py-4">
-              <p className="font-[family-name:var(--font-lora)] text-2xl font-bold tracking-tight text-(--brand-green)">
+              <p className="font-(family-name:--font-lora) text-2xl font-bold tracking-tight text-(--brand-green)">
                 {value}
               </p>
-              <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.45)]">
+              <p className="mt-1 font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.45)]">
                 {label}
               </p>
             </div>
@@ -413,7 +413,7 @@ export default function CoursesPage() {
             {(["all", "active", "inactive"] as const).map((f) => (
               <button
                 key={f}
-                className={`cursor-pointer px-3 py-2 font-[family-name:var(--font-dm-sans)] text-xs font-semibold uppercase tracking-[0.06em] transition-colors ${
+                className={`cursor-pointer px-3 py-2 font-(family-name:--font-dm-sans) text-xs font-semibold uppercase tracking-[0.06em] transition-colors ${
                   filterActive === f
                     ? adminSegmentActiveClass
                     : adminSegmentInactiveClass
@@ -428,7 +428,7 @@ export default function CoursesPage() {
 
         <div className="overflow-hidden border border-[rgba(47,78,64,0.18)] bg-white">
           {filtered.length > 0 && (
-            <div className="border-b border-[rgba(47,78,64,0.12)] px-4 py-3 font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.45)]">
+            <div className="border-b border-[rgba(47,78,64,0.12)] px-4 py-3 font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.45)]">
               Showing {filtered.length} of {courses.length} courses
             </div>
           )}
@@ -440,7 +440,7 @@ export default function CoursesPage() {
                     (h) => (
                       <th
                         key={h}
-                        className="px-4 py-3 text-left font-[family-name:var(--font-dm-sans)] text-[10px] font-bold tracking-[0.1em] whitespace-nowrap text-[rgba(47,78,64,0.45)] uppercase"
+                        className="px-4 py-3 text-left font-(family-name:--font-dm-sans) text-[10px] font-bold tracking-widest whitespace-nowrap text-[rgba(47,78,64,0.45)] uppercase"
                       >
                         {h}
                       </th>
@@ -454,7 +454,7 @@ export default function CoursesPage() {
                     <td colSpan={5}>
                       <div className="px-6 py-14 text-center text-[rgba(47,78,64,0.45)]">
                         <BookOpen size={28} className="mx-auto opacity-40" />
-                        <p className="mt-2 font-[family-name:var(--font-dm-sans)] text-sm">
+                        <p className="mt-2 font-(family-name:--font-dm-sans) text-sm">
                           No courses found{search ? ` for "${search}"` : ""}.
                         </p>
                       </div>
@@ -466,7 +466,7 @@ export default function CoursesPage() {
                       key={course.id}
                       className="border-b border-[rgba(47,78,64,0.08)] transition-colors last:border-b-0 hover:bg-[rgba(47,78,64,0.02)]"
                     >
-                      <td className="whitespace-nowrap px-4 py-3.5 font-[family-name:var(--font-dm-sans)] text-sm font-semibold text-(--brand-green)">
+                      <td className="whitespace-nowrap px-4 py-3.5 font-(family-name:--font-dm-sans) text-sm font-semibold text-(--brand-green)">
                         {course.name}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3.5 font-mono text-sm text-[rgba(47,78,64,0.65)]">
@@ -480,7 +480,7 @@ export default function CoursesPage() {
                           }
                         />
                       </td>
-                      <td className="px-4 py-3.5 font-[family-name:var(--font-dm-sans)] text-xs whitespace-nowrap text-[rgba(47,78,64,0.45)]">
+                      <td className="px-4 py-3.5 font-(family-name:--font-dm-sans) text-xs whitespace-nowrap text-[rgba(47,78,64,0.45)]">
                         {formatDate(String(course.createdAt))}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3.5">

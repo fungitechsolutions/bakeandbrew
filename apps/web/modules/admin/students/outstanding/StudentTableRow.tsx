@@ -18,7 +18,7 @@ function OutstandingBadge({ amount }: { amount: number }) {
   return (
     <span
       className={cn(
-        "inline-block border px-2.5 py-1 font-[family-name:var(--font-dm-sans)] text-[13px] font-semibold tabular-nums",
+        "inline-block border px-2.5 py-1 font-(family-name:--font-dm-sans) text-[13px] font-semibold tabular-nums",
         levelClass,
       )}
     >
@@ -75,23 +75,23 @@ export function StudentTableRow({ student }: StudentTableRowProps) {
         <div className="flex items-center gap-3">
           <StudentInitialsAvatar name={student.name} />
           <div className="flex flex-col gap-0.5">
-            <span className="whitespace-nowrap font-[family-name:var(--font-dm-sans)] text-sm font-semibold text-(--brand-ink)">
+            <span className="whitespace-nowrap font-(family-name:--font-dm-sans) text-sm font-semibold text-(--brand-ink)">
               {student.name}
             </span>
-            <span className="font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.5)]">
+            <span className="font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.5)]">
               {student.email}
             </span>
           </div>
         </div>
       </td>
       <td className={tdClass}>
-        <span className="font-[family-name:var(--font-dm-sans)] text-sm tabular-nums text-[rgba(47,78,64,0.75)]">
+        <span className="font-(family-name:--font-dm-sans) text-sm tabular-nums text-[rgba(47,78,64,0.75)]">
           {formatNpr(student.totalCourseFee / 100)}
         </span>
       </td>
       <td className={tdClass}>
         <div className="flex flex-col gap-1.5">
-          <span className="font-[family-name:var(--font-dm-sans)] text-sm font-medium tabular-nums text-(--brand-green)">
+          <span className="font-(family-name:--font-dm-sans) text-sm font-medium tabular-nums text-(--brand-green)">
             {formatNpr(student.totalPaid / 100)}
           </span>
           <div className="h-1 w-20 overflow-hidden bg-[rgba(47,78,64,0.1)]">
@@ -103,12 +103,12 @@ export function StudentTableRow({ student }: StudentTableRowProps) {
         </div>
       </td>
       <td className={tdClass}>
-        <span className="font-[family-name:var(--font-dm-sans)] text-sm tabular-nums text-[rgba(47,78,64,0.75)]">
+        <span className="font-(family-name:--font-dm-sans) text-sm tabular-nums text-[rgba(47,78,64,0.75)]">
           {formatNpr(student.totalDiscount / 100)}
         </span>
       </td>
       <td className={tdClass}>
-        <span className="font-[family-name:var(--font-dm-sans)] text-sm tabular-nums text-[rgba(47,78,64,0.75)]">
+        <span className="font-(family-name:--font-dm-sans) text-sm tabular-nums text-[rgba(47,78,64,0.75)]">
           {formatNpr(student.totalScholarship / 100)}
         </span>
       </td>

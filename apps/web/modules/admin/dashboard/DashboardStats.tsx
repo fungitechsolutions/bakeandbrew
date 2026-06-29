@@ -63,13 +63,13 @@ export function DashboardStats({ overview, revenueStats }: DashboardStatsProps) 
           <span className="absolute top-0 left-0 h-[2px] w-0 bg-(--brand-brown) transition-all duration-300 group-hover:w-full" />
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <p className="font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.45)]">
+              <p className="font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.45)]">
                 {card.label}
               </p>
-              <p className="mt-2 font-[family-name:var(--font-lora)] text-2xl font-bold tracking-tight text-(--brand-ink)">
+              <p className="mt-2 font-(family-name:--font-lora) text-2xl font-bold tracking-tight text-(--brand-ink)">
                 {card.value}
               </p>
-              <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.5)]">
+              <p className="mt-1 font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.5)]">
                 {card.detail}
               </p>
             </div>

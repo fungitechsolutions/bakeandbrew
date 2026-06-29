@@ -144,7 +144,7 @@ export function CourseFormModal({
           {errors.fee ? (
             <span className={adminFieldErrorClass}>{errors.fee}</span>
           ) : (
-            <span className="font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.45)]">
+            <span className="font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.45)]">
               {COURSE_PRICE_VAT_NOTE}
             </span>
           )}
@@ -152,10 +152,10 @@ export function CourseFormModal({
 
         <div className="flex items-center justify-between gap-4 border border-[rgba(47,78,64,0.12)] bg-white px-4 py-3">
           <div>
-            <p className="font-[family-name:var(--font-dm-sans)] text-sm font-semibold text-(--brand-ink)">
+            <p className="font-(family-name:--font-dm-sans) text-sm font-semibold text-(--brand-ink)">
               Active
             </p>
-            <p className="mt-0.5 font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.5)]">
+            <p className="mt-0.5 font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.5)]">
               Inactive courses won&apos;t appear for enrollment
             </p>
           </div>

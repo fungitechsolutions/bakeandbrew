@@ -64,7 +64,7 @@ export function InventoryFormSection({
 }: InventoryFormSectionProps) {
   return (
     <section className="flex flex-col gap-5">
-      <h3 className="border-b border-[rgba(47,78,64,0.1)] pb-2 font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.4)]">
+      <h3 className="border-b border-[rgba(47,78,64,0.1)] pb-2 font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.4)]">
         {title}
       </h3>
       <div className="flex flex-col gap-5">{children}</div>

@@ -37,7 +37,7 @@ export function SectionCard({
           </div>
           <h3
             className={cn(
-              "font-[family-name:var(--font-lora)] text-xs font-bold text-(--brand-green) sm:text-sm",
+              "font-(family-name:--font-lora) text-xs font-bold text-(--brand-green) sm:text-sm",
               titleClassName,
             )}
           >

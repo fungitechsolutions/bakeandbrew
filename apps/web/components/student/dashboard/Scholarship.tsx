@@ -57,10 +57,10 @@ function SectionError({
       >
         <AlertCircle className="h-5 w-5 text-red-400" strokeWidth={1.75} />
         <div>
-          <p className="font-[family-name:var(--font-dm-sans)] text-[0.9rem] font-semibold text-(--brand-green)">
+          <p className="font-(family-name:--font-dm-sans) text-[0.9rem] font-semibold text-(--brand-green)">
             Couldn&apos;t load data
           </p>
-          <p className="mx-auto mt-1 max-w-xs font-[family-name:var(--font-dm-sans)] text-[0.8rem] leading-relaxed text-[rgba(47,78,64,0.5)]">
+          <p className="mx-auto mt-1 max-w-xs font-(family-name:--font-dm-sans) text-[0.8rem] leading-relaxed text-[rgba(47,78,64,0.5)]">
             {message ?? "Something went wrong. Please try again."}
           </p>
         </div>
@@ -96,7 +96,7 @@ function ScholarshipEmpty() {
         <p className="font-[family-name:var(--font-playfair)] text-[0.92rem] font-semibold text-[rgba(47,78,64,0.45)]">
           No scholarship awarded
         </p>
-        <p className="mx-auto mt-1 max-w-[200px] font-[family-name:var(--font-dm-sans)] text-[0.75rem] leading-relaxed text-[rgba(47,78,64,0.35)]">
+        <p className="mx-auto mt-1 max-w-[200px] font-(family-name:--font-dm-sans) text-[0.75rem] leading-relaxed text-[rgba(47,78,64,0.35)]">
           A scholarship awarded to your account will appear here.
         </p>
       </div>
@@ -119,11 +119,11 @@ function ScholarshipCard({ scholarship }: { scholarship: ScholarshipItem }) {
               Merit scholarship
             </p>
             {scholarship.note ? (
-              <p className="mt-0.5 font-[family-name:var(--font-dm-sans)] text-[0.75rem] leading-snug text-[rgba(47,78,64,0.5)]">
+              <p className="mt-0.5 font-(family-name:--font-dm-sans) text-[0.75rem] leading-snug text-[rgba(47,78,64,0.5)]">
                 {scholarship.note}
               </p>
             ) : null}
-            <p className="mt-1.5 font-[family-name:var(--font-dm-sans)] text-[0.72rem] text-[rgba(47,78,64,0.38)]">
+            <p className="mt-1.5 font-(family-name:--font-dm-sans) text-[0.72rem] text-[rgba(47,78,64,0.38)]">
               Awarded {formatDate(scholarship.createdAt)}
             </p>
           </div>

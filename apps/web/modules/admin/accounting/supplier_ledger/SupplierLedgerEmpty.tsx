@@ -15,10 +15,10 @@ export function SupplierLedgerEmpty({
         strokeWidth={1.25}
       />
       <div>
-        <p className="font-[family-name:var(--font-lora)] text-base font-semibold text-(--brand-ink)">
+        <p className="font-(family-name:--font-lora) text-base font-semibold text-(--brand-ink)">
           No ledger entries yet
         </p>
-        <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-sm text-[rgba(47,78,64,0.45)]">
+        <p className="mt-1 font-(family-name:--font-dm-sans) text-sm text-[rgba(47,78,64,0.45)]">
           Record a purchase or payment to get started.
         </p>
       </div>

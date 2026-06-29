@@ -427,10 +427,10 @@ export default function Navbar() {
                     onClick={closeMenu}
                     className="group flex items-center gap-3 px-3 py-3.5 transition-colors hover:bg-[rgba(47,78,64,0.04)]"
                   >
-                    <span className="w-6 shrink-0 font-[family-name:var(--font-dm-sans)] text-[0.7rem] font-semibold tabular-nums text-(--brand-brown)">
+                    <span className="w-6 shrink-0 font-(family-name:--font-dm-sans) text-[0.7rem] font-semibold tabular-nums text-(--brand-brown)">
                       {String(index + 1).padStart(2, "0")}
                     </span>
-                    <span className="flex-1 font-[family-name:var(--font-dm-sans)] text-[1.02rem] font-medium text-[rgba(26,26,26,0.72)] transition-colors group-hover:text-(--brand-green)">
+                    <span className="flex-1 font-(family-name:--font-dm-sans) text-[1.02rem] font-medium text-[rgba(26,26,26,0.72)] transition-colors group-hover:text-(--brand-green)">
                       {link.label}
                     </span>
                     <ChevronRight
@@ -449,11 +449,11 @@ export default function Navbar() {
                 <div className="flex items-center gap-3">
                   <UserAvatar user={user} size={40} />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-[family-name:var(--font-dm-sans)] text-sm font-semibold text-(--brand-ink)">
+                    <p className="truncate font-(family-name:--font-dm-sans) text-sm font-semibold text-(--brand-ink)">
                       {user.name}
                     </p>
                     {user.email ? (
-                      <p className="truncate font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(26,26,26,0.45)]">
+                      <p className="truncate font-(family-name:--font-dm-sans) text-xs text-[rgba(26,26,26,0.45)]">
                         {user.email}
                       </p>
                     ) : null}
@@ -488,7 +488,7 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="flex flex-col gap-2.5">
-                <p className="font-[family-name:var(--font-dm-sans)] text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-[rgba(47,78,64,0.45)]">
+                <p className="font-(family-name:--font-dm-sans) text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-[rgba(47,78,64,0.45)]">
                   Student access
                 </p>
                 <Link

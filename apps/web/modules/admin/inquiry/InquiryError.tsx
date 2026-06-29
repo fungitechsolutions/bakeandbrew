@@ -52,16 +52,16 @@ export default function InquiryError({ message, code, onRetry }: Props) {
           </span>
         )}
 
-        <h2 className="font-[family-name:var(--font-lora)] text-xl font-bold text-(--brand-green)">
+        <h2 className="font-(family-name:--font-lora) text-xl font-bold text-(--brand-green)">
           Something went wrong
         </h2>
 
-        <p className="mt-2 max-w-md font-[family-name:var(--font-dm-sans)] text-sm leading-relaxed text-[rgba(47,78,64,0.55)]">
+        <p className="mt-2 max-w-md font-(family-name:--font-dm-sans) text-sm leading-relaxed text-[rgba(47,78,64,0.55)]">
           {message ?? "An unexpected error occurred while fetching inquiries."}
         </p>
 
         {hint && (
-          <p className="mt-4 max-w-sm border border-[rgba(47,78,64,0.12)] bg-[rgba(251,250,247,0.9)] px-4 py-2 font-[family-name:var(--font-dm-sans)] text-xs leading-relaxed text-[rgba(47,78,64,0.55)]">
+          <p className="mt-4 max-w-sm border border-[rgba(47,78,64,0.12)] bg-[rgba(251,250,247,0.9)] px-4 py-2 font-(family-name:--font-dm-sans) text-xs leading-relaxed text-[rgba(47,78,64,0.55)]">
             <Lightbulb className="mr-1 inline h-3.5 w-3.5" />
             {hint}
           </p>

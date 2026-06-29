@@ -105,7 +105,7 @@ export function SummaryTable({ data }: Props) {
             <tr className="bg-[rgba(47,78,64,0.04)]">
               <td
                 colSpan={6}
-                className="px-5 py-4 font-[family-name:var(--font-dm-sans)] text-xs font-bold uppercase tracking-[0.08em] text-(--brand-green)"
+                className="px-5 py-4 font-(family-name:--font-dm-sans) text-xs font-bold uppercase tracking-[0.08em] text-(--brand-green)"
               >
                 Totals
               </td>

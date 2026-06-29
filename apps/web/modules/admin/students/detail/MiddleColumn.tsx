@@ -111,7 +111,7 @@ export function MiddleColumn({
         ) : (
           <>
             <div className="mb-4 flex flex-col items-center gap-3 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
-              <p className="font-[family-name:var(--font-dm-sans)] text-sm text-[rgba(47,78,64,0.5)]">
+              <p className="font-(family-name:--font-dm-sans) text-sm text-[rgba(47,78,64,0.5)]">
                 {payments.length} payment{payments.length !== 1 ? "s" : ""}{" "}
                 recorded
               </p>

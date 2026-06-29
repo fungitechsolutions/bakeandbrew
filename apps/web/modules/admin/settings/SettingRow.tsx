@@ -50,7 +50,7 @@ export function SettingRow({ setting, onSave }: SettingRowProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[rgba(47,78,64,0.08)] px-5 py-4 transition-colors last:border-b-0 hover:bg-[rgba(47,78,64,0.02)]">
       <div className="flex min-w-0 flex-col gap-1">
-        <span className="font-[family-name:var(--font-dm-sans)] text-sm font-semibold text-(--brand-ink)">
+        <span className="font-(family-name:--font-dm-sans) text-sm font-semibold text-(--brand-ink)">
           {formatKey(setting.key)}
         </span>
         <span className="w-fit border border-[rgba(47,78,64,0.12)] bg-[rgba(251,250,247,0.9)] px-1.5 py-0.5 font-mono text-[10px] text-[rgba(47,78,64,0.45)]">

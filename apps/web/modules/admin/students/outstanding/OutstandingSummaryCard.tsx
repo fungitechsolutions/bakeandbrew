@@ -24,7 +24,7 @@ export function OutstandingSummaryCard({
     <div className="grid grid-cols-2 gap-4 mb-6 max-[480px]:grid-cols-1">
       {/* Primary card */}
       <div className="rounded-[14px] px-7 py-6 relative overflow-hidden bg-[#2f4e40] text-[#fbfaf7] max-[480px]:px-5 max-[480px]:py-5">
-        <div className="font-[var(--font-dm-sans)] text-[11px] font-semibold tracking-[0.1em] uppercase opacity-70 mb-2">
+        <div className="font-[var(--font-dm-sans)] text-[11px] font-semibold tracking-widest uppercase opacity-70 mb-2">
           Total Outstanding
         </div>
         {isLoading ? (
@@ -41,7 +41,7 @@ export function OutstandingSummaryCard({
 
       {/* Secondary card */}
       <div className="rounded-[14px] px-7 py-6 relative overflow-hidden bg-white border border-[#e8e3da] text-[#1a1a1a] max-[480px]:px-5 max-[480px]:py-5">
-        <div className="font-[var(--font-dm-sans)] text-[11px] font-semibold tracking-[0.1em] uppercase opacity-70 mb-2">
+        <div className="font-[var(--font-dm-sans)] text-[11px] font-semibold tracking-widest uppercase opacity-70 mb-2">
           Students with Dues
         </div>
         {isLoading ? (

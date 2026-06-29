@@ -104,7 +104,7 @@ export function DiscountFormModal({
             value={form.percent}
             onChange={set("percent")}
           />
-          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 font-[family-name:var(--font-dm-sans)] text-sm font-semibold text-[rgba(47,78,64,0.4)]">
+          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 font-(family-name:--font-dm-sans) text-sm font-semibold text-[rgba(47,78,64,0.4)]">
             %
           </span>
         </div>

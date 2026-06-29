@@ -43,7 +43,7 @@ export function ModalShell({
             </div>
             <h2
               id="modal-shell-title"
-              className="font-[family-name:var(--font-lora)] text-base font-bold text-(--brand-green)"
+              className="font-(family-name:--font-lora) text-base font-bold text-(--brand-green)"
             >
               {title}
             </h2>

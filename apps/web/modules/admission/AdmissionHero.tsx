@@ -49,16 +49,16 @@ export function AdmissionHero() {
         </div>
 
         <aside className="border border-[rgba(47,78,64,0.1)] bg-white p-5 lg:p-6">
-          <p className="font-[family-name:var(--font-dm-sans)] text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[rgba(47,78,64,0.42)]">
+          <p className="font-(family-name:--font-dm-sans) text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[rgba(47,78,64,0.42)]">
             Need help?
           </p>
-          <p className="mt-2 font-[family-name:var(--font-dm-sans)] text-[0.88rem] leading-relaxed text-[rgba(47,78,64,0.62)]">
+          <p className="mt-2 font-(family-name:--font-dm-sans) text-[0.88rem] leading-relaxed text-[rgba(47,78,64,0.62)]">
             Call or message us before you apply — we are happy to walk you
             through programs and batch schedules.
           </p>
           <a
             href={`tel:${siteInfo.contact.phone.replace(/\s/g, "")}`}
-            className="mt-4 inline-flex items-center gap-2 font-[family-name:var(--font-dm-sans)] text-[0.88rem] font-semibold text-(--brand-brown) transition-colors hover:text-(--brand-green)"
+            className="mt-4 inline-flex items-center gap-2 font-(family-name:--font-dm-sans) text-[0.88rem] font-semibold text-(--brand-brown) transition-colors hover:text-(--brand-green)"
           >
             <Phone className="h-4 w-4" strokeWidth={2} />
             {siteInfo.contact.phone}
@@ -76,10 +76,10 @@ export function AdmissionHero() {
               <Icon className="h-4 w-4" strokeWidth={1.75} />
             </div>
             <div>
-              <p className="font-[family-name:var(--font-dm-sans)] text-[0.88rem] font-semibold text-(--brand-green)">
+              <p className="font-(family-name:--font-dm-sans) text-[0.88rem] font-semibold text-(--brand-green)">
                 {title}
               </p>
-              <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-[0.8rem] leading-relaxed text-[rgba(47,78,64,0.52)]">
+              <p className="mt-1 font-(family-name:--font-dm-sans) text-[0.8rem] leading-relaxed text-[rgba(47,78,64,0.52)]">
                 {body}
               </p>
             </div>

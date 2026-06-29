@@ -95,7 +95,7 @@ export default function CourseClientShells({ toneKey }: CourseClientShellsProps)
                   type="button"
                   onClick={() => scrollTo(id)}
                   aria-current={isActive ? "location" : undefined}
-                  className="relative shrink-0 snap-start px-3.5 py-3 font-[family-name:var(--font-dm-sans)] text-[0.82rem] font-medium transition-colors duration-150 sm:px-4 sm:py-3.5 sm:text-[0.85rem]"
+                  className="relative shrink-0 snap-start px-3.5 py-3 font-(family-name:--font-dm-sans) text-[0.82rem] font-medium transition-colors duration-150 sm:px-4 sm:py-3.5 sm:text-[0.85rem]"
                   style={{
                     color: isActive
                       ? "var(--brand-green)"

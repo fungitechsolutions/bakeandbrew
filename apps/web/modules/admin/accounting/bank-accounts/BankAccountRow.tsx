@@ -45,12 +45,12 @@ export function BankAccountRow({
           <div className="flex min-w-0 items-center gap-2.5">
             <span>{account.accountName}</span>
             {account.isDefault ? (
-              <span className="shrink-0 border border-[rgba(47,78,64,0.2)] bg-[rgba(47,78,64,0.06)] px-2 py-0.5 font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.08em] text-(--brand-green)">
+              <span className="shrink-0 border border-[rgba(47,78,64,0.2)] bg-[rgba(47,78,64,0.06)] px-2 py-0.5 font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.08em] text-(--brand-green)">
                 Default
               </span>
             ) : null}
           </div>
-          <span className="font-[family-name:var(--font-dm-sans)] text-[0.78rem] text-[rgba(47,78,64,0.45)]">
+          <span className="font-(family-name:--font-dm-sans) text-[0.78rem] text-[rgba(47,78,64,0.45)]">
             {account.bankName}
           </span>
         </div>
@@ -64,7 +64,7 @@ export function BankAccountRow({
             </span>
           </div>
         ) : (
-          <span className="font-[family-name:var(--font-dm-sans)] text-[0.8125rem] italic text-[rgba(47,78,64,0.3)]">
+          <span className="font-(family-name:--font-dm-sans) text-[0.8125rem] italic text-[rgba(47,78,64,0.3)]">
             —
           </span>
         )}

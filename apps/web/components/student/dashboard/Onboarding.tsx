@@ -68,13 +68,13 @@ export default function OnboardingPage() {
               <FileText className="h-6 w-6" strokeWidth={1.75} />
             </div>
             <div>
-              <p className="font-[family-name:var(--font-dm-sans)] text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[rgba(47,78,64,0.42)]">
+              <p className="font-(family-name:--font-dm-sans) text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[rgba(47,78,64,0.42)]">
                 Next step
               </p>
               <h2 className="mt-1 font-[family-name:var(--font-playfair)] text-[1.35rem] font-semibold text-(--brand-green)">
                 Complete your admission form
               </h2>
-              <p className="mt-2 font-[family-name:var(--font-dm-sans)] text-[0.86rem] leading-relaxed text-[rgba(47,78,64,0.55)]">
+              <p className="mt-2 font-(family-name:--font-dm-sans) text-[0.86rem] leading-relaxed text-[rgba(47,78,64,0.55)]">
                 About 5 minutes · personal details, guardian info & course
                 preferences
               </p>

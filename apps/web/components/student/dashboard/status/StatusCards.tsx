@@ -30,13 +30,13 @@ export function OptionCardGrid({ cards }: { cards: OptionCard[] }) {
             >
               <Icon className="h-5 w-5" strokeWidth={1.75} />
             </div>
-            <p className="font-[family-name:var(--font-dm-sans)] text-[0.9rem] font-semibold text-(--brand-green) group-hover:text-(--brand-brown)">
+            <p className="font-(family-name:--font-dm-sans) text-[0.9rem] font-semibold text-(--brand-green) group-hover:text-(--brand-brown)">
               {card.title}
             </p>
-            <p className="mt-2 font-[family-name:var(--font-dm-sans)] text-[0.8rem] leading-relaxed text-[rgba(47,78,64,0.52)]">
+            <p className="mt-2 font-(family-name:--font-dm-sans) text-[0.8rem] leading-relaxed text-[rgba(47,78,64,0.52)]">
               {card.description}
             </p>
-            <span className="mt-4 inline-flex items-center gap-1 font-[family-name:var(--font-dm-sans)] text-[0.78rem] font-semibold text-(--brand-brown) opacity-0 transition-opacity group-hover:opacity-100">
+            <span className="mt-4 inline-flex items-center gap-1 font-(family-name:--font-dm-sans) text-[0.78rem] font-semibold text-(--brand-brown) opacity-0 transition-opacity group-hover:opacity-100">
               {card.external ? "Open" : "Go"}
               {card.external ? (
                 <ArrowUpRight className="h-3.5 w-3.5" />
@@ -86,10 +86,10 @@ export function InfoBento({
             className="mb-3 h-4 w-4 text-(--brand-brown)"
             strokeWidth={1.75}
           />
-          <p className="font-[family-name:var(--font-dm-sans)] text-[0.65rem] font-bold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.4)]">
+          <p className="font-(family-name:--font-dm-sans) text-[0.65rem] font-bold uppercase tracking-[0.12em] text-[rgba(47,78,64,0.4)]">
             {label}
           </p>
-          <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-[0.86rem] font-medium leading-snug text-(--brand-green)">
+          <p className="mt-1 font-(family-name:--font-dm-sans) text-[0.86rem] font-medium leading-snug text-(--brand-green)">
             {value}
           </p>
         </div>

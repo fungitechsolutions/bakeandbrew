@@ -114,7 +114,7 @@ export default function HowItWorks() {
                   <h3 className="mb-2 font-[family-name:var(--font-playfair)] text-[1.05rem] font-semibold text-(--brand-green)">
                     {step.title}
                   </h3>
-                  <p className="font-[family-name:var(--font-dm-sans)] text-[0.88rem] leading-[1.65] text-[rgba(47,78,64,0.58)]">
+                  <p className="font-(family-name:--font-dm-sans) text-[0.88rem] leading-[1.65] text-[rgba(47,78,64,0.58)]">
                     {step.description}
                   </p>
 

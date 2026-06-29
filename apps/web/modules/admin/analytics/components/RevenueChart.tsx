@@ -54,7 +54,7 @@ export function RevenueChart({
         isEmpty ? undefined : (
         <div className="flex items-center gap-2">
           <span
-            className={`inline-flex items-center border px-2 py-0.5 font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.08em] ${
+            className={`inline-flex items-center border px-2 py-0.5 font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.08em] ${
               isPositive
                 ? "border-[rgba(58,90,73,0.25)] bg-[rgba(58,90,73,0.08)] text-[#3a5a49]"
                 : "border-[rgba(154,52,18,0.25)] bg-[rgba(154,52,18,0.08)] text-[#9a3412]"
@@ -62,7 +62,7 @@ export function RevenueChart({
           >
             {isPositive ? "↑" : "↓"} {Math.abs(Number(percentChange))}%
           </span>
-          <span className="font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.45)]">
+          <span className="font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.45)]">
             vs last month
           </span>
         </div>

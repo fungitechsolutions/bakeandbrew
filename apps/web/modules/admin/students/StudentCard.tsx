@@ -25,7 +25,7 @@ export function StudentCard({
       <div className="flex flex-1 flex-col gap-4 p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <p className="truncate font-[family-name:var(--font-lora)] text-base font-bold text-(--brand-green)">
+            <p className="truncate font-(family-name:--font-lora) text-base font-bold text-(--brand-green)">
               {student.fullName}
             </p>
             <div className="mt-1.5 flex items-center gap-1.5">
@@ -33,7 +33,7 @@ export function StudentCard({
                 className="h-3 w-3 shrink-0 text-[rgba(47,78,64,0.35)]"
                 strokeWidth={2}
               />
-              <span className="font-[family-name:var(--font-dm-sans)] text-[11px] font-medium tracking-wide text-[rgba(47,78,64,0.45)]">
+              <span className="font-(family-name:--font-dm-sans) text-[11px] font-medium tracking-wide text-[rgba(47,78,64,0.45)]">
                 {student.referenceNo}
               </span>
             </div>
@@ -46,7 +46,7 @@ export function StudentCard({
             className="h-3.5 w-3.5 shrink-0 text-[rgba(47,78,64,0.4)]"
             strokeWidth={1.75}
           />
-          <span className="font-[family-name:var(--font-dm-sans)] text-sm text-[rgba(47,78,64,0.7)]">
+          <span className="font-(family-name:--font-dm-sans) text-sm text-[rgba(47,78,64,0.7)]">
             {student.phone}
           </span>
         </div>
@@ -56,7 +56,7 @@ export function StudentCard({
             {student.courses.map((course) => (
               <span
                 key={course}
-                className="border border-[rgba(47,78,64,0.14)] bg-white px-2 py-0.5 font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.08em] text-[rgba(47,78,64,0.55)]"
+                className="border border-[rgba(47,78,64,0.14)] bg-white px-2 py-0.5 font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.08em] text-[rgba(47,78,64,0.55)]"
               >
                 {course}
               </span>
@@ -67,7 +67,7 @@ export function StudentCard({
 
       <Link
         href={`/admin/students/${student.id}`}
-        className="flex items-center justify-between border-t border-[rgba(47,78,64,0.12)] bg-[rgba(47,78,64,0.02)] px-5 py-3 font-[family-name:var(--font-dm-sans)] text-[11px] font-semibold uppercase tracking-[0.08em] text-[rgba(47,78,64,0.55)] transition-colors group-hover:bg-(--brand-green) group-hover:text-white"
+        className="flex items-center justify-between border-t border-[rgba(47,78,64,0.12)] bg-[rgba(47,78,64,0.02)] px-5 py-3 font-(family-name:--font-dm-sans) text-[11px] font-semibold uppercase tracking-[0.08em] text-[rgba(47,78,64,0.55)] transition-colors group-hover:bg-(--brand-green) group-hover:text-white"
       >
         View profile
         <ArrowUpRight

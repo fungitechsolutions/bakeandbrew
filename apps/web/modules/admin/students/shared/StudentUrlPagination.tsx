@@ -53,7 +53,7 @@ export function StudentUrlPagination({
 
   const pages = getPageNumbers(page, totalPages);
   const btnBase =
-    "inline-flex h-9 w-9 items-center justify-center border border-[rgba(47,78,64,0.18)] font-[family-name:var(--font-dm-sans)] text-xs font-semibold transition-colors select-none";
+    "inline-flex h-9 w-9 items-center justify-center border border-[rgba(47,78,64,0.18)] font-(family-name:--font-dm-sans) text-xs font-semibold transition-colors select-none";
   const btnActive = "bg-(--brand-green) text-white";
   const btnInactive =
     "bg-white text-(--brand-green) hover:bg-[rgba(47,78,64,0.04)]";
@@ -66,7 +66,7 @@ export function StudentUrlPagination({
       role="navigation"
       aria-label="Pagination"
     >
-      <p className="font-[family-name:var(--font-dm-sans)] text-xs text-[rgba(47,78,64,0.45)]">
+      <p className="font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.45)]">
         Page {page} of {totalPages}
       </p>
 

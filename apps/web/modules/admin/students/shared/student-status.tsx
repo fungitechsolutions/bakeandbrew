@@ -37,7 +37,7 @@ export function StudentStatusBadge({ status }: { status: StudentStatus }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 border px-2 py-0.5 font-[family-name:var(--font-dm-sans)] text-[10px] font-semibold uppercase tracking-[0.08em]",
+        "inline-flex items-center gap-1.5 border px-2 py-0.5 font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.08em]",
         meta.classes,
       )}
     >
