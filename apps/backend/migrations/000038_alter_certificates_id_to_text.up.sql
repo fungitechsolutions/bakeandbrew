@@ -1,0 +1,5 @@
+ALTER TABLE certificates
+    ALTER COLUMN id DROP DEFAULT;
+
+ALTER TABLE certificates
+    ALTER COLUMN id TYPE TEXT;

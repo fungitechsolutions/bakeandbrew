@@ -18,4 +18,5 @@ func SetupAdminRoutes(router *gin.RouterGroup, cfg config.Config) {
 	setupAdminInventoryRoutes(admin, cfg)
 	setupAdminAccountingRoutes(admin, cfg)
 	setupAdminProfileRoutes(admin, cfg)
+	setupAdminCertificatesRoutes(admin, cfg)
 }

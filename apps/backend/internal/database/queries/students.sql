@@ -404,3 +404,6 @@ SELECT DISTINCT batch FROM students WHERE batch IS NOT NULL ORDER BY batch;
 
 -- name: UpdateStudentImage :execresult
 UPDATE students SET photo_url = $2 WHERE id = $1;
+
+-- name: GetStudentStatus :one
+SELECT status FROM students WHERE id = $1;

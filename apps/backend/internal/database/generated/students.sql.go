@@ -663,6 +663,17 @@ func (q *Queries) GetStudentRejectedOverview(ctx context.Context, studentID pgty
 	return i, err
 }
 
+const getStudentStatus = `-- name: GetStudentStatus :one
+SELECT status FROM students WHERE id = $1
+`
+
+func (q *Queries) GetStudentStatus(ctx context.Context, id pgtype.UUID) (string, error) {
+	row := q.db.QueryRow(ctx, getStudentStatus, id)
+	var status string
+	err := row.Scan(&status)
+	return status, err
+}
+
 const getStudentStatusByUserID = `-- name: GetStudentStatusByUserID :one
 SELECT status
 FROM students

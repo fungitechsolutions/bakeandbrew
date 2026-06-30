@@ -15,24 +15,25 @@ const deleteCertificate = `-- name: DeleteCertificate :exec
 DELETE FROM certificates WHERE id = $1
 `
 
-func (q *Queries) DeleteCertificate(ctx context.Context, id int32) error {
+func (q *Queries) DeleteCertificate(ctx context.Context, id string) error {
 	_, err := q.db.Exec(ctx, deleteCertificate, id)
 	return err
 }
 
 const getCertificateByStudentID = `-- name: GetCertificateByStudentID :one
-SELECT ce.id, ce.student_id, ce.issued_by, ce.issued_at, ce.remarks, a.name AS issued_by_name
+SELECT ce.id, ce.student_id, ce.issued_by, ce.issued_at, ce.remarks, ce.type, a.name AS issued_by_name
 FROM certificates ce
 JOIN users a ON a.id = ce.issued_by
 WHERE ce.student_id = $1
 `
 
 type GetCertificateByStudentIDRow struct {
-	ID           int32              `json:"id"`
+	ID           string             `json:"id"`
 	StudentID    pgtype.UUID        `json:"studentId"`
 	IssuedBy     pgtype.UUID        `json:"issuedBy"`
 	IssuedAt     pgtype.Timestamptz `json:"issuedAt"`
 	Remarks      pgtype.Text        `json:"remarks"`
+	Type         string             `json:"type"`
 	IssuedByName string             `json:"issuedByName"`
 }
 
@@ -45,25 +46,34 @@ func (q *Queries) GetCertificateByStudentID(ctx context.Context, studentID pgtyp
 		&i.IssuedBy,
 		&i.IssuedAt,
 		&i.Remarks,
+		&i.Type,
 		&i.IssuedByName,
 	)
 	return i, err
 }
 
 const issueCertificate = `-- name: IssueCertificate :one
-INSERT INTO certificates (student_id, issued_by, remarks)
-VALUES ($1, $2, $3)
-RETURNING id, student_id, issued_by, issued_at, remarks
+INSERT INTO certificates (id, student_id, issued_by, remarks, type)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, student_id, issued_by, issued_at, remarks, type
 `
 
 type IssueCertificateParams struct {
+	ID        string      `json:"id"`
 	StudentID pgtype.UUID `json:"studentId"`
 	IssuedBy  pgtype.UUID `json:"issuedBy"`
 	Remarks   pgtype.Text `json:"remarks"`
+	Type      string      `json:"type"`
 }
 
 func (q *Queries) IssueCertificate(ctx context.Context, arg IssueCertificateParams) (Certificate, error) {
-	row := q.db.QueryRow(ctx, issueCertificate, arg.StudentID, arg.IssuedBy, arg.Remarks)
+	row := q.db.QueryRow(ctx, issueCertificate,
+		arg.ID,
+		arg.StudentID,
+		arg.IssuedBy,
+		arg.Remarks,
+		arg.Type,
+	)
 	var i Certificate
 	err := row.Scan(
 		&i.ID,
@@ -71,12 +81,13 @@ func (q *Queries) IssueCertificate(ctx context.Context, arg IssueCertificatePara
 		&i.IssuedBy,
 		&i.IssuedAt,
 		&i.Remarks,
+		&i.Type,
 	)
 	return i, err
 }
 
 const listCertificates = `-- name: ListCertificates :many
-SELECT ce.id, ce.student_id, ce.issued_by, ce.issued_at, ce.remarks, s.full_name, s.reference_no, a.name AS issued_by_name
+SELECT ce.id, ce.student_id, ce.issued_by, ce.issued_at, ce.remarks, ce.type, s.full_name, s.reference_no, a.name AS issued_by_name
 FROM certificates ce
 JOIN students s ON s.id = ce.student_id
 JOIN users a ON a.id = ce.issued_by
@@ -84,11 +95,12 @@ ORDER BY ce.issued_at DESC
 `
 
 type ListCertificatesRow struct {
-	ID           int32              `json:"id"`
+	ID           string             `json:"id"`
 	StudentID    pgtype.UUID        `json:"studentId"`
 	IssuedBy     pgtype.UUID        `json:"issuedBy"`
 	IssuedAt     pgtype.Timestamptz `json:"issuedAt"`
 	Remarks      pgtype.Text        `json:"remarks"`
+	Type         string             `json:"type"`
 	FullName     string             `json:"fullName"`
 	ReferenceNo  string             `json:"referenceNo"`
 	IssuedByName string             `json:"issuedByName"`
@@ -109,6 +121,7 @@ func (q *Queries) ListCertificates(ctx context.Context) ([]ListCertificatesRow, 
 			&i.IssuedBy,
 			&i.IssuedAt,
 			&i.Remarks,
+			&i.Type,
 			&i.FullName,
 			&i.ReferenceNo,
 			&i.IssuedByName,
