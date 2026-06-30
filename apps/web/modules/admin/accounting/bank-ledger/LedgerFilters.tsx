@@ -61,6 +61,7 @@ export function LedgerFilters({
       (a) => a.id === filters.accountId && a.bankId === value,
     );
     onChange({
+      ...filters,
       bankId: value ?? "all",
       bankName: selectedBank?.name ?? "all",
       accountId: currentAccountStillValid ? filters.accountId : "all",
