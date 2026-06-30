@@ -1,6 +1,6 @@
 -- name: IssueCertificate :one
-INSERT INTO certificates (student_id, issued_by, remarks)
-VALUES ($1, $2, $3)
+INSERT INTO certificates (id, student_id, issued_by, remarks, type)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- name: GetCertificateByStudentID :one

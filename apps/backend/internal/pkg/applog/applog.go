@@ -7,13 +7,14 @@ import (
 )
 
 const (
-	AttrHandler   = "handler"
-	AttrMethod    = "method"
-	AttrPath      = "path"
-	AttrIP        = "ip"
-	AttrUserID    = "user_id"
-	AttrStudentID = "student_id"
-	AttrError     = "error"
+	AttrHandler       = "handler"
+	AttrMethod        = "method"
+	AttrPath          = "path"
+	AttrIP            = "ip"
+	AttrUserID        = "user_id"
+	AttrStudentID     = "student_id"
+	AttrError         = "error"
+	AttrStudentStatus = "student_status"
 )
 
 // Base returns common request-scoped attributes for structured logs.
