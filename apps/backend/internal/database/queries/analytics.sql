@@ -3,6 +3,8 @@ SELECT
     COUNT(DISTINCT s.id)::INTEGER AS total_students,
     COUNT(DISTINCT s.id) FILTER (WHERE s.status = 'pending')::INTEGER AS pending_approvals,
     (SELECT COALESCE(SUM(amount), 0)::BIGINT FROM payments) AS total_revenue,
+    (SELECT COALESCE(SUM(amount), 0)::BIGINT FROM student_discounts) AS total_discounts,
+    (SELECT COALESCE(SUM(amount), 0)::BIGINT FROM student_scholarships) AS total_scholarships,
     COUNT(DISTINCT s.id) FILTER (
         WHERE s.status IN ('active', 'completed')
         AND (
