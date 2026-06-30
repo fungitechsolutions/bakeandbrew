@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Printer } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Loader2, Printer, Stamp } from "lucide-react";
 import {
   AddPayment,
   AddPaymentResponse,
@@ -20,15 +20,21 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Certificate } from "@/components/certificate/Certificate";
 import { printCertificateElement } from "@/components/certificate/printCertificate";
+import { getCertificateVerifyUrl } from "@/lib/certificate-url";
+import { useIssueCertificate } from "@/hooks/mutations/admin/certificates/useIssueCertificate";
+import { useStudentCertificate } from "@/hooks/queries/admin/certificates/useStudentCertificate";
 import { siteInfo } from "@/utils/site-info";
 import { usePrintInvoice } from "./PrintInvoice";
 import { PaymentRow } from "./PaymentRow";
-import { WorkshopCertificate } from "@/components/certificate/WorkshopCertificate";
 import StudentDetailGrid from "./StudentDetailGrid";
 import { StudentDetailHeader } from "./StudentDetailHeader";
 import { StudentFinanceBar } from "./StudentFinanceBar";
 import { Invoice } from "./Invoice";
-import { adminPrimaryButtonClass } from "@/components/admin/admin-styles";
+import {
+  adminPrimaryButtonClass,
+  adminPrimaryButtonDisabledClass,
+} from "@/components/admin/admin-styles";
+import { cn } from "@/lib/utils";
 import { detailPanelClass } from "./detail-styles";
 
 type Props = {
@@ -71,6 +77,19 @@ export const STATUS_META: Record<
   },
 };
 
+const WORKSHOP_TITLE = "Specialty Coffee Brewing";
+
+function buildCertificateRemarks(
+  type: "normal" | "workshop",
+  courseNames: string[],
+  workshopTitle: string,
+): string {
+  if (type === "workshop") {
+    return `Workshop certificate for ${workshopTitle}`;
+  }
+  return `Course certificate for ${courseNames.join(", ")}`;
+}
+
 export default function StudentDetailPage({
   student,
   courses,
@@ -82,8 +101,10 @@ export default function StudentDetailPage({
   const [showInvoice, setShowInvoice] = useState(false);
   const [showCertificate, setShowCertificate] = useState(false);
   const [showWorkshopCertificate, setShowWorkshopCertificate] = useState(false);
+  const [issuedCertId, setIssuedCertId] = useState<string | null>(null);
+  const [pendingPrint, setPendingPrint] = useState(false);
+  const [isIssuing, setIsIssuing] = useState(false);
   const courseCertRef = useRef<HTMLDivElement>(null);
-  const workshopCertRef = useRef<HTMLDivElement>(null);
   const [currentStatus, setCurrentStatus] = useState<Status>(student.status);
   const router = useRouter();
 
@@ -95,11 +116,29 @@ export default function StudentDetailPage({
     : 0;
   const balanceDue = totalFee - totalPaid - discountAmount - scholarshipAmount;
 
-  const issueDate = new Date().toLocaleDateString("en-NP", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const { data: certificateResponse, isLoading: isLoadingCertificate } =
+    useStudentCertificate(student.id, showCertificate);
+
+  const existingCertificate = certificateResponse?.data?.id
+    ? certificateResponse.data
+    : null;
+
+  const certificateId = existingCertificate?.id ?? issuedCertId;
+  const courseQrUrl = certificateId
+    ? getCertificateVerifyUrl(certificateId)
+    : null;
+
+  const issueDate = existingCertificate?.issuedAt
+    ? new Date(existingCertificate.issuedAt).toLocaleDateString("en-NP", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : new Date().toLocaleDateString("en-NP", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
 
   const { mutate: updateStatus } = useMutation({
     mutationFn: async (data: UpdateStudentStatus) => {
@@ -137,6 +176,67 @@ export default function StudentDetailPage({
   });
 
   const { handlePrint } = usePrintInvoice({ student, courses, payments });
+
+  const { mutateAsync: issueCertificate, isPending: isIssuingCertificate } =
+    useIssueCertificate(student.id);
+
+  useEffect(() => {
+    if (!pendingPrint || !courseQrUrl) return;
+
+    let cancelled = false;
+
+    const runPrint = async () => {
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      });
+      if (cancelled) return;
+
+      const ok = await printCertificateElement(courseCertRef.current);
+      if (!ok && !cancelled) {
+        toast.error("Could not open the certificate print dialog.");
+      }
+      setPendingPrint(false);
+      setIsIssuing(false);
+    };
+
+    void runPrint();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [pendingPrint, courseQrUrl]);
+
+  const handlePrintCertificate = async () => {
+    const ok = await printCertificateElement(courseCertRef.current);
+    if (!ok) {
+      toast.error("Could not open the certificate print dialog.");
+    }
+  };
+
+  const handleIssueCertificate = async () => {
+    const remarks = buildCertificateRemarks(
+      "normal",
+      courses.map((course) => course.name),
+      WORKSHOP_TITLE,
+    );
+
+    setIsIssuing(true);
+    try {
+      const result = await issueCertificate({ remarks, type: "normal" });
+      setIssuedCertId(result.data.id);
+      setPendingPrint(true);
+    } catch {
+      setIsIssuing(false);
+    }
+  };
+
+  const certificateActionDisabled =
+    isIssuing || isIssuingCertificate || pendingPrint || isLoadingCertificate;
+
+  const certificateActionButtonClass = cn(
+    adminPrimaryButtonClass,
+    adminPrimaryButtonDisabledClass,
+  );
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-(--brand-cream) px-4 py-8 sm:px-6 lg:px-8">
@@ -196,7 +296,11 @@ export default function StudentDetailPage({
               </button>
             </div>
             <div className="p-5">
-              <Invoice student={student} payments={payments} courses={courses} />
+              <Invoice
+                student={student}
+                payments={payments}
+                courses={courses}
+              />
             </div>
           </div>
         ) : null}
@@ -209,27 +313,46 @@ export default function StudentDetailPage({
                   Certificate Preview
                 </h2>
                 <p className="mt-1 font-(family-name:--font-dm-sans) text-[0.72rem] text-[rgba(47,78,64,0.45)]">
-                  Print: turn off Headers &amp; footers, turn on Background graphics
+                  {existingCertificate
+                    ? "Certificate issued. Print with verification QR code. Turn off Headers & footers and turn on Background graphics."
+                    : "Issue to record the certificate and print with verification QR code. Print: turn off Headers & footers, turn on Background graphics"}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  void printCertificateElement(courseCertRef.current).then(
-                    (ok) => {
-                      if (!ok) {
-                        toast.error(
-                          "Open a certificate preview before printing.",
-                        );
-                      }
-                    },
-                  );
-                }}
-                className={adminPrimaryButtonClass}
-              >
-                <Printer size={14} />
-                Print Certificate
-              </button>
+              {isLoadingCertificate ? (
+                <button
+                  type="button"
+                  disabled
+                  className={certificateActionButtonClass}
+                >
+                  <Loader2 size={14} className="animate-spin" />
+                  Loading…
+                </button>
+              ) : existingCertificate ? (
+                <button
+                  type="button"
+                  onClick={() => void handlePrintCertificate()}
+                  className={certificateActionButtonClass}
+                >
+                  <Printer size={14} />
+                  Print Certificate
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => void handleIssueCertificate()}
+                  disabled={certificateActionDisabled}
+                  className={certificateActionButtonClass}
+                >
+                  {isIssuing || isIssuingCertificate ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Stamp size={14} />
+                  )}
+                  {isIssuing || isIssuingCertificate
+                    ? "Issuing…"
+                    : "Issue Certificate"}
+                </button>
+              )}
             </div>
             <div className="overflow-x-auto p-5">
               <div style={{ minWidth: 1123 }}>
@@ -240,16 +363,18 @@ export default function StudentDetailPage({
                   courses={courses.map((c) => c.name)}
                   issueDate={issueDate}
                   schoolName={siteInfo.company.name}
-                  logoUrl="/assets/watermark-no-bg.png"
-                  accreditationLogoUrl="/assets/watermark-no-bg.png"
+                  logoUrl={siteInfo.assets.watermarkNoBG}
+                  accreditationLogoUrl={siteInfo.assets.watermarkNoBG}
                   footerAddress={siteInfo.contact.address}
                   footerContact={siteInfo.contact.email}
+                  qrCodeUrl={courseQrUrl ?? undefined}
                 />
               </div>
             </div>
           </div>
         ) : null}
 
+        {/* Workshop certificate preview — temporarily hidden
         {showWorkshopCertificate ? (
           <div className={detailPanelClass}>
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[rgba(47,78,64,0.12)] px-5 py-4">
@@ -258,26 +383,27 @@ export default function StudentDetailPage({
                   Workshop Certificate Preview
                 </h2>
                 <p className="mt-1 font-(family-name:--font-dm-sans) text-[0.72rem] text-[rgba(47,78,64,0.45)]">
-                  Print: turn off Headers &amp; footers, turn on Background graphics
+                  Issue to record the certificate and print with verification QR
+                  code. Print: turn off Headers &amp; footers, turn on Background
+                  graphics
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  void printCertificateElement(workshopCertRef.current).then(
-                    (ok) => {
-                      if (!ok) {
-                        toast.error(
-                          "Open a certificate preview before printing.",
-                        );
-                      }
-                    },
-                  );
-                }}
-                className={adminPrimaryButtonClass}
+                onClick={() => void handleIssueCertificate("workshop")}
+                disabled={
+                  isIssuingCertificate ||
+                  issuingType === "workshop" ||
+                  !!pendingPrint
+                }
+                className={certificateActionButtonClass}
               >
-                <Printer size={14} />
-                Print Certificate
+                {issuingType === "workshop" ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <Stamp size={14} />
+                )}
+                Issue Certificate
               </button>
             </div>
             <div className="overflow-x-auto p-5">
@@ -285,19 +411,21 @@ export default function StudentDetailPage({
                 <WorkshopCertificate
                   ref={workshopCertRef}
                   studentName={student.fullName}
-                  workshopTitle="Specialty Coffee Brewing"
+                  workshopTitle={WORKSHOP_TITLE}
                   workshopDate="2082-02-01"
                   referenceNo={student.referenceNo}
                   issueDate={issueDate}
-                  logoUrl={siteInfo.assets.greenBrownNoBG}
-                  accreditationLogoUrl="/assets/watermark-no-bg.png"
+                  logoUrl={siteInfo.assets.watermarkNoBG}
+                  accreditationLogoUrl={siteInfo.assets.watermarkNoBG}
                   footerAddress={siteInfo.contact.address}
                   footerContact={siteInfo.contact.email}
+                  qrCodeUrl={workshopQrUrl ?? undefined}
                 />
               </div>
             </div>
           </div>
         ) : null}
+        */}
 
         <StudentDetailGrid
           balanceDue={balanceDue}

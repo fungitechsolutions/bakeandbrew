@@ -63,8 +63,6 @@ export function StudentDetailHeader({
   const paymentDisabled = balanceDue <= 0 || !actionsAllowed;
   const paymentStatusBlocked = !actionsAllowed && balanceDue > 0;
   const certificateBlocked = !actionsAllowed && !showCertificate;
-  const workshopCertificateBlocked =
-    !actionsAllowed && !showWorkshopCertificate;
   const invoiceBlocked = !actionsAllowed && !showInvoice;
   const showStatusNotice = !actionsAllowed;
 
@@ -119,6 +117,10 @@ export function StudentDetailHeader({
     </button>
   );
 
+  /* Workshop certificate toggle — temporarily hidden
+  const workshopCertificateBlocked =
+    !actionsAllowed && !showWorkshopCertificate;
+
   const workshopCertificateButton = (
     <button
       type="button"
@@ -141,6 +143,7 @@ export function StudentDetailHeader({
       </span>
     </button>
   );
+  */
 
   const invoiceButton = (
     <button
@@ -207,6 +210,7 @@ export function StudentDetailHeader({
               ) : (
                 certificateButton
               )}
+              {/* Workshop certificate toggle — temporarily hidden
               {workshopCertificateBlocked ? (
                 <StatusActionTooltip
                   blocked
@@ -218,6 +222,7 @@ export function StudentDetailHeader({
               ) : (
                 workshopCertificateButton
               )}
+              */}
             </div>
 
             {showStatusNotice ? (

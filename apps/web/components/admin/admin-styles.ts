@@ -7,6 +7,9 @@ export const adminInputClass =
 export const adminPrimaryButtonClass =
   "inline-flex cursor-pointer items-center gap-2 border border-(--brand-green) bg-(--brand-green) px-4 py-2 font-(family-name:--font-dm-sans) text-xs font-semibold uppercase tracking-[0.08em] text-white transition-colors hover:bg-(--brand-green-2)";
 
+export const adminPrimaryButtonDisabledClass =
+  "disabled:cursor-not-allowed disabled:border-[rgba(47,78,64,0.2)] disabled:bg-[rgba(47,78,64,0.35)] disabled:text-white/75 disabled:hover:bg-[rgba(47,78,64,0.35)]";
+
 export const adminSecondaryButtonClass =
   "inline-flex items-center gap-2 border border-[rgba(47,78,64,0.18)] bg-white px-4 py-2 font-(family-name:--font-dm-sans) text-xs font-semibold uppercase tracking-[0.08em] text-(--brand-green) transition-colors hover:border-(--brand-green) hover:bg-[rgba(47,78,64,0.03)]";
 

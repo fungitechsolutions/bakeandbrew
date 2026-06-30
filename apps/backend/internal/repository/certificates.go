@@ -9,6 +9,7 @@ import (
 
 type CertificatesRepository interface {
 	IssueCertificate(ctx context.Context, certificate db.IssueCertificateParams) (db.Certificate, error)
-	GetCertificateByStudentID(ctx context.Context, studentID pgtype.UUID) (db.GetCertificateByStudentIDRow, error)
 	GetStudentStatus(ctx context.Context, id pgtype.UUID) (string, error)
+	GetStudentCertificate(ctx context.Context, params db.GetStudentCertificateParams) (db.GetStudentCertificateRow, error)
+	CheckCertificateExists(ctx context.Context, params db.CheckCertificateExistsParams) (bool, error)
 }

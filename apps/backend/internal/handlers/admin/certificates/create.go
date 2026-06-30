@@ -120,6 +120,31 @@ func CreateCertificate(queries repository.CertificatesRepository) gin.HandlerFun
 			return
 		}
 
+		certificateExists, err := queries.CheckCertificateExists(ctx, db.CheckCertificateExistsParams{
+			StudentID: studentID,
+			Type:      req.Type,
+		})
+		if err != nil {
+			applog.Error(c, handlerCreateCertificate, "failed to check certificate exists",
+				slog.Any(applog.AttrError, err))
+			c.JSON(http.StatusInternalServerError, types.APIResponse{
+				Success: false,
+				Message: "Failed to check certificate exists",
+				Code:    constants.InternalServerError,
+			})
+			return
+		}
+		if certificateExists {
+			applog.Warn(c, handlerCreateCertificate, "certificate already exists",
+				slog.String(applog.AttrCertificateType, req.Type))
+			c.JSON(http.StatusBadRequest, types.APIResponse{
+				Success: false,
+				Message: "Certificate already exists",
+				Code:    constants.CertificateAlreadyExists,
+			})
+			return
+		}
+
 		certificate, err := queries.IssueCertificate(ctx, db.IssueCertificateParams{
 			ID:        certificateID,
 			StudentID: studentID,

@@ -137,6 +137,20 @@ export {
   type UpdateStudentImageResponse,
 } from "./admin/students/image";
 
+export {
+  certificateTypeSchema,
+  issueCertificateInputSchema,
+  certificateRecordSchema,
+  issueCertificateResponseSchema,
+  studentCertificateSchema,
+  getStudentCertificateResponseSchema,
+  type IssueCertificateInput,
+  type CertificateRecord,
+  type IssueCertificateResponse,
+  type StudentCertificate,
+  type GetStudentCertificateResponse,
+} from "./admin/certificates";
+
 export { type GetStudentPendingOverviewResponse } from "./student_portal/pending-overview";
 export { type GetStudentRejectedOverviewResponse } from "./student_portal/rejected-overview";
 export { type GetStudentDiscountsResponse } from "./student_portal/discounts";

@@ -7,6 +7,8 @@ import (
 )
 
 func setupAdminCertificatesRoutes(admin *gin.RouterGroup, cfg config.Config) {
+	c := admin.Group("/certificates")
 
-	admin.POST("/certificates/:studentID", certificates.CreateCertificate(cfg.Queries))
+	c.POST("/:studentID", certificates.CreateCertificate(cfg.Queries))
+	c.GET("/:studentID", certificates.GetCertificate(cfg.Queries))
 }
