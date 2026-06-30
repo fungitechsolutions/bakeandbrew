@@ -10,9 +10,11 @@ import {
   adminSecondaryButtonClass,
 } from "@/components/admin/admin-styles";
 import {
+  accountingLedgerTableClass,
+  accountingStickyThClass,
+  accountingStickyTfootClass,
+  accountingStickyTfootRowClass,
   accountingTableWrapClass,
-  accountingTableClass,
-  accountingThClass,
 } from "../shared/accounting-styles";
 
 interface LedgerTableProps {
@@ -29,7 +31,7 @@ interface LedgerTableProps {
   refetch: () => void;
 }
 
-const thSticky = `${accountingThClass} sticky top-0 z-10`;
+const thSticky = accountingStickyThClass;
 
 export function LedgerTable({
   entries,
@@ -79,7 +81,7 @@ export function LedgerTable({
         onScroll={onScroll}
         className="flex-1 overflow-auto"
       >
-        <table className={`${accountingTableClass} min-w-[720px] text-left text-sm`}>
+        <table className={`${accountingLedgerTableClass} min-w-[720px] text-left text-sm`}>
           <thead>
             <tr>
               <th className={`${thSticky} w-12 text-center`}>S.No</th>
@@ -162,9 +164,9 @@ export function LedgerTable({
           ) : (
             !initialLoading &&
             entries.length > 0 && (
-              <tfoot className="sticky bottom-0 z-10">
+              <tfoot className={accountingStickyTfootClass}>
                 {isFetchingNextPage && (
-                  <tr className="bg-[rgba(47,78,64,0.03)]">
+                  <tr className="bg-white">
                     <td colSpan={colSpan} className="px-5 py-2 text-center">
                       <span className="flex items-center justify-center gap-2 font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.45)]">
                         <Loader2 size={13} className="animate-spin" />
@@ -173,7 +175,7 @@ export function LedgerTable({
                     </td>
                   </tr>
                 )}
-                <tr className="border-t border-[rgba(47,78,64,0.12)] bg-[rgba(47,78,64,0.03)] text-xs font-semibold whitespace-nowrap">
+                <tr className={accountingStickyTfootRowClass}>
                   <td
                     colSpan={showBankColumns ? 5 : 3}
                     className="px-5 py-2 text-right font-(family-name:--font-dm-sans) uppercase tracking-[0.08em] text-[rgba(47,78,64,0.55)]"

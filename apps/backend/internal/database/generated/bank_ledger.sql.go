@@ -67,15 +67,24 @@ JOIN bank_accounts ba ON ba.id = bl.bank_account_id
 WHERE
     ($1::uuid IS NULL OR bl.bank_account_id = $1::uuid)
     AND ($2::uuid IS NULL OR ba.bank_id = $2::uuid)
+    AND ($3::date IS NULL OR bl.date >= $3::timestamptz)
+    AND ($4::date IS NULL OR bl.date <= $4::timestamptz)
 `
 
 type GetBankLedgerCountParams struct {
 	BankAccountID pgtype.UUID `json:"bankAccountId"`
 	BankID        pgtype.UUID `json:"bankId"`
+	FromDate      pgtype.Date `json:"fromDate"`
+	ToDate        pgtype.Date `json:"toDate"`
 }
 
 func (q *Queries) GetBankLedgerCount(ctx context.Context, arg GetBankLedgerCountParams) (int64, error) {
-	row := q.db.QueryRow(ctx, getBankLedgerCount, arg.BankAccountID, arg.BankID)
+	row := q.db.QueryRow(ctx, getBankLedgerCount,
+		arg.BankAccountID,
+		arg.BankID,
+		arg.FromDate,
+		arg.ToDate,
+	)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -139,11 +148,15 @@ JOIN bank_accounts ba ON ba.id = bl.bank_account_id
 WHERE
     ($1::uuid IS NULL OR bl.bank_account_id = $1::uuid)
     AND ($2::uuid IS NULL OR ba.bank_id = $2::uuid)
+    AND ($3::date IS NULL OR bl.date >= $3::timestamptz)
+    AND ($4::date IS NULL OR bl.date <= $4::timestamptz)
 `
 
 type GetBankLedgerSummaryParams struct {
 	BankAccountID pgtype.UUID `json:"bankAccountId"`
 	BankID        pgtype.UUID `json:"bankId"`
+	FromDate      pgtype.Date `json:"fromDate"`
+	ToDate        pgtype.Date `json:"toDate"`
 }
 
 type GetBankLedgerSummaryRow struct {
@@ -153,7 +166,12 @@ type GetBankLedgerSummaryRow struct {
 }
 
 func (q *Queries) GetBankLedgerSummary(ctx context.Context, arg GetBankLedgerSummaryParams) (GetBankLedgerSummaryRow, error) {
-	row := q.db.QueryRow(ctx, getBankLedgerSummary, arg.BankAccountID, arg.BankID)
+	row := q.db.QueryRow(ctx, getBankLedgerSummary,
+		arg.BankAccountID,
+		arg.BankID,
+		arg.FromDate,
+		arg.ToDate,
+	)
 	var i GetBankLedgerSummaryRow
 	err := row.Scan(&i.TotalCr, &i.TotalDr, &i.Balance)
 	return i, err
@@ -216,6 +234,8 @@ JOIN banks b ON b.id = ba.bank_id
 WHERE
     ($3::uuid IS NULL OR bl.bank_account_id = $3::uuid)
     AND ($4::uuid IS NULL OR ba.bank_id = $4::uuid)
+    AND ($5::date IS NULL OR bl.date >= $5::timestamptz)
+    AND ($6::date IS NULL OR bl.date <= $6::timestamptz)
 ORDER BY bl.date DESC
 LIMIT $1 OFFSET $2
 `
@@ -225,6 +245,8 @@ type ListBankLedgerParams struct {
 	Offset        int32       `json:"offset"`
 	BankAccountID pgtype.UUID `json:"bankAccountId"`
 	BankID        pgtype.UUID `json:"bankId"`
+	FromDate      pgtype.Date `json:"fromDate"`
+	ToDate        pgtype.Date `json:"toDate"`
 }
 
 type ListBankLedgerRow struct {
@@ -248,6 +270,8 @@ func (q *Queries) ListBankLedger(ctx context.Context, arg ListBankLedgerParams) 
 		arg.Offset,
 		arg.BankAccountID,
 		arg.BankID,
+		arg.FromDate,
+		arg.ToDate,
 	)
 	if err != nil {
 		return nil, err

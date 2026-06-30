@@ -1,6 +1,6 @@
 -- name: CreateSupplierLedgerEntry :one
-INSERT INTO supplier_ledger (supplier_id, date, bs_date, entry_type, amount, description, stock_in_id)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
+INSERT INTO supplier_ledger (supplier_id, date, bs_date, entry_type, amount, description, stock_in_id, payment_type)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING *;
 
 -- name: GetSupplierLedgerEntryByID :one

@@ -18,8 +18,10 @@ import (
 const handlerGetBankLedgerSummary = "GetBankLedgerSummary"
 
 type GetBankLedgerSummaryParams struct {
-	BankAccountID string `form:"bank_account_id"`
-	BankID        string `form:"bank_id"`
+	BankAccountID string `form:"account_id" binding:"omitempty,uuid"`
+	BankID        string `form:"bank_id" binding:"omitempty,uuid"`
+	FromDate      string `form:"from_date" binding:"omitempty,date_format"`
+	ToDate        string `form:"to_date" binding:"omitempty,date_format"`
 }
 
 func GetBankLedgerSummary(queries accountingRepository.BankLedgerRepository) gin.HandlerFunc {
@@ -73,6 +75,8 @@ func GetBankLedgerSummary(queries accountingRepository.BankLedgerRepository) gin
 		summary, err := queries.GetBankLedgerSummary(ctx, db.GetBankLedgerSummaryParams{
 			BankAccountID: accountID,
 			BankID:        bankID,
+			FromDate:      utils.ToNullableDate(filter.FromDate),
+			ToDate:        utils.ToNullableDate(filter.ToDate),
 		})
 
 		if err != nil {

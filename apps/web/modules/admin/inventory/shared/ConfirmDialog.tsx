@@ -40,7 +40,7 @@ export function ConfirmDialog({
             This action cannot be undone. The record will be permanently removed.
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="gap-2 px-5 py-4 sm:justify-end">
+        <DialogFooter className="mx-0 mb-0 gap-2 rounded-none border-t border-[rgba(47,78,64,0.12)] bg-transparent px-5 py-4 sm:flex-row sm:justify-end">
           <button
             type="button"
             onClick={onCancel}

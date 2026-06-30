@@ -7,6 +7,7 @@ CREATE TABLE supplier_ledger (
     amount BIGINT NOT NULL CHECK (amount > 0),
     description TEXT,
     stock_in_id UUID REFERENCES stock_in(id) ON DELETE SET NULL,
+    payment_type TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

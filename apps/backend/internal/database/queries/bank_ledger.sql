@@ -26,6 +26,8 @@ JOIN banks b ON b.id = ba.bank_id
 WHERE
     (sqlc.narg('bank_account_id')::uuid IS NULL OR bl.bank_account_id = sqlc.narg('bank_account_id')::uuid)
     AND (sqlc.narg('bank_id')::uuid IS NULL OR ba.bank_id = sqlc.narg('bank_id')::uuid)
+    AND (sqlc.narg('from_date')::date IS NULL OR bl.date >= sqlc.narg('from_date')::timestamptz)
+    AND (sqlc.narg('to_date')::date IS NULL OR bl.date <= sqlc.narg('to_date')::timestamptz)
 ORDER BY bl.date DESC
 LIMIT $1 OFFSET $2;
 
@@ -66,7 +68,9 @@ FROM bank_ledger bl
 JOIN bank_accounts ba ON ba.id = bl.bank_account_id
 WHERE
     (sqlc.narg('bank_account_id')::uuid IS NULL OR bl.bank_account_id = sqlc.narg('bank_account_id')::uuid)
-    AND (sqlc.narg('bank_id')::uuid IS NULL OR ba.bank_id = sqlc.narg('bank_id')::uuid);
+    AND (sqlc.narg('bank_id')::uuid IS NULL OR ba.bank_id = sqlc.narg('bank_id')::uuid)
+    AND (sqlc.narg('from_date')::date IS NULL OR bl.date >= sqlc.narg('from_date')::timestamptz)
+    AND (sqlc.narg('to_date')::date IS NULL OR bl.date <= sqlc.narg('to_date')::timestamptz);
 
 -- name: GetBankLedgerSummaryByAccount :one
 SELECT
@@ -90,7 +94,9 @@ SELECT COUNT(*) FROM bank_ledger bl
 JOIN bank_accounts ba ON ba.id = bl.bank_account_id
 WHERE
     (sqlc.narg('bank_account_id')::uuid IS NULL OR bl.bank_account_id = sqlc.narg('bank_account_id')::uuid)
-    AND (sqlc.narg('bank_id')::uuid IS NULL OR ba.bank_id = sqlc.narg('bank_id')::uuid);
+    AND (sqlc.narg('bank_id')::uuid IS NULL OR ba.bank_id = sqlc.narg('bank_id')::uuid)
+    AND (sqlc.narg('from_date')::date IS NULL OR bl.date >= sqlc.narg('from_date')::timestamptz)
+    AND (sqlc.narg('to_date')::date IS NULL OR bl.date <= sqlc.narg('to_date')::timestamptz);
 
 -- name: DeleteBankLedgerEntry :exec
 DELETE FROM bank_ledger WHERE id = $1;

@@ -202,6 +202,7 @@ type SupplierLedger struct {
 	Amount      int64              `json:"amount"`
 	Description pgtype.Text        `json:"description"`
 	StockInID   pgtype.UUID        `json:"stockInId"`
+	PaymentType string             `json:"paymentType"`
 	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
 }
 
