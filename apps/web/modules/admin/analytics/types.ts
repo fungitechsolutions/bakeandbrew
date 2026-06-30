@@ -4,6 +4,8 @@ export interface OverviewData {
   totalStudents: number;
   pendingApprovals: number;
   totalRevenue: number;
+  totalDiscounts: number;
+  totalScholarships: number;
   studentsWithBalance: number;
 }
 

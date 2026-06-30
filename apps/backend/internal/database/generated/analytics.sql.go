@@ -14,6 +14,8 @@ SELECT
     COUNT(DISTINCT s.id)::INTEGER AS total_students,
     COUNT(DISTINCT s.id) FILTER (WHERE s.status = 'pending')::INTEGER AS pending_approvals,
     (SELECT COALESCE(SUM(amount), 0)::BIGINT FROM payments) AS total_revenue,
+    (SELECT COALESCE(SUM(amount), 0)::BIGINT FROM student_discounts) AS total_discounts,
+    (SELECT COALESCE(SUM(amount), 0)::BIGINT FROM student_scholarships) AS total_scholarships,
     COUNT(DISTINCT s.id) FILTER (
         WHERE s.status IN ('active', 'completed')
         AND (
@@ -44,6 +46,8 @@ type GetAnalyticsOverviewRow struct {
 	TotalStudents       int32 `json:"totalStudents"`
 	PendingApprovals    int32 `json:"pendingApprovals"`
 	TotalRevenue        int64 `json:"totalRevenue"`
+	TotalDiscounts      int64 `json:"totalDiscounts"`
+	TotalScholarships   int64 `json:"totalScholarships"`
 	StudentsWithBalance int32 `json:"studentsWithBalance"`
 }
 
@@ -54,6 +58,8 @@ func (q *Queries) GetAnalyticsOverview(ctx context.Context) (GetAnalyticsOvervie
 		&i.TotalStudents,
 		&i.PendingApprovals,
 		&i.TotalRevenue,
+		&i.TotalDiscounts,
+		&i.TotalScholarships,
 		&i.StudentsWithBalance,
 	)
 	return i, err

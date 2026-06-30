@@ -4,8 +4,10 @@ import Link from "next/link";
 import {
   AlertTriangle,
   ArrowRight,
+  Award,
   Clock,
   DollarSign,
+  Percent,
   Users,
 } from "lucide-react";
 
@@ -43,6 +45,20 @@ const statCards = (
     icon: DollarSign,
   },
   {
+    label: "Total Discounts",
+    value: formatNPR(overview.totalDiscounts),
+    detail: "Fee reductions granted",
+    href: "/admin/students",
+    icon: Percent,
+  },
+  {
+    label: "Total Scholarships",
+    value: formatNPR(overview.totalScholarships),
+    detail: "Scholarship aid awarded",
+    href: "/admin/students",
+    icon: Award,
+  },
+  {
     label: "Outstanding",
     value: overview.studentsWithBalance.toLocaleString(),
     detail: formatNPR(revenueStats.outstanding),
@@ -53,7 +69,7 @@ const statCards = (
 
 export function DashboardStats({ overview, revenueStats }: DashboardStatsProps) {
   return (
-    <div className="grid grid-cols-1 divide-y divide-[rgba(47,78,64,0.12)] border border-[rgba(47,78,64,0.18)] sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
+    <div className="grid grid-cols-1 divide-y divide-[rgba(47,78,64,0.12)] border border-[rgba(47,78,64,0.18)] sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-3 xl:grid-cols-6">
       {statCards(overview, revenueStats).map((card) => (
         <Link
           key={card.label}
@@ -83,8 +99,8 @@ export function DashboardStats({ overview, revenueStats }: DashboardStatsProps) 
 
 export function DashboardStatsSkeleton() {
   return (
-    <div className="grid grid-cols-1 divide-y divide-[rgba(47,78,64,0.12)] border border-[rgba(47,78,64,0.18)] sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
-      {Array.from({ length: 4 }).map((_, index) => (
+    <div className="grid grid-cols-1 divide-y divide-[rgba(47,78,64,0.12)] border border-[rgba(47,78,64,0.18)] sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-3 xl:grid-cols-6">
+      {Array.from({ length: 6 }).map((_, index) => (
         <div key={index} className="bg-white p-5">
           <div className="h-3 w-20 animate-pulse bg-[rgba(47,78,64,0.08)]" />
           <div className="mt-3 h-8 w-24 animate-pulse bg-[rgba(47,78,64,0.08)]" />
