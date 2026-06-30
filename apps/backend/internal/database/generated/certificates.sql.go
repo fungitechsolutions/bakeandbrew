@@ -11,43 +11,99 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const deleteCertificate = `-- name: DeleteCertificate :exec
-DELETE FROM certificates WHERE id = $1
+const checkCertificateExists = `-- name: CheckCertificateExists :one
+SELECT EXISTS (
+    SELECT 1 FROM certificates
+    WHERE student_id = $1 AND type = $2
+) AS exists
 `
 
-func (q *Queries) DeleteCertificate(ctx context.Context, id string) error {
-	_, err := q.db.Exec(ctx, deleteCertificate, id)
-	return err
+type CheckCertificateExistsParams struct {
+	StudentID pgtype.UUID `json:"studentId"`
+	Type      string      `json:"type"`
 }
 
-const getCertificateByStudentID = `-- name: GetCertificateByStudentID :one
-SELECT ce.id, ce.student_id, ce.issued_by, ce.issued_at, ce.remarks, ce.type, a.name AS issued_by_name
-FROM certificates ce
-JOIN users a ON a.id = ce.issued_by
-WHERE ce.student_id = $1
+func (q *Queries) CheckCertificateExists(ctx context.Context, arg CheckCertificateExistsParams) (bool, error) {
+	row := q.db.QueryRow(ctx, checkCertificateExists, arg.StudentID, arg.Type)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
+const getCertificateDetails = `-- name: GetCertificateDetails :one
+SELECT
+    c.id,
+    c.type,
+    c.remarks,
+    c.issued_at,
+    s.full_name,
+    s.reference_no,
+    COALESCE(string_agg(co.name, ', ' ORDER BY co.name), '') AS course_names
+FROM certificates c
+JOIN students s ON s.id = c.student_id
+LEFT JOIN student_courses sc ON sc.student_id = s.id
+LEFT JOIN courses co ON co.id = sc.course_id
+WHERE c.id = $1
+GROUP BY c.id, c.type, c.remarks, c.issued_at, s.full_name, s.reference_no
 `
 
-type GetCertificateByStudentIDRow struct {
-	ID           string             `json:"id"`
-	StudentID    pgtype.UUID        `json:"studentId"`
-	IssuedBy     pgtype.UUID        `json:"issuedBy"`
-	IssuedAt     pgtype.Timestamptz `json:"issuedAt"`
-	Remarks      pgtype.Text        `json:"remarks"`
-	Type         string             `json:"type"`
-	IssuedByName string             `json:"issuedByName"`
+type GetCertificateDetailsRow struct {
+	ID          string             `json:"id"`
+	Type        string             `json:"type"`
+	Remarks     pgtype.Text        `json:"remarks"`
+	IssuedAt    pgtype.Timestamptz `json:"issuedAt"`
+	FullName    string             `json:"fullName"`
+	ReferenceNo string             `json:"referenceNo"`
+	CourseNames interface{}        `json:"courseNames"`
 }
 
-func (q *Queries) GetCertificateByStudentID(ctx context.Context, studentID pgtype.UUID) (GetCertificateByStudentIDRow, error) {
-	row := q.db.QueryRow(ctx, getCertificateByStudentID, studentID)
-	var i GetCertificateByStudentIDRow
+func (q *Queries) GetCertificateDetails(ctx context.Context, id string) (GetCertificateDetailsRow, error) {
+	row := q.db.QueryRow(ctx, getCertificateDetails, id)
+	var i GetCertificateDetailsRow
 	err := row.Scan(
 		&i.ID,
-		&i.StudentID,
-		&i.IssuedBy,
-		&i.IssuedAt,
-		&i.Remarks,
 		&i.Type,
-		&i.IssuedByName,
+		&i.Remarks,
+		&i.IssuedAt,
+		&i.FullName,
+		&i.ReferenceNo,
+		&i.CourseNames,
+	)
+	return i, err
+}
+
+const getStudentCertificate = `-- name: GetStudentCertificate :one
+SELECT
+    id,
+    type,
+    remarks,
+    issued_at
+FROM certificates
+WHERE student_id = $1 AND type = $2
+ORDER BY issued_at DESC
+LIMIT 1
+`
+
+type GetStudentCertificateParams struct {
+	StudentID pgtype.UUID `json:"studentId"`
+	Type      string      `json:"type"`
+}
+
+type GetStudentCertificateRow struct {
+	ID       string             `json:"id"`
+	Type     string             `json:"type"`
+	Remarks  pgtype.Text        `json:"remarks"`
+	IssuedAt pgtype.Timestamptz `json:"issuedAt"`
+}
+
+func (q *Queries) GetStudentCertificate(ctx context.Context, arg GetStudentCertificateParams) (GetStudentCertificateRow, error) {
+	row := q.db.QueryRow(ctx, getStudentCertificate, arg.StudentID, arg.Type)
+	var i GetStudentCertificateRow
+	err := row.Scan(
+		&i.ID,
+		&i.Type,
+		&i.Remarks,
+		&i.IssuedAt,
 	)
 	return i, err
 }
@@ -84,54 +140,4 @@ func (q *Queries) IssueCertificate(ctx context.Context, arg IssueCertificatePara
 		&i.Type,
 	)
 	return i, err
-}
-
-const listCertificates = `-- name: ListCertificates :many
-SELECT ce.id, ce.student_id, ce.issued_by, ce.issued_at, ce.remarks, ce.type, s.full_name, s.reference_no, a.name AS issued_by_name
-FROM certificates ce
-JOIN students s ON s.id = ce.student_id
-JOIN users a ON a.id = ce.issued_by
-ORDER BY ce.issued_at DESC
-`
-
-type ListCertificatesRow struct {
-	ID           string             `json:"id"`
-	StudentID    pgtype.UUID        `json:"studentId"`
-	IssuedBy     pgtype.UUID        `json:"issuedBy"`
-	IssuedAt     pgtype.Timestamptz `json:"issuedAt"`
-	Remarks      pgtype.Text        `json:"remarks"`
-	Type         string             `json:"type"`
-	FullName     string             `json:"fullName"`
-	ReferenceNo  string             `json:"referenceNo"`
-	IssuedByName string             `json:"issuedByName"`
-}
-
-func (q *Queries) ListCertificates(ctx context.Context) ([]ListCertificatesRow, error) {
-	rows, err := q.db.Query(ctx, listCertificates)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []ListCertificatesRow
-	for rows.Next() {
-		var i ListCertificatesRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.StudentID,
-			&i.IssuedBy,
-			&i.IssuedAt,
-			&i.Remarks,
-			&i.Type,
-			&i.FullName,
-			&i.ReferenceNo,
-			&i.IssuedByName,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }

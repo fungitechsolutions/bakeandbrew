@@ -89,4 +89,7 @@ const (
 	SupplierNotFound     = "SUPPLIER_NOT_FOUND"
 	MissingSupplierID    = "MISSING_SUPPLIER_ID"
 	StockNotFound        = "STOCK_NOT_FOUND"
+
+	// certificates
+	CertificateAlreadyExists = "CERTIFICATE_ALREADY_EXISTS"
 )

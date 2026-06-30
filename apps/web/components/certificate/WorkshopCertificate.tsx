@@ -7,6 +7,7 @@ import { CertificateBrandText } from "./CertificateBrandText";
 import { CertificateFrame } from "./CertificateFrame";
 import { CertificateSignatureSlot } from "./CertificateSignatureSlot";
 import { formatPersonName } from "@/lib/format-person-name";
+import { CertificateQrCode } from "./CertificateQrCode";
 
 export interface WorkshopCertificateProps {
   studentName: string;
@@ -21,6 +22,7 @@ export interface WorkshopCertificateProps {
   footerAddress?: string;
   footerContact?: string;
   footerPhone?: string;
+  qrCodeUrl?: string;
 }
 
 const passthroughLoader: ImageLoader = ({ src }) => src;
@@ -41,6 +43,7 @@ export const WorkshopCertificate = forwardRef<
     footerAddress = siteInfo.contact.address,
     footerContact = siteInfo.contact.email,
     footerPhone = siteInfo.contact.phone,
+    qrCodeUrl,
   },
   ref,
 ) {
@@ -90,8 +93,11 @@ export const WorkshopCertificate = forwardRef<
             </div>
 
             <div className="cert-meta">
-              <div className="cert-meta-label">Certificate No.</div>
-              <div className="cert-meta-value">{referenceNo}</div>
+              {qrCodeUrl ? <CertificateQrCode value={qrCodeUrl} size={56} /> : null}
+              <div className="cert-meta-details">
+                <div className="cert-meta-label">Certificate No.</div>
+                <div className="cert-meta-value">{referenceNo}</div>
+              </div>
             </div>
           </header>
 
@@ -171,6 +177,7 @@ export const WorkshopCertificate = forwardRef<
               {footerPhone}
             </div>
           </div>
+
         </section>
       </div>
     </div>
