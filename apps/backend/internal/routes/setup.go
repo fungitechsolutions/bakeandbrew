@@ -28,4 +28,5 @@ func Setup(r *gin.Engine, cfg config.Config) {
 	setupStudentRoutes(router, cfg)
 	setupPortalRoutes(router, cfg)
 	setupCourseRoutes(router, cfg)
+	setupCertificatesRoutes(router, cfg)
 }

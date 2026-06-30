@@ -12,4 +12,5 @@ type CertificatesRepository interface {
 	GetStudentStatus(ctx context.Context, id pgtype.UUID) (string, error)
 	GetStudentCertificate(ctx context.Context, params db.GetStudentCertificateParams) (db.GetStudentCertificateRow, error)
 	CheckCertificateExists(ctx context.Context, params db.CheckCertificateExistsParams) (bool, error)
+	GetCertificateDetails(ctx context.Context, id string) (db.GetCertificateDetailsRow, error)
 }
