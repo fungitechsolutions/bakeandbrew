@@ -13,10 +13,27 @@ export const queryKeys = {
   },
   bankLedger: {
     all: ["admin-bank-ledger"] as const,
-    list: (bankId?: string, accountId?: string) =>
-      ["admin-bank-ledger", "list", bankId, accountId] as const,
-    summary: ({ accountID, bankID }: GetBankLedgerSummaryParams) =>
-      ["admin-bank-ledger", "summary", accountID, bankID] as const,
+    list: (
+      bankId?: string,
+      accountId?: string,
+      fromDate?: string | null,
+      toDate?: string | null,
+    ) =>
+      ["admin-bank-ledger", "list", bankId, accountId, fromDate, toDate] as const,
+    summary: ({
+      accountID,
+      bankID,
+      fromDate,
+      toDate,
+    }: GetBankLedgerSummaryParams) =>
+      [
+        "admin-bank-ledger",
+        "summary",
+        accountID,
+        bankID,
+        fromDate,
+        toDate,
+      ] as const,
   },
   cashLedger: {
     all: ["admin-cash-ledger"] as const,

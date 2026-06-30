@@ -12,9 +12,9 @@ import (
 )
 
 const createSupplierLedgerEntry = `-- name: CreateSupplierLedgerEntry :one
-INSERT INTO supplier_ledger (supplier_id, date, bs_date, entry_type, amount, description, stock_in_id)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
-RETURNING id, supplier_id, date, bs_date, entry_type, amount, description, stock_in_id, created_at
+INSERT INTO supplier_ledger (supplier_id, date, bs_date, entry_type, amount, description, stock_in_id, payment_type)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING id, supplier_id, date, bs_date, entry_type, amount, description, stock_in_id, payment_type, created_at
 `
 
 type CreateSupplierLedgerEntryParams struct {
@@ -25,6 +25,7 @@ type CreateSupplierLedgerEntryParams struct {
 	Amount      int64              `json:"amount"`
 	Description pgtype.Text        `json:"description"`
 	StockInID   pgtype.UUID        `json:"stockInId"`
+	PaymentType string             `json:"paymentType"`
 }
 
 func (q *Queries) CreateSupplierLedgerEntry(ctx context.Context, arg CreateSupplierLedgerEntryParams) (SupplierLedger, error) {
@@ -36,6 +37,7 @@ func (q *Queries) CreateSupplierLedgerEntry(ctx context.Context, arg CreateSuppl
 		arg.Amount,
 		arg.Description,
 		arg.StockInID,
+		arg.PaymentType,
 	)
 	var i SupplierLedger
 	err := row.Scan(
@@ -47,6 +49,7 @@ func (q *Queries) CreateSupplierLedgerEntry(ctx context.Context, arg CreateSuppl
 		&i.Amount,
 		&i.Description,
 		&i.StockInID,
+		&i.PaymentType,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -84,7 +87,7 @@ func (q *Queries) GetSupplierLedgerCount(ctx context.Context, arg GetSupplierLed
 
 const getSupplierLedgerEntryByID = `-- name: GetSupplierLedgerEntryByID :one
 SELECT
-    sl.id, sl.supplier_id, sl.date, sl.bs_date, sl.entry_type, sl.amount, sl.description, sl.stock_in_id, sl.created_at,
+    sl.id, sl.supplier_id, sl.date, sl.bs_date, sl.entry_type, sl.amount, sl.description, sl.stock_in_id, sl.payment_type, sl.created_at,
     s.company_name AS supplier_name
 FROM supplier_ledger sl
 JOIN suppliers s ON s.id = sl.supplier_id
@@ -100,6 +103,7 @@ type GetSupplierLedgerEntryByIDRow struct {
 	Amount       int64              `json:"amount"`
 	Description  pgtype.Text        `json:"description"`
 	StockInID    pgtype.UUID        `json:"stockInId"`
+	PaymentType  string             `json:"paymentType"`
 	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
 	SupplierName string             `json:"supplierName"`
 }
@@ -116,6 +120,7 @@ func (q *Queries) GetSupplierLedgerEntryByID(ctx context.Context, id pgtype.UUID
 		&i.Amount,
 		&i.Description,
 		&i.StockInID,
+		&i.PaymentType,
 		&i.CreatedAt,
 		&i.SupplierName,
 	)
@@ -180,7 +185,7 @@ func (q *Queries) GetSupplierLedgerSummaryBySupplier(ctx context.Context, suppli
 
 const listSupplierLedger = `-- name: ListSupplierLedger :many
 SELECT
-    sl.id, sl.supplier_id, sl.date, sl.bs_date, sl.entry_type, sl.amount, sl.description, sl.stock_in_id, sl.created_at,
+    sl.id, sl.supplier_id, sl.date, sl.bs_date, sl.entry_type, sl.amount, sl.description, sl.stock_in_id, sl.payment_type, sl.created_at,
     s.company_name AS supplier_name
 FROM supplier_ledger sl
 JOIN suppliers s ON s.id = sl.supplier_id
@@ -209,6 +214,7 @@ type ListSupplierLedgerRow struct {
 	Amount       int64              `json:"amount"`
 	Description  pgtype.Text        `json:"description"`
 	StockInID    pgtype.UUID        `json:"stockInId"`
+	PaymentType  string             `json:"paymentType"`
 	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
 	SupplierName string             `json:"supplierName"`
 }
@@ -237,6 +243,7 @@ func (q *Queries) ListSupplierLedger(ctx context.Context, arg ListSupplierLedger
 			&i.Amount,
 			&i.Description,
 			&i.StockInID,
+			&i.PaymentType,
 			&i.CreatedAt,
 			&i.SupplierName,
 		); err != nil {
@@ -252,7 +259,7 @@ func (q *Queries) ListSupplierLedger(ctx context.Context, arg ListSupplierLedger
 
 const listSupplierLedgerByDateRange = `-- name: ListSupplierLedgerByDateRange :many
 SELECT
-    sl.id, sl.supplier_id, sl.date, sl.bs_date, sl.entry_type, sl.amount, sl.description, sl.stock_in_id, sl.created_at,
+    sl.id, sl.supplier_id, sl.date, sl.bs_date, sl.entry_type, sl.amount, sl.description, sl.stock_in_id, sl.payment_type, sl.created_at,
     s.company_name AS supplier_name
 FROM supplier_ledger sl
 JOIN suppliers s ON s.id = sl.supplier_id
@@ -274,6 +281,7 @@ type ListSupplierLedgerByDateRangeRow struct {
 	Amount       int64              `json:"amount"`
 	Description  pgtype.Text        `json:"description"`
 	StockInID    pgtype.UUID        `json:"stockInId"`
+	PaymentType  string             `json:"paymentType"`
 	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
 	SupplierName string             `json:"supplierName"`
 }
@@ -296,6 +304,7 @@ func (q *Queries) ListSupplierLedgerByDateRange(ctx context.Context, arg ListSup
 			&i.Amount,
 			&i.Description,
 			&i.StockInID,
+			&i.PaymentType,
 			&i.CreatedAt,
 			&i.SupplierName,
 		); err != nil {
@@ -311,7 +320,7 @@ func (q *Queries) ListSupplierLedgerByDateRange(ctx context.Context, arg ListSup
 
 const listSupplierLedgerBySupplier = `-- name: ListSupplierLedgerBySupplier :many
 SELECT
-    sl.id, sl.supplier_id, sl.date, sl.bs_date, sl.entry_type, sl.amount, sl.description, sl.stock_in_id, sl.created_at,
+    sl.id, sl.supplier_id, sl.date, sl.bs_date, sl.entry_type, sl.amount, sl.description, sl.stock_in_id, sl.payment_type, sl.created_at,
     s.company_name AS supplier_name
 FROM supplier_ledger sl
 JOIN suppliers s ON s.id = sl.supplier_id
@@ -335,6 +344,7 @@ type ListSupplierLedgerBySupplierRow struct {
 	Amount       int64              `json:"amount"`
 	Description  pgtype.Text        `json:"description"`
 	StockInID    pgtype.UUID        `json:"stockInId"`
+	PaymentType  string             `json:"paymentType"`
 	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
 	SupplierName string             `json:"supplierName"`
 }
@@ -357,6 +367,7 @@ func (q *Queries) ListSupplierLedgerBySupplier(ctx context.Context, arg ListSupp
 			&i.Amount,
 			&i.Description,
 			&i.StockInID,
+			&i.PaymentType,
 			&i.CreatedAt,
 			&i.SupplierName,
 		); err != nil {

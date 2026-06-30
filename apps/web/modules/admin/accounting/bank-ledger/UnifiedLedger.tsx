@@ -20,6 +20,8 @@ import { adminPrimaryButtonClass } from "@/components/admin/admin-styles";
 
 const PARAM_BANK_NAME = "bank_name";
 const PARAM_ACCOUNT_NAME = "account_name";
+const PARAM_FROM_BS = "from_bs";
+const PARAM_TO_BS = "to_bs";
 
 function LedgerPageInner() {
   const router = useRouter();
@@ -29,11 +31,24 @@ function LedgerPageInner() {
 
   const [bankId, setBankId] = useState("all");
   const [accountId, setAccountId] = useState("all");
+  const [fromDate, setFromDate] = useState<string | null>(null);
+  const [toDate, setToDate] = useState<string | null>(null);
 
   const bankName = searchParams.get(PARAM_BANK_NAME) ?? "all";
   const accountName = searchParams.get(PARAM_ACCOUNT_NAME) ?? "all";
+  const fromBsDate = searchParams.get(PARAM_FROM_BS);
+  const toBsDate = searchParams.get(PARAM_TO_BS);
 
-  const filters: FilterState = { bankId, accountId, bankName, accountName };
+  const filters: FilterState = {
+    bankId,
+    accountId,
+    bankName,
+    accountName,
+    fromDate,
+    toDate,
+    fromBsDate,
+    toBsDate,
+  };
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -57,9 +72,13 @@ function LedgerPageInner() {
     (next: FilterState) => {
       setBankId(next.bankId);
       setAccountId(next.accountId);
+      setFromDate(next.fromDate);
+      setToDate(next.toDate);
       setSearchParams({
         [PARAM_BANK_NAME]: next.bankName,
         [PARAM_ACCOUNT_NAME]: next.accountName,
+        [PARAM_FROM_BS]: next.fromBsDate,
+        [PARAM_TO_BS]: next.toBsDate,
       });
     },
     [setSearchParams],
@@ -70,6 +89,8 @@ function LedgerPageInner() {
   const summaryQuery = useBankLedgerSummary({
     accountID: accountId,
     bankID: bankId,
+    fromDate,
+    toDate,
   });
 
   const {
@@ -81,12 +102,14 @@ function LedgerPageInner() {
     isError,
     refetch,
   } = useInfiniteQuery<BankLedgerData>({
-    queryKey: queryKeys.bankLedger.list(bankId, accountId),
+    queryKey: queryKeys.bankLedger.list(bankId, accountId, fromDate, toDate),
     queryFn: ({ pageParam = 1 }) =>
       getBankLedger({
         page: pageParam as number,
         bankID: bankId !== "all" ? bankId : undefined,
         accountID: accountId !== "all" ? accountId : undefined,
+        fromDate,
+        toDate,
       }),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {

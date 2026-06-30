@@ -10,6 +10,7 @@ const supplierLedgerSchema = z.object({
   amount: z.number(),
   description: z.string().optional(),
   stockInId: z.uuid().optional(),
+  paymentType: z.string(),
   createdAt: z.string(),
   supplierName: z.string(),
 });
@@ -65,7 +66,17 @@ export const createSupplierLedgerEntryInput = z.object({
     .lte(10000000, {
       error: "Amount must not exceed Rs. 1,00,00,000",
     }),
-  description: z.string().optional(),
+  description: z
+    .string()
+    .trim()
+    .min(5, { error: "Description must be at least 5 characters" })
+    .max(200, { error: "Description must be 200 characters or less" })
+    .optional(),
+  paymentType: z
+    .string()
+    .trim()
+    .min(2, { error: "Payment type is required" })
+    .max(100, { error: "Payment type must be 100 characters or less" }),
 });
 
 export type CreateSupplierLedgerEntryInput = z.infer<

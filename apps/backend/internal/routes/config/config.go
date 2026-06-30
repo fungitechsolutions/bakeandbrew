@@ -6,12 +6,14 @@ import (
 	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
 	"github.com/suprimkhatri77/sms/backend/internal/pkg/cloudinary"
 	"github.com/suprimkhatri77/sms/backend/internal/repository"
+	accountingRepository "github.com/suprimkhatri77/sms/backend/internal/repository/accounting"
 )
 
 type Config struct {
-	Config      *config.Config
-	Queries     *db.Queries
-	CldClient   *cloudinary.Client
-	StudentRepo repository.StudentRepository
-	PgxPool     *pgxpool.Pool
+	Config             *config.Config
+	Queries            *db.Queries
+	CldClient          *cloudinary.Client
+	StudentRepo        repository.StudentRepository
+	SupplierLedgerRepo accountingRepository.SupplierLedgerTxRepository
+	PgxPool            *pgxpool.Pool
 }

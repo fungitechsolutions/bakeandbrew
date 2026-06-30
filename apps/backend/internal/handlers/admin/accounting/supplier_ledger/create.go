@@ -9,8 +9,10 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
 	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
 	accountingRepository "github.com/suprimkhatri77/sms/backend/internal/repository/accounting"
@@ -28,9 +30,10 @@ type CreateSupplierLedgerEntryRequest struct {
 	Amount      float64 `json:"amount" binding:"required,gt=0,lte=10000000"`
 	Description string  `json:"description" binding:"omitempty,notblank,min=5,max=200"`
 	StockInID   string  `json:"stockInID" binding:"omitempty,uuid"`
+	PaymentType string  `json:"paymentType" binding:"required,notblank,min=2,max=100"`
 }
 
-func CreateSupplierLedgerEntry(queries accountingRepository.SupplierLedgerRepository) gin.HandlerFunc {
+func CreateSupplierLedgerEntry(queries accountingRepository.SupplierLedgerTxRepository, pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 
@@ -74,7 +77,22 @@ func CreateSupplierLedgerEntry(queries accountingRepository.SupplierLedgerReposi
 			return
 		}
 
-		_, err = queries.CreateSupplierLedgerEntry(ctx, db.CreateSupplierLedgerEntryParams{
+		tx, err := pool.Begin(ctx)
+		if err != nil {
+			applog.Error(c, handlerCreateSupplierLedgerEntry, "failed to begin transaction",
+				slog.Any(applog.AttrError, err))
+			c.JSON(http.StatusInternalServerError, types.APIResponse{
+				Success: false,
+				Message: "Failed to create supplier ledger entry",
+				Code:    constants.InternalServerError,
+			})
+			return
+		}
+		defer tx.Rollback(ctx)
+
+		qtx := queries.WithTx(tx)
+
+		_, err = qtx.CreateSupplierLedgerEntry(ctx, db.CreateSupplierLedgerEntryParams{
 			SupplierID:  supplierID,
 			Date:        pgtype.Timestamptz{Time: adDate, Valid: true},
 			BsDate:      req.BsDate,
@@ -82,6 +100,7 @@ func CreateSupplierLedgerEntry(queries accountingRepository.SupplierLedgerReposi
 			Description: utils.ToNullableText(req.Description),
 			Amount:      int64(req.Amount * 100),
 			EntryType:   req.EntryType,
+			PaymentType: req.PaymentType,
 		})
 
 		if err != nil {
@@ -132,7 +151,226 @@ func CreateSupplierLedgerEntry(queries accountingRepository.SupplierLedgerReposi
 
 		}
 
+		counterEntryType := "cr"
+		if req.EntryType == "cr" {
+			counterEntryType = "dr"
+		}
+
+		if req.PaymentType == "cash" {
+			_, err = qtx.CreateCashLedgerEntry(ctx, db.CreateCashLedgerEntryParams{
+				Amount:      int64(req.Amount * 100),
+				EntryType:   counterEntryType,
+				Description: pgtype.Text{String: "Supplier payment - auto recorded", Valid: true},
+				BsDate:      req.BsDate,
+				Date:        pgtype.Timestamptz{Time: adDate, Valid: true},
+			})
+
+			if err != nil {
+				var pgErr *pgconn.PgError
+				if errors.As(err, &pgErr) {
+					switch pgErr.Code {
+					case "23503":
+						switch pgErr.ConstraintName {
+						case "cash_ledger_payment_id_fkey":
+							applog.Warn(c, handlerCreateSupplierLedgerEntry, "resource not found",
+								slog.Any(applog.AttrError, err))
+							c.JSON(http.StatusNotFound, types.APIResponse{
+								Success: false,
+								Message: "Payment not found",
+								Code:    constants.PaymentNotFound,
+							})
+							return
+						default:
+							applog.Error(c, handlerCreateSupplierLedgerEntry, "failed to process request",
+								slog.Any(applog.AttrError, err),
+							)
+							c.JSON(http.StatusInternalServerError, types.APIResponse{
+								Success: false,
+								Message: "Failed to process request",
+								Code:    constants.InternalServerError,
+							})
+							return
+						}
+					case "23514":
+						switch pgErr.ConstraintName {
+						case "cash_ledger_entry_type_check":
+							applog.Warn(c, handlerCreateSupplierLedgerEntry, "invalid request")
+							c.JSON(http.StatusBadRequest, types.APIResponse{
+								Success: false,
+								Message: "Entry type must be one of cr or dr",
+								Code:    constants.ValidationFailed,
+							})
+							return
+						case "cash_ledger_amount_check":
+							applog.Warn(c, handlerCreateSupplierLedgerEntry, "invalid request")
+							c.JSON(http.StatusBadRequest, types.APIResponse{
+								Success: false,
+								Message: "Ledger amount must be greater than 0",
+								Code:    constants.ValidationFailed,
+							})
+							return
+						default:
+							applog.Error(c, handlerCreateSupplierLedgerEntry, "failed to process request",
+								slog.Any(applog.AttrError, err),
+							)
+							c.JSON(http.StatusInternalServerError, types.APIResponse{
+								Success: false,
+								Message: "Failed to process request",
+								Code:    constants.ValidationFailed,
+							})
+							return
+						}
+					default:
+						applog.Error(c, handlerCreateSupplierLedgerEntry, "failed to process request",
+							slog.Any(applog.AttrError, err),
+						)
+						c.JSON(http.StatusInternalServerError, types.APIResponse{
+							Success: false,
+							Message: "Failed to process request",
+							Code:    constants.InternalServerError,
+						})
+						return
+					}
+				}
+				applog.Error(c, handlerCreateSupplierLedgerEntry, "failed to create cash ledger entry",
+					slog.Any(applog.AttrError, err))
+				c.JSON(http.StatusInternalServerError, types.APIResponse{
+					Success: false,
+					Message: "Failed to create cash ledger entry",
+					Code:    constants.InternalServerError,
+				})
+				return
+			}
+
+		} else {
+			defaultBankAccountID, err := qtx.GetDefaultBankAccountID(ctx)
+			if err != nil {
+				if errors.Is(err, pgx.ErrNoRows) {
+					applog.Warn(c, handlerCreateSupplierLedgerEntry, "resource not found",
+						slog.Any(applog.AttrError, err))
+					c.JSON(http.StatusNotFound, types.APIResponse{
+						Success: false,
+						Message: "No default bank account configured",
+						Code:    constants.NoDefaultBankAccount,
+					})
+					return
+				}
+				applog.Error(c, handlerCreateSupplierLedgerEntry, "failed to get default bank account id",
+					slog.Any(applog.AttrError, err))
+				c.JSON(http.StatusInternalServerError, types.APIResponse{
+					Success: false,
+					Message: "Failed to get default bank account id",
+					Code:    constants.InternalServerError,
+				})
+				return
+			}
+			_, err = qtx.CreateBankLedgerEntry(ctx, db.CreateBankLedgerEntryParams{
+				Amount:        int64(req.Amount * 100),
+				BankAccountID: defaultBankAccountID,
+				EntryType:     counterEntryType,
+				Description:   pgtype.Text{String: "Supplier payment - auto recorded", Valid: true},
+				BsDate:        req.BsDate,
+				Date:          pgtype.Timestamptz{Time: adDate, Valid: true},
+			})
+			if err != nil {
+				var pgErr *pgconn.PgError
+				if errors.As(err, &pgErr) {
+					switch pgErr.Code {
+					case "23503":
+						switch pgErr.ConstraintName {
+						case "bank_ledger_bank_account_id_fkey":
+							applog.Warn(c, handlerCreateSupplierLedgerEntry, "resource not found",
+								slog.Any(applog.AttrError, err))
+							c.JSON(http.StatusNotFound, types.APIResponse{
+								Success: false,
+								Message: "Bank account not found",
+								Code:    constants.BankAccountNotFound,
+							})
+							return
+						case "bank_ledger_payment_id_fkey":
+							applog.Warn(c, handlerCreateSupplierLedgerEntry, "resource not found")
+							c.JSON(http.StatusNotFound, types.APIResponse{
+								Success: false,
+								Message: "Payment not found",
+								Code:    constants.PaymentNotFound,
+							})
+							return
+						default:
+							applog.Error(c, handlerCreateSupplierLedgerEntry, "failed to process request",
+								slog.Any(applog.AttrError, err),
+							)
+							c.JSON(http.StatusInternalServerError, types.APIResponse{
+								Success: false,
+								Message: "Failed to process request",
+								Code:    constants.InternalServerError,
+							})
+							return
+						}
+					case "23514":
+						switch pgErr.ConstraintName {
+						case "bank_ledger_entry_type_check":
+							applog.Warn(c, handlerCreateSupplierLedgerEntry, "invalid request")
+							c.JSON(http.StatusBadRequest, types.APIResponse{
+								Success: false,
+								Message: "Entry type must be one of cr or dr",
+								Code:    constants.ValidationFailed,
+							})
+							return
+						case "bank_ledger_amount_check":
+							applog.Warn(c, handlerCreateSupplierLedgerEntry, "invalid request")
+							c.JSON(http.StatusBadRequest, types.APIResponse{
+								Success: false,
+								Message: "Ledger amount must be greater than 0",
+								Code:    constants.ValidationFailed,
+							})
+							return
+						default:
+							applog.Error(c, handlerCreateSupplierLedgerEntry, "failed to process request",
+								slog.Any(applog.AttrError, err),
+							)
+							c.JSON(http.StatusInternalServerError, types.APIResponse{
+								Success: false,
+								Message: "Failed to process request",
+								Code:    constants.ValidationFailed,
+							})
+							return
+						}
+					default:
+						applog.Error(c, handlerCreateSupplierLedgerEntry, "failed to process request",
+							slog.Any(applog.AttrError, err),
+						)
+						c.JSON(http.StatusInternalServerError, types.APIResponse{
+							Success: false,
+							Message: "Failed to process request",
+							Code:    constants.InternalServerError,
+						})
+						return
+					}
+				}
+				applog.Error(c, handlerCreateSupplierLedgerEntry, "failed to create bank ledger entry",
+					slog.Any(applog.AttrError, err))
+				c.JSON(http.StatusInternalServerError, types.APIResponse{
+					Success: false,
+					Message: "Failed to create bank ledger entry",
+					Code:    constants.InternalServerError,
+				})
+				return
+			}
+		}
+
 		applog.Info(c, handlerCreateSupplierLedgerEntry, "ledger entry created")
+
+		if err := tx.Commit(ctx); err != nil {
+			applog.Error(c, handlerCreateSupplierLedgerEntry, "failed to commit transaction",
+				slog.Any(applog.AttrError, err))
+			c.JSON(http.StatusInternalServerError, types.APIResponse{
+				Success: false,
+				Message: "Failed to create supplier ledger entry",
+				Code:    constants.InternalServerError,
+			})
+			return
+		}
+
 		c.JSON(http.StatusCreated, types.APIResponse{
 			Success: true,
 			Message: "Ledger entry created",

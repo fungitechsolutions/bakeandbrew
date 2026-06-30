@@ -14,6 +14,7 @@ import (
 
 	appconfig "github.com/suprimkhatri77/sms/backend/internal/config"
 	"github.com/suprimkhatri77/sms/backend/internal/database"
+	accountingRepository "github.com/suprimkhatri77/sms/backend/internal/repository/accounting"
 
 	dbgen "github.com/suprimkhatri77/sms/backend/internal/database/generated"
 	"github.com/suprimkhatri77/sms/backend/internal/middleware"
@@ -76,11 +77,12 @@ func main() {
 	r.Use(middleware.CORS(cfg))
 
 	routes.Setup(r, routeconfig.Config{
-		Config:      cfg,
-		Queries:     queries,
-		CldClient:   cldClient,
-		StudentRepo: repository.NewAdmissionRepository(queries),
-		PgxPool:     db.Pool,
+		Config:             cfg,
+		Queries:            queries,
+		CldClient:          cldClient,
+		StudentRepo:        repository.NewAdmissionRepository(queries),
+		SupplierLedgerRepo: accountingRepository.NewSupplierLedgerTxRepository(queries, db.Pool),
+		PgxPool:            db.Pool,
 	})
 
 	srv := &http.Server{

@@ -4,14 +4,17 @@ import { Loader2 } from "lucide-react";
 import { SupplierLedgerEntryRow } from "./SupplierLedgerEntryRow";
 import { SupplierLedger } from "@repo/types";
 import {
-  accountingThClass,
+  accountingStickyThClass,
+  accountingStickyTfootClass,
+  accountingStickyTfootRowClass,
   accountingTableWrapClass,
 } from "../shared/accounting-styles";
 
 const COL_SPAN_WITH = 7;
 const COL_SPAN_WITHOUT = 6;
-const thSticky = `${accountingThClass} sticky top-0 z-10`;
-const tableClass = "w-full table-fixed border-collapse text-left text-sm";
+const thSticky = accountingStickyThClass;
+const tableClass =
+  "w-full table-fixed border-separate border-spacing-0 text-left text-sm";
 
 function LedgerColGroup({
   showSupplierColumn,
@@ -117,9 +120,9 @@ export function SupplierLedgerTable({
             ))}
           </tbody>
 
-          <tfoot className="sticky bottom-0 z-10">
+          <tfoot className={accountingStickyTfootClass}>
             {isFetchingNextPage && (
-              <tr className="bg-[rgba(47,78,64,0.03)]">
+              <tr className="bg-white">
                 <td colSpan={colSpan} className="px-5 py-2 text-center">
                   <span className="flex items-center justify-center gap-2 font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.45)]">
                     <Loader2 size={13} className="animate-spin" />
@@ -128,7 +131,7 @@ export function SupplierLedgerTable({
                 </td>
               </tr>
             )}
-            <tr className="border-t border-[rgba(47,78,64,0.12)] bg-[rgba(47,78,64,0.03)] text-xs font-semibold">
+            <tr className={accountingStickyTfootRowClass}>
               <td
                 colSpan={showSupplierColumn ? 4 : 3}
                 className="px-5 py-2 text-right font-(family-name:--font-dm-sans) uppercase tracking-[0.08em] text-[rgba(47,78,64,0.55)]"

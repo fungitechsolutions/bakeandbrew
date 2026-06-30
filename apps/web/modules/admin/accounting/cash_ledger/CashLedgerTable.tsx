@@ -8,13 +8,15 @@ import { EmptyCashLedgerState } from "./EmptyCashLedgerState";
 import { CashLedger } from "@repo/types";
 import { adminSecondaryButtonClass } from "@/components/admin/admin-styles";
 import {
-  accountingTableClass,
+  accountingLedgerTableClass,
+  accountingStickyThClass,
+  accountingStickyTfootClass,
+  accountingStickyTfootRowClass,
   accountingTableWrapClass,
-  accountingThClass,
 } from "../shared/accounting-styles";
 
 const COL_SPAN = 6;
-const thSticky = `${accountingThClass} sticky top-0 z-10`;
+const thSticky = accountingStickyThClass;
 
 interface CashLedgerTableProps {
   entries: CashLedger[];
@@ -74,7 +76,7 @@ export function CashLedgerTable({
         onScroll={onScroll}
         className="flex-1 overflow-auto"
       >
-        <table className={`${accountingTableClass} min-w-[600px] text-left text-sm`}>
+        <table className={`${accountingLedgerTableClass} min-w-[600px] text-left text-sm`}>
           <thead>
             <tr>
               <th className={`${thSticky} w-12 text-center`}>S.No</th>
@@ -150,9 +152,9 @@ export function CashLedgerTable({
           ) : (
             !initialLoading &&
             entries.length > 0 && (
-              <tfoot className="sticky bottom-0 z-10">
+              <tfoot className={accountingStickyTfootClass}>
                 {isFetchingNextPage && (
-                  <tr className="bg-[rgba(47,78,64,0.03)]">
+                  <tr className="bg-white">
                     <td colSpan={COL_SPAN} className="px-5 py-2 text-center">
                       <span className="flex items-center justify-center gap-2 font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.45)]">
                         <Loader2 size={13} className="animate-spin" />
@@ -161,7 +163,7 @@ export function CashLedgerTable({
                     </td>
                   </tr>
                 )}
-                <tr className="border-t border-[rgba(47,78,64,0.12)] bg-[rgba(47,78,64,0.03)] text-xs font-semibold whitespace-nowrap">
+                <tr className={`${accountingStickyTfootRowClass} whitespace-nowrap`}>
                   <td
                     colSpan={3}
                     className="px-5 py-2 text-right font-(family-name:--font-dm-sans) uppercase tracking-[0.08em] text-[rgba(47,78,64,0.55)]"

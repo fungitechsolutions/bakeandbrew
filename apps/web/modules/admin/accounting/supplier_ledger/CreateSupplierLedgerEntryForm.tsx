@@ -35,6 +35,13 @@ import {
   accountingSelectTriggerClass,
 } from "../shared/accounting-styles";
 
+const PAYMENT_TYPE_SUGGESTIONS = [
+  { value: "cash", label: "Cash" },
+  { value: "bank", label: "Bank" },
+  { value: "cheque", label: "Cheque" },
+  { value: "esewa", label: "eSewa" },
+] as const;
+
 interface CreateSupplierLedgerEntryFormProps {
   open: boolean;
   loading: boolean;
@@ -59,7 +66,8 @@ export function CreateSupplierLedgerEntryForm({
   const [adDate, setAdDate] = useState("");
   const [entryType, setEntryType] = useState<"dr" | "cr" | "">("");
   const [amountRs, setAmountRs] = useState("");
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState<string | undefined>(undefined);
+  const [paymentType, setPaymentType] = useState("");
   const [errors, setErrors] =
     useState<Partial<Record<keyof CreateSupplierLedgerEntryInput, string>>>();
 
@@ -69,7 +77,8 @@ export function CreateSupplierLedgerEntryForm({
     setAdDate("");
     setEntryType("");
     setAmountRs("");
-    setDescription("");
+    setDescription(undefined);
+    setPaymentType("");
     setErrors({});
   };
 
@@ -90,7 +99,8 @@ export function CreateSupplierLedgerEntryForm({
       bsDate,
       entryType: entryType as "dr" | "cr",
       amount: Number(amountRs),
-      description: description.trim() ?? undefined,
+      description: description,
+      paymentType,
     });
     if (!validateFields.success) {
       const tree = z.treeifyError(validateFields.error).properties;
@@ -101,6 +111,7 @@ export function CreateSupplierLedgerEntryForm({
         entryType: tree?.entryType?.errors[0],
         amount: tree?.amount?.errors[0],
         description: tree?.description?.errors[0],
+        paymentType: tree?.paymentType?.errors[0],
       });
       return;
     }
@@ -256,6 +267,56 @@ export function CreateSupplierLedgerEntryForm({
                   errors?.amount && "border-[#9a3412]",
                 )}
               />
+            </div>
+          </AccountingFormField>
+
+          <AccountingFormField
+            label="Payment Type"
+            htmlFor="supplier-payment-type"
+            required
+            error={errors?.paymentType}
+          >
+            <input
+              id="supplier-payment-type"
+              type="text"
+              placeholder="Type a custom payment method…"
+              value={paymentType}
+              onChange={(e) => {
+                setPaymentType(e.target.value);
+                setErrors((prev) => ({ ...prev, paymentType: undefined }));
+              }}
+              className={cn(
+                accountingFieldInputClass,
+                errors?.paymentType && "border-[#9a3412]",
+              )}
+            />
+            <div className="mt-2.5 flex flex-wrap gap-2">
+              {PAYMENT_TYPE_SUGGESTIONS.map((option) => {
+                const isSelected =
+                  paymentType.trim().toLowerCase() === option.value;
+
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => {
+                      setPaymentType(option.value);
+                      setErrors((prev) => ({
+                        ...prev,
+                        paymentType: undefined,
+                      }));
+                    }}
+                    className={cn(
+                      "border px-3 py-1.5 font-(family-name:--font-dm-sans) text-xs font-semibold uppercase tracking-[0.06em] transition-colors",
+                      isSelected
+                        ? "border-(--brand-green) bg-(--brand-green) text-white"
+                        : "border-[rgba(47,78,64,0.18)] bg-white text-[rgba(47,78,64,0.65)] hover:border-(--brand-green) hover:text-(--brand-green)",
+                    )}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
             </div>
           </AccountingFormField>
 

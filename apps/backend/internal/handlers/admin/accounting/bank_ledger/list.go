@@ -19,8 +19,10 @@ import (
 const handlerListBankLedger = "ListBankLedger"
 
 type ListBankLedgerParams struct {
-	BankAccountID string `form:"account_id"`
-	BankID        string `form:"bank_id"`
+	BankAccountID string `form:"account_id" binding:"omitempty,uuid"`
+	BankID        string `form:"bank_id" binding:"omitempty,uuid"`
+	FromDate      string `form:"from_date" binding:"omitempty,date_format"`
+	ToDate        string `form:"to_date" binding:"omitempty,date_format"`
 }
 
 func ListBankLedger(queries accountingRepository.BankLedgerRepository) gin.HandlerFunc {
@@ -88,6 +90,8 @@ func ListBankLedger(queries accountingRepository.BankLedgerRepository) gin.Handl
 		total, err := queries.GetBankLedgerCount(ctx, db.GetBankLedgerCountParams{
 			BankAccountID: accountID,
 			BankID:        bankID,
+			FromDate:      utils.ToNullableDate(filter.FromDate),
+			ToDate:        utils.ToNullableDate(filter.ToDate),
 		})
 		if err != nil {
 			applog.Error(c, handlerListBankLedger, "failed to process request",
@@ -132,6 +136,8 @@ func ListBankLedger(queries accountingRepository.BankLedgerRepository) gin.Handl
 			Offset:        int32(offset),
 			BankAccountID: accountID,
 			BankID:        bankID,
+			FromDate:      utils.ToNullableDate(filter.FromDate),
+			ToDate:        utils.ToNullableDate(filter.ToDate),
 		})
 
 		if err != nil {

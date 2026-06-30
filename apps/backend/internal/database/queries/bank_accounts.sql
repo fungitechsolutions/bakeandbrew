@@ -71,3 +71,6 @@ SELECT
 FROM bank_accounts ba
 JOIN banks b ON b.id = ba.bank_id
 ORDER BY ba.account_name ASC;
+
+-- name: GetDefaultBankAccountID :one
+SELECT id FROM bank_accounts WHERE is_default = TRUE LIMIT 1;
