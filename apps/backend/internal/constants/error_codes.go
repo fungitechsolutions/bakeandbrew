@@ -92,4 +92,5 @@ const (
 
 	// certificates
 	CertificateAlreadyExists = "CERTIFICATE_ALREADY_EXISTS"
+	CertificateNotFound      = "CERTIFICATE_NOT_FOUND"
 )

@@ -157,6 +157,13 @@ export { type GetStudentDiscountsResponse } from "./student_portal/discounts";
 export { type GetStudentPortalScholarshipResponse } from "./student_portal/scholarship";
 
 export {
+  certificateDetailsSchema,
+  getCertificateDetailsResponseSchema,
+  type CertificateDetails,
+  type GetCertificateDetailsResponse,
+} from "./certificates";
+
+export {
   createBankInputSchema,
   updateBankInputSchema,
   type CreateBankInput,

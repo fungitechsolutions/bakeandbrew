@@ -77,18 +77,6 @@ func CreateCertificate(queries repository.CertificatesRepository) gin.HandlerFun
 			req.Type = "normal"
 		}
 
-		certificateID, err := generateCertificateID(14)
-		if err != nil {
-			applog.Error(c, handlerCreateCertificate, "failed to generate certificate ID",
-				slog.Any(applog.AttrError, err))
-			c.JSON(http.StatusInternalServerError, types.APIResponse{
-				Success: false,
-				Message: "Failed to generate certificate ID",
-				Code:    constants.InternalServerError,
-			})
-			return
-		}
-
 		studentStatus, err := queries.GetStudentStatus(ctx, studentID)
 		if err != nil {
 			applog.Error(c, handlerCreateCertificate, "failed to get student by ID",
@@ -145,6 +133,17 @@ func CreateCertificate(queries repository.CertificatesRepository) gin.HandlerFun
 			return
 		}
 
+		certificateID, err := generateCertificateID(14)
+		if err != nil {
+			applog.Error(c, handlerCreateCertificate, "failed to generate certificate ID",
+				slog.Any(applog.AttrError, err))
+			c.JSON(http.StatusInternalServerError, types.APIResponse{
+				Success: false,
+				Message: "Failed to generate certificate ID",
+				Code:    constants.InternalServerError,
+			})
+			return
+		}
 		certificate, err := queries.IssueCertificate(ctx, db.IssueCertificateParams{
 			ID:        certificateID,
 			StudentID: studentID,
