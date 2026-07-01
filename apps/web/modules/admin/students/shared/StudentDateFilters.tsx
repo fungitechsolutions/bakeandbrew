@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { CalendarDays, Search, X } from "lucide-react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { NepaliDatePicker } from "nepali-datepicker-reactjs";
@@ -10,6 +10,10 @@ import { toast } from "sonner";
 import { adminInputClass, adminSecondaryButtonClass } from "@/components/admin/admin-styles";
 import { cn } from "@/lib/utils";
 import { PARAM_FROM_BS, PARAM_TO_BS } from "./student-date-filter-utils";
+import {
+  useAdminClearFiltersShortcut,
+  useAdminFocusSearchShortcut,
+} from "@/components/admin/admin-shortcut-provider";
 
 type StudentDateFiltersProps = {
   isPending?: boolean;
@@ -30,6 +34,7 @@ export function StudentDateFilters({
   const fromBs = searchParams.get(PARAM_FROM_BS) ?? "";
   const toBs = searchParams.get(PARAM_TO_BS) ?? "";
   const search = searchParams.get("search") ?? "";
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const updateParams = useCallback(
     (updates: Record<string, string | null>) => {
@@ -70,9 +75,18 @@ export function StudentDateFilters({
     }
   };
 
-  const clearAll = () => {
+  const clearAll = useCallback(() => {
     router.push(pathname);
-  };
+  }, [router, pathname]);
+
+  const focusSearch = useCallback(() => {
+    if (showSearch) {
+      searchInputRef.current?.focus();
+    }
+  }, [showSearch]);
+
+  useAdminClearFiltersShortcut(clearAll);
+  useAdminFocusSearchShortcut(focusSearch);
 
   const hasFilters = fromBs || toBs || (showSearch && search);
 
@@ -107,6 +121,7 @@ export function StudentDateFilters({
                 strokeWidth={1.75}
               />
               <input
+                ref={searchInputRef}
                 id="student-finance-search"
                 type="text"
                 className={cn(adminInputClass, "pl-9 normal-case tracking-normal")}

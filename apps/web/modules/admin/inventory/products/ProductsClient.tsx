@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { CalendarDays, Plus, Search } from "lucide-react";
 import { useDebounce } from "@/modules/admin/analytics/hooks/useDebounce";
@@ -8,6 +8,14 @@ import { NepaliDatePicker } from "nepali-datepicker-reactjs";
 import { inputCls } from "../../students/detail/shared/utils";
 import { cn } from "@/lib/utils";
 import { AdminPageLayout } from "@/components/admin/admin-page-layout";
+import {
+  useAdminEscapeShortcut,
+  useAdminClearFiltersShortcut,
+  useAdminFocusSearchShortcut,
+  useAdminNewShortcut,
+  useAdminRefreshShortcut,
+} from "@/components/admin/admin-shortcut-provider";
+import { useAdminQueryRefresh } from "@/hooks/useAdminQueryRefresh";
 import {
   adminInputClass,
   adminPrimaryButtonClass,
@@ -43,6 +51,7 @@ export function ProductsClient() {
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [page, setPage] = useState(1);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -279,9 +288,40 @@ export function ProductsClient() {
     },
   });
 
-  const handleCreate = () => {
+  const openCreate = useCallback(() => {
     setEditingProduct(null);
     setDialogOpen(true);
+  }, []);
+
+  const toggleCreate = useCallback(() => {
+    if (dialogOpen && !editingProduct) setDialogOpen(false);
+    else if (!dialogOpen) openCreate();
+  }, [dialogOpen, editingProduct, openCreate]);
+
+  const focusSearch = useCallback(() => searchInputRef.current?.focus(), []);
+
+  const handleClear = useCallback(() => {
+    setSearch("");
+    setPendingFrom("");
+    setPendingTo("");
+    setDateFrom("");
+    setDateTo("");
+    router.push(pathname);
+  }, [pathname, router]);
+
+  useAdminNewShortcut(toggleCreate);
+  useAdminFocusSearchShortcut(focusSearch);
+  useAdminRefreshShortcut(useAdminQueryRefresh(refetch));
+  useAdminClearFiltersShortcut(handleClear);
+  useAdminEscapeShortcut(
+    useCallback(() => {
+      if (deletingProduct) setDeletingProduct(null);
+      else if (dialogOpen) setDialogOpen(false);
+    }, [deletingProduct, dialogOpen]),
+  );
+
+  const handleCreate = () => {
+    openCreate();
   };
 
   const handleEdit = (product: Product) => {
@@ -318,15 +358,6 @@ export function ProductsClient() {
     updateParams({ from: pendingFrom, to: pendingTo });
   };
 
-  const handleClear = () => {
-    setSearch("");
-    setPendingFrom("");
-    setPendingTo("");
-    setDateFrom("");
-    setDateTo("");
-    router.push(pathname);
-  };
-
   const hasActiveFilters = !!search || !!dateFrom || !!dateTo;
   const hasPendingDateChange = pendingFrom !== dateFrom || pendingTo !== dateTo;
   return (
@@ -353,6 +384,7 @@ export function ProductsClient() {
             <div className="relative w-full">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[rgba(47,78,64,0.35)]" />
               <input
+                ref={searchInputRef}
                 id="product-search"
                 placeholder="Search by product name…"
                 value={search}

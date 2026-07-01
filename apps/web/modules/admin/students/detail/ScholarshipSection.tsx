@@ -6,7 +6,7 @@ import { SectionCard } from "./shared/SectionCard";
 import { DetailEmptyState } from "./shared/DetailEmptyState";
 import { detailInsetClass } from "./detail-styles";
 import { DeleteScholarshipDialog } from "./DeleteScholarshipDialog";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { IconBtn } from "./IconButton";
 import { ScholarshipFormModal } from "./ScholarshipFormModal";
 import {
@@ -23,19 +23,24 @@ import { toast } from "sonner";
 import type { Status } from "./StudentDetail";
 import {
   canPerformStudentActions,
+  canAddStudentFinanceAdjustments,
+  getStudentFinanceAdjustmentDisabledTooltip,
   STUDENT_STATUS_ACTION_TOOLTIP,
 } from "./student-status-actions";
+import { useAdminScholarshipShortcut } from "@/components/admin/admin-shortcut-provider";
 
 type Props = {
   studentID: string;
   scholarship: Extract<StudentScholarshipResponse, { success: true }>["data"];
   currentStatus: Status;
+  balanceDue: number;
 };
 
 export function ScholarshipSection({
   scholarship,
   studentID,
   currentStatus,
+  balanceDue,
 }: Props) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -150,6 +155,26 @@ export function ScholarshipSection({
   };
 
   const actionsAllowed = canPerformStudentActions(currentStatus);
+  const canAwardScholarship = canAddStudentFinanceAdjustments(
+    currentStatus,
+    balanceDue,
+  );
+  const awardDisabledTooltip = getStudentFinanceAdjustmentDisabledTooltip(
+    currentStatus,
+    balanceDue,
+  );
+
+  useAdminScholarshipShortcut(
+    useCallback(() => {
+      if (!actionsAllowed) return;
+      if (scholarship) {
+        setShowEditModal(true);
+        return;
+      }
+      if (!canAwardScholarship) return;
+      setShowAddModal(true);
+    }, [actionsAllowed, canAwardScholarship, scholarship]),
+  );
 
   return (
     <SectionCard title="Scholarship" icon={GraduationCap}>
@@ -246,8 +271,8 @@ export function ScholarshipSection({
             <AddBtn
               label="Award Scholarship"
               onClick={() => setShowAddModal(true)}
-              disabled={!actionsAllowed}
-              disabledTooltip={STUDENT_STATUS_ACTION_TOOLTIP}
+              disabled={!canAwardScholarship}
+              disabledTooltip={awardDisabledTooltip}
               compact
             />
           }

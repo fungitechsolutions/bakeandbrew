@@ -1,9 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { AdminPageLayout } from "@/components/admin/admin-page-layout";
+import {
+  useAdminEscapeShortcut,
+  useAdminBackShortcut,
+  useAdminNewShortcut,
+  useAdminRefreshShortcut,
+} from "@/components/admin/admin-shortcut-provider";
+import { useAdminQueryRefresh } from "@/hooks/useAdminQueryRefresh";
 import { adminPrimaryButtonClass } from "@/components/admin/admin-styles";
 import { accountingTableWrapClass } from "../shared/accounting-styles";
 import { BankAccountSkeleton } from "./BankAccountSkeleton";
@@ -26,6 +34,7 @@ import { useDeleteBankAccount } from "@/hooks/mutations/admin/bank_accounts/useD
 import { useSetDefaultBankAccount } from "@/hooks/mutations/admin/bank_accounts/useSetDefaultBankAccount";
 
 export function BankAccountsClient() {
+  const router = useRouter();
   const [page, setPage] = useState(1);
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -33,7 +42,21 @@ export function BankAccountsClient() {
   const [deleteAccount, setDeleteAccount] = useState<BankAccount | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
+  const toggleCreate = useCallback(() => setCreateOpen((open) => !open), []);
+
   const { isPending, isError, error, refetch, data } = useBankAccounts(page);
+
+  useAdminNewShortcut(toggleCreate);
+  useAdminRefreshShortcut(useAdminQueryRefresh(refetch));
+  useAdminBackShortcut(useCallback(() => router.push("/admin/banks"), [router]));
+  useAdminEscapeShortcut(
+    useCallback(() => {
+      if (createOpen) setCreateOpen(false);
+      else if (editAccount) setEditAccount(null);
+      else if (deleteAccount) setDeleteAccount(null);
+    }, [createOpen, editAccount, deleteAccount]),
+  );
+
   const {
     // isPending: isFetchingBanks,
     // isError: isBanksError,

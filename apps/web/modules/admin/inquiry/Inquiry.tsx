@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useTransition, useCallback } from "react";
+import { useState, useMemo, useEffect, useTransition, useCallback, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useDebouncedCallback } from "use-debounce";
 import {
@@ -31,6 +31,7 @@ import {
 } from "@repo/types";
 import { toast } from "sonner";
 import { AdminPageLayout } from "@/components/admin/admin-page-layout";
+import { useAdminClearFiltersShortcut, useAdminFocusSearchShortcut } from "@/components/admin/admin-shortcut-provider";
 import {
   adminIconButtonClass,
   adminDangerIconButtonClass,
@@ -140,6 +141,7 @@ export default function AdminInquiryPage() {
   const sourceFilter = searchParams.get("source") ?? "all";
 
   const [searchInput, setSearchInput] = useState(search);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [sortField, setSortField] = useState<SortableField>("createdAt");
   const [sortDir, setSortDir] = useState<SortDirection>("desc");
   const [selected, setSelected] = useState<Inquiry | null>(null);
@@ -356,7 +358,7 @@ export default function AdminInquiryPage() {
     }
   };
 
-  const clearAllFilters = () => {
+  const clearAllFilters = useCallback(() => {
     setSearchInput("");
     updateParams({
       is_read: null,
@@ -364,7 +366,12 @@ export default function AdminInquiryPage() {
       search: null,
       page: null,
     });
-  };
+  }, [updateParams]);
+
+  useAdminClearFiltersShortcut(clearAllFilters);
+  useAdminFocusSearchShortcut(
+    useCallback(() => searchInputRef.current?.focus(), []),
+  );
 
   // ── Table column definitions ───────────────────────────────────────────────
   const tableColumns: Array<{
@@ -475,6 +482,7 @@ export default function AdminInquiryPage() {
           <div className="relative sm:ml-auto">
             <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[rgba(47,78,64,0.4)]" />
             <input
+              ref={searchInputRef}
               type="text"
               placeholder="Search inquiries…"
               value={searchInput}

@@ -15,6 +15,12 @@ import { CashLedgerFilters } from "./CashLedgerFilter";
 import { useCreateCashLedgerEntry } from "@/hooks/mutations/admin/cash_ledger/useCreateCashLedgerEntry";
 import { useCashLedgerSummary } from "@/hooks/queries/admin/cash_ledger/useCashLedger";
 import { AdminPageLayout } from "@/components/admin/admin-page-layout";
+import {
+  useAdminEscapeShortcut,
+  useAdminNewShortcut,
+  useAdminRefreshShortcut,
+} from "@/components/admin/admin-shortcut-provider";
+import { useAdminQueryRefresh } from "@/hooks/useAdminQueryRefresh";
 import { adminPrimaryButtonClass } from "@/components/admin/admin-styles";
 
 const PARAM_FROM_BS = "from_bs";
@@ -25,6 +31,8 @@ function CashLedgerPageInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [formOpen, setFormOpen] = useState(false);
+
+  const toggleForm = useCallback(() => setFormOpen((open) => !open), []);
 
   const [fromDate, setFromDate] = useState<string | null>(null);
   const [toDate, setToDate] = useState<string | null>(null);
@@ -94,6 +102,14 @@ function CashLedgerPageInner() {
   );
   const totalCount = data?.pages[0]?.meta.total ?? 0;
   const hasReachedEnd = !hasNextPage && !isLoading;
+
+  useAdminNewShortcut(toggleForm);
+  useAdminRefreshShortcut(useAdminQueryRefresh(refetch));
+  useAdminEscapeShortcut(
+    useCallback(() => {
+      if (formOpen) setFormOpen(false);
+    }, [formOpen]),
+  );
 
   const handleScroll = useCallback(
     (e: React.UIEvent<HTMLDivElement>) => {

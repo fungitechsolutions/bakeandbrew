@@ -8,6 +8,14 @@ import { StockOutDialog } from "./StockOutDialog";
 import { ConfirmDialog } from "../shared/ConfirmDialog";
 import { useDebounce } from "@/modules/admin/analytics/hooks/useDebounce";
 import { AdminPageLayout } from "@/components/admin/admin-page-layout";
+import {
+  useAdminEscapeShortcut,
+  useAdminClearFiltersShortcut,
+  useAdminFocusSearchShortcut,
+  useAdminNewShortcut,
+  useAdminRefreshShortcut,
+} from "@/components/admin/admin-shortcut-provider";
+import { useAdminQueryRefresh } from "@/hooks/useAdminQueryRefresh";
 import { adminPrimaryButtonClass } from "@/components/admin/admin-styles";
 import { InventoryTransactionFilters } from "../shared/InventoryTransactionFilters";
 import {
@@ -94,7 +102,7 @@ export function StockOutClient() {
     setCurrentPage(1);
   };
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     setSearch("");
     setPendingFrom("");
     setPendingTo("");
@@ -103,7 +111,7 @@ export function StockOutClient() {
     setPriceSort("");
     setCurrentPage(1);
     router.push(pathname);
-  };
+  }, [pathname, router]);
 
   const hasActiveFilters = !!search || !!dateFrom || !!dateTo || !!priceSort;
   const hasPendingDateChange = pendingFrom !== dateFrom || pendingTo !== dateTo;
@@ -229,6 +237,31 @@ export function StockOutClient() {
     setTimeout(() => setEditTarget(null), 200);
   };
 
+  const openCreate = useCallback(() => {
+    setEditTarget(null);
+    setDialogOpen(true);
+  }, []);
+
+  const toggleCreate = useCallback(() => {
+    if (dialogOpen && !editTarget) setDialogOpen(false);
+    else if (!dialogOpen) openCreate();
+  }, [dialogOpen, editTarget, openCreate]);
+
+  const focusSearch = useCallback(() => {
+    document.getElementById("inventory-tx-search")?.focus();
+  }, []);
+
+  useAdminNewShortcut(toggleCreate);
+  useAdminFocusSearchShortcut(focusSearch);
+  useAdminRefreshShortcut(useAdminQueryRefresh(refetch));
+  useAdminClearFiltersShortcut(handleClear);
+  useAdminEscapeShortcut(
+    useCallback(() => {
+      if (deleteTarget) setDeleteTarget(null);
+      else if (dialogOpen) handleClose();
+    }, [deleteTarget, dialogOpen, handleClose]),
+  );
+
   return (
     <AdminPageLayout
       title="Stock Out"
@@ -237,10 +270,7 @@ export function StockOutClient() {
       action={
         <button
           type="button"
-          onClick={() => {
-            setEditTarget(null);
-            setDialogOpen(true);
-          }}
+          onClick={openCreate}
           className={adminPrimaryButtonClass}
         >
           <Plus size={16} />

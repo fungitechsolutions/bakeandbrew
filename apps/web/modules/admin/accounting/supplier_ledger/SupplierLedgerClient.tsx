@@ -25,6 +25,12 @@ import { useSupplierLedgerSummary } from "@/hooks/queries/admin/suppliers/ledger
 import { useSuppliers } from "@/hooks/queries/admin/suppliers/useSuppliers";
 import { useCreateSupplierLedgerEntry } from "@/hooks/queries/admin/suppliers/ledger/useCreateSupplierLedgerEntry";
 import { AdminPageLayout } from "@/components/admin/admin-page-layout";
+import {
+  useAdminEscapeShortcut,
+  useAdminNewShortcut,
+  useAdminRefreshShortcut,
+} from "@/components/admin/admin-shortcut-provider";
+import { useAdminQueryRefresh } from "@/hooks/useAdminQueryRefresh";
 import { adminPrimaryButtonClass } from "@/components/admin/admin-styles";
 import { accountingTableWrapClass } from "../shared/accounting-styles";
 
@@ -38,6 +44,8 @@ function SupplierLedgerInner() {
   const searchParams = useSearchParams();
   const page = Number(searchParams.get("page")) || 1;
   const [createOpen, setCreateOpen] = useState(false);
+
+  const toggleCreate = useCallback(() => setCreateOpen((open) => !open), []);
 
   const [supplierId, setSupplierId] = useState("all");
   const [fromDate, setFromDate] = useState<string | null>(null);
@@ -125,6 +133,14 @@ function SupplierLedgerInner() {
   );
   const totalCount = data?.pages[0]?.meta.total ?? 0;
   const hasReachedEnd = !hasNextPage && !isLoading;
+
+  useAdminNewShortcut(toggleCreate);
+  useAdminRefreshShortcut(useAdminQueryRefresh(refetch));
+  useAdminEscapeShortcut(
+    useCallback(() => {
+      if (createOpen) setCreateOpen(false);
+    }, [createOpen]),
+  );
 
   const createSupplierLedgerEntry = useCreateSupplierLedgerEntry();
   const handleScroll = useCallback(

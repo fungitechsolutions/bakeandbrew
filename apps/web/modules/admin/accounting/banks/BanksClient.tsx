@@ -1,12 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Plus } from "lucide-react";
 import { AxiosError } from "axios";
 import { APIError, Bank } from "@repo/types";
 import { useQuery } from "@tanstack/react-query";
 
 import { AdminPageLayout } from "@/components/admin/admin-page-layout";
+import {
+  useAdminEscapeShortcut,
+  useAdminNewShortcut,
+  useAdminRefreshShortcut,
+} from "@/components/admin/admin-shortcut-provider";
+import { useAdminQueryRefresh } from "@/hooks/useAdminQueryRefresh";
 import { adminPrimaryButtonClass } from "@/components/admin/admin-styles";
 import { accountingTableWrapClass } from "../shared/accounting-styles";
 import { BanksData, fetchBanks } from "@/lib/api/banks";
@@ -30,6 +36,8 @@ export function BanksClient() {
   const [deleteBank_, setDeleteBank] = useState<Bank | null>(null);
   const [toggleLoadingId, setToggleLoadingId] = useState<string | null>(null);
 
+  const toggleCreate = useCallback(() => setCreateOpen((open) => !open), []);
+
   const { data, isPending, isError, error, refetch } = useQuery<
     BanksData,
     AxiosError<APIError>
@@ -40,21 +48,15 @@ export function BanksClient() {
     gcTime: 1000 * 60 * 30,
   });
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (
-        tag === "INPUT" ||
-        tag === "TEXTAREA" ||
-        (e.target as HTMLElement)?.isContentEditable
-      ) {
-        return;
-      }
-      if (e.key.toLowerCase() === "a") setCreateOpen(true);
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  useAdminNewShortcut(toggleCreate);
+  useAdminRefreshShortcut(useAdminQueryRefresh(refetch));
+  useAdminEscapeShortcut(
+    useCallback(() => {
+      if (createOpen) setCreateOpen(false);
+      else if (editBank) setEditBank(null);
+      else if (deleteBank_) setDeleteBank(null);
+    }, [createOpen, editBank, deleteBank_]),
+  );
 
   const createBank = useCreateBank(page);
   const updateBank = useUpdateBank();

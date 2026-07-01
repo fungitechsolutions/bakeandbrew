@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import { CalendarDays } from "lucide-react";
 import {
   Select,
@@ -19,6 +20,7 @@ import {
   accountingLabelClass,
   accountingSelectTriggerClass,
 } from "../shared/accounting-styles";
+import { useAdminClearFiltersShortcut } from "@/components/admin/admin-shortcut-provider";
 
 interface SupplierLedgerFiltersBarProps {
   suppliers: SupplierForDropdown[];
@@ -59,7 +61,7 @@ export function SupplierLedgerFiltersBar({
     }
   }
 
-  function handleClear() {
+  const handleClear = useCallback(() => {
     onChange({
       supplierId: "all",
       supplierName: "all",
@@ -68,7 +70,9 @@ export function SupplierLedgerFiltersBar({
       fromBsDate: null,
       toBsDate: null,
     });
-  }
+  }, [onChange]);
+
+  useAdminClearFiltersShortcut(handleClear);
 
   return (
     <AccountingFilterShell hasActiveFilters={hasFilters} onClear={handleClear}>

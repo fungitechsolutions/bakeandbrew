@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useAdminClearFiltersShortcut } from "@/components/admin/admin-shortcut-provider";
 
 interface OutstandingFiltersBarProps {
   isPending: boolean;
@@ -32,9 +33,11 @@ export function OutstandingFiltersBar({
     [router, pathname, searchParams],
   );
 
-  const clearAll = () => {
+  const clearAll = useCallback(() => {
     router.push(pathname);
-  };
+  }, [router, pathname]);
+
+  useAdminClearFiltersShortcut(clearAll);
 
   const hasFilters = from || to || search;
 

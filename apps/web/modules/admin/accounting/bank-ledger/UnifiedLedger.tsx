@@ -16,6 +16,12 @@ import { useBankAccountsDropdown } from "@/hooks/queries/admin/banks/bank_ledger
 import { useCreateBankLedgerEntry } from "@/hooks/mutations/admin/bank_ledger/useCreateBankLedgerEntry";
 import { queryKeys } from "@/lib/query-keys";
 import { AdminPageLayout } from "@/components/admin/admin-page-layout";
+import {
+  useAdminEscapeShortcut,
+  useAdminNewShortcut,
+  useAdminRefreshShortcut,
+} from "@/components/admin/admin-shortcut-provider";
+import { useAdminQueryRefresh } from "@/hooks/useAdminQueryRefresh";
 import { adminPrimaryButtonClass } from "@/components/admin/admin-styles";
 
 const PARAM_BANK_NAME = "bank_name";
@@ -28,6 +34,8 @@ function LedgerPageInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [formOpen, setFormOpen] = useState<boolean>(false);
+
+  const toggleForm = useCallback(() => setFormOpen((open) => !open), []);
 
   const [bankId, setBankId] = useState("all");
   const [accountId, setAccountId] = useState("all");
@@ -124,6 +132,14 @@ function LedgerPageInner() {
   );
   const totalCount = data?.pages[0]?.meta.total ?? 0;
   const hasReachedEnd = !hasNextPage && !isEntriesLoading;
+
+  useAdminNewShortcut(toggleForm);
+  useAdminRefreshShortcut(useAdminQueryRefresh(refetch));
+  useAdminEscapeShortcut(
+    useCallback(() => {
+      if (formOpen) setFormOpen(false);
+    }, [formOpen]),
+  );
 
   const handleScroll = useCallback(
     (e: React.UIEvent<HTMLDivElement>) => {

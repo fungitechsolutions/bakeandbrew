@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { SectionCard } from "./shared/SectionCard";
 import { DetailEmptyState } from "./shared/DetailEmptyState";
 import { DeleteDiscountDialog } from "./DeleteDiscountDialog";
@@ -26,8 +26,11 @@ import axios, { AxiosError } from "axios";
 import type { Status } from "./StudentDetail";
 import {
   canPerformStudentActions,
+  canAddStudentFinanceAdjustments,
+  getStudentFinanceAdjustmentDisabledTooltip,
   STUDENT_STATUS_ACTION_TOOLTIP,
 } from "./student-status-actions";
+import { useAdminDiscountShortcut } from "@/components/admin/admin-shortcut-provider";
 
 type Discount = Extract<
   StudentDiscountResponse,
@@ -38,6 +41,7 @@ type Props = {
   discounts: Extract<StudentDiscountResponse, { success: true }>["data"];
   studentID: string;
   currentStatus: Status;
+  balanceDue: number;
 };
 
 type CreateStudentDiscountPayload = StudentDiscountMutationInput & {
@@ -46,7 +50,12 @@ type CreateStudentDiscountPayload = StudentDiscountMutationInput & {
 type UpdateStudentDiscountPayload = StudentDiscountMutationInput & {
   studentID: string;
 };
-export function DiscountSection({ discounts, studentID, currentStatus }: Props) {
+export function DiscountSection({
+  discounts,
+  studentID,
+  currentStatus,
+  balanceDue,
+}: Props) {
   const [deleteTarget, setDeleteTarget] = useState<Discount | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editTarget, setEditTarget] = useState<Discount | null>(null);
@@ -161,13 +170,28 @@ export function DiscountSection({ discounts, studentID, currentStatus }: Props) 
   };
 
   const actionsAllowed = canPerformStudentActions(currentStatus);
+  const canAddDiscount = canAddStudentFinanceAdjustments(
+    currentStatus,
+    balanceDue,
+  );
+  const addDisabledTooltip = getStudentFinanceAdjustmentDisabledTooltip(
+    currentStatus,
+    balanceDue,
+  );
+
+  useAdminDiscountShortcut(
+    useCallback(() => {
+      if (!canAddDiscount) return;
+      setShowAddModal(true);
+    }, [canAddDiscount]),
+  );
 
   const renderAddDiscountButton = (compact = false) => (
     <AddBtn
       label="Add"
       onClick={() => setShowAddModal(true)}
-      disabled={!actionsAllowed}
-      disabledTooltip={STUDENT_STATUS_ACTION_TOOLTIP}
+      disabled={!canAddDiscount}
+      disabledTooltip={addDisabledTooltip}
       compact={compact}
     />
   );

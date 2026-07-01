@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   BookOpen,
   Plus,
@@ -29,6 +29,13 @@ import { CoursesLoading } from "./CoursesLoadingSkeleton";
 import { CoursesError } from "./CoursesError";
 import { CoursesUnavailable } from "./CoursesUnavailable";
 import { AdminPageLayout } from "@/components/admin/admin-page-layout";
+import {
+  useAdminEscapeShortcut,
+  useAdminFocusSearchShortcut,
+  useAdminNewShortcut,
+  useAdminRefreshShortcut,
+} from "@/components/admin/admin-shortcut-provider";
+import { useAdminQueryRefresh } from "@/hooks/useAdminQueryRefresh";
 import { ADMIN_DRAWER_CLOSE_MS } from "@/components/admin/admin-drawer";
 import {
   adminIconButtonClass,
@@ -87,6 +94,7 @@ export default function CoursesPage() {
     "all" | "active" | "inactive"
   >("all");
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -132,6 +140,26 @@ export default function CoursesPage() {
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
   });
+
+  const toggleCreate = useCallback(() => {
+    if (courseDrawerOpen && courseDrawer?.type === "add") {
+      handleCourseDrawerOpenChange(false);
+    } else if (!courseDrawerOpen && modal === null) {
+      openCourseDrawer({ type: "add" });
+    }
+  }, [courseDrawerOpen, courseDrawer, modal]);
+
+  const focusSearch = useCallback(() => searchInputRef.current?.focus(), []);
+
+  const handleEscape = useCallback(() => {
+    if (modal) setModal(null);
+    else if (courseDrawerOpen) handleCourseDrawerOpenChange(false);
+  }, [modal, courseDrawerOpen]);
+
+  useAdminNewShortcut(toggleCreate);
+  useAdminFocusSearchShortcut(focusSearch);
+  useAdminRefreshShortcut(useAdminQueryRefresh(refetch));
+  useAdminEscapeShortcut(handleEscape);
 
   const { mutate: addCourse } = useMutation({
     mutationFn: async (data: CreateCourse) => {
@@ -403,6 +431,7 @@ export default function CoursesPage() {
               className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[rgba(47,78,64,0.4)]"
             />
             <input
+              ref={searchInputRef}
               className={`${adminInputClass} py-2.5 pr-3 pl-9`}
               placeholder="Search courses…"
               value={search}

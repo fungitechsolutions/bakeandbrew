@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { SummaryTable } from "./SummaryTable";
 import { CalendarDays } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -15,6 +15,7 @@ import { AdminPageLayout } from "@/components/admin/admin-page-layout";
 import { adminPrimaryButtonClass } from "@/components/admin/admin-styles";
 import { InventoryFilterShell } from "../shared/InventoryFilterShell";
 import { inventoryLabelClass } from "../shared/inventory-styles";
+import { useAdminClearFiltersShortcut } from "@/components/admin/admin-shortcut-provider";
 
 export function SummaryClient() {
   const [pendingFrom, setPendingFrom] = useState("");
@@ -46,12 +47,14 @@ export function SummaryClient() {
     setToDate(pendingTo);
   };
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     setPendingFrom("");
     setPendingTo("");
     setFromDate("");
     setToDate("");
-  };
+  }, []);
+
+  useAdminClearFiltersShortcut(handleClear);
 
   return (
     <AdminPageLayout

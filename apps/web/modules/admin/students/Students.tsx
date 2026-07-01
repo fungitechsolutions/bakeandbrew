@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import {
@@ -22,6 +22,8 @@ import { useDebounce } from "../analytics/hooks/useDebounce";
 import { StudentCard } from "./StudentCard";
 import { useStudentBatches } from "@/hooks/queries/admin/students/useStudentBtaches";
 import { AdminPageLayout } from "@/components/admin/admin-page-layout";
+import { useAdminRefreshShortcut, useAdminClearFiltersShortcut, useAdminFocusSearchShortcut } from "@/components/admin/admin-shortcut-provider";
+import { useAdminQueryRefresh } from "@/hooks/useAdminQueryRefresh";
 import {
   adminInputClass,
   adminSecondaryButtonClass,
@@ -46,6 +48,7 @@ export default function StudentsPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [searchInput, setSearchInput] = useState(searchParams.get("q") ?? "");
 
   const statusFilter = (searchParams.get("status") ?? "all") as Status | "all";
@@ -86,7 +89,7 @@ export default function StudentsPage() {
   };
   const handleShift = (v: string) => updateParams({ shift: v });
   const handleBatch = (v: string) => updateParams({ batch: v });
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setSearchInput("");
     updateParams({
       status: null,
@@ -95,7 +98,7 @@ export default function StudentsPage() {
       shift: null,
       batch: null,
     });
-  };
+  }, [updateParams]);
 
   const {
     data: batchesData,
@@ -134,6 +137,16 @@ export default function StudentsPage() {
       return res.data;
     },
   });
+
+  const refreshPage = useCallback(
+    () => Promise.all([refetch(), refetchBatches()]),
+    [refetch, refetchBatches],
+  );
+  useAdminRefreshShortcut(useAdminQueryRefresh(refreshPage));
+  useAdminClearFiltersShortcut(clearFilters);
+  useAdminFocusSearchShortcut(
+    useCallback(() => searchInputRef.current?.focus(), []),
+  );
 
   const isSuccess = data?.success === true;
   const students = isSuccess ? data.data : [];
@@ -220,6 +233,7 @@ export default function StudentsPage() {
               strokeWidth={1.75}
             />
             <input
+              ref={searchInputRef}
               type="text"
               placeholder="Search by name, reference or phone…"
               value={searchInput}

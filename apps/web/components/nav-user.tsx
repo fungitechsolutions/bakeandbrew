@@ -16,37 +16,18 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import api from "@/lib/axios";
+import { useLogout } from "@/hooks/useLogout";
 import { useAuthStore } from "@/store/auth";
 import { CaretUpDownIcon, SignOutIcon, UserIcon } from "@phosphor-icons/react";
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { Spinner } from "./ui/spinner";
 import { useRouter } from "next/navigation";
-import { BaseAPIResponse } from "@repo/types";
 
 export function NavUser() {
   const user = useAuthStore((state) => state.user);
-  const clearUser = useAuthStore((state) => state.clearUser);
   const { isMobile } = useSidebar();
   const router = useRouter();
 
-  const { mutate, isPending, reset } = useMutation({
-    mutationFn: async () => {
-      const response = await api.post<BaseAPIResponse>("/auth/logout");
-      return response.data;
-    },
-    onSuccess: (result) => {
-      clearUser();
-      toast.success(result.message);
-      router.replace("/auth/login");
-      reset();
-    },
-    onError: (error) => {
-      toast.error(error.message);
-      reset();
-    },
-  });
+  const { mutate, isPending, reset } = useLogout();
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -92,7 +73,12 @@ export function NavUser() {
               Profile
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => mutate()} disabled={isPending}>
+            <DropdownMenuItem
+              onClick={() => {
+                mutate(undefined, { onSettled: () => reset() });
+              }}
+              disabled={isPending}
+            >
               {isPending ? (
                 <Spinner />
               ) : (

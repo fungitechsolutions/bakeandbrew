@@ -9,6 +9,14 @@ import { WastageTable } from "./WastageTable";
 import { WastageDialog } from "./WastageDialog";
 import { ConfirmDialog } from "../shared/ConfirmDialog";
 import { AdminPageLayout } from "@/components/admin/admin-page-layout";
+import {
+  useAdminEscapeShortcut,
+  useAdminClearFiltersShortcut,
+  useAdminFocusSearchShortcut,
+  useAdminNewShortcut,
+  useAdminRefreshShortcut,
+} from "@/components/admin/admin-shortcut-provider";
+import { useAdminQueryRefresh } from "@/hooks/useAdminQueryRefresh";
 import { adminPrimaryButtonClass } from "@/components/admin/admin-styles";
 import { InventoryTransactionFilters } from "../shared/InventoryTransactionFilters";
 import {
@@ -98,7 +106,7 @@ export function WastageClient() {
     setCurrentPage(1);
   };
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     setSearchInput("");
     setPendingFrom("");
     setPendingTo("");
@@ -108,7 +116,7 @@ export function WastageClient() {
     // setCreatedSort("");
     setCurrentPage(1);
     router.push(pathname);
-  };
+  }, [pathname, router]);
 
   const hasActiveFilters =
     !!debouncedSearch || !!dateFrom || !!dateTo || !!priceSort;
@@ -233,6 +241,31 @@ export function WastageClient() {
     setDeleteTarget(null);
   };
 
+  const openCreate = useCallback(() => {
+    setEditTarget(null);
+    setDialogOpen(true);
+  }, []);
+
+  const toggleCreate = useCallback(() => {
+    if (dialogOpen && !editTarget) setDialogOpen(false);
+    else if (!dialogOpen) openCreate();
+  }, [dialogOpen, editTarget, openCreate]);
+
+  const focusSearch = useCallback(() => {
+    document.getElementById("inventory-tx-search")?.focus();
+  }, []);
+
+  useAdminNewShortcut(toggleCreate);
+  useAdminFocusSearchShortcut(focusSearch);
+  useAdminRefreshShortcut(useAdminQueryRefresh(refetch));
+  useAdminClearFiltersShortcut(handleClear);
+  useAdminEscapeShortcut(
+    useCallback(() => {
+      if (deleteTarget) setDeleteTarget(null);
+      else if (dialogOpen) setDialogOpen(false);
+    }, [deleteTarget, dialogOpen]),
+  );
+
   return (
     <AdminPageLayout
       title="Wastage"
@@ -241,10 +274,7 @@ export function WastageClient() {
       action={
         <button
           type="button"
-          onClick={() => {
-            setEditTarget(null);
-            setDialogOpen(true);
-          }}
+          onClick={openCreate}
           className={adminPrimaryButtonClass}
         >
           <Plus size={16} />

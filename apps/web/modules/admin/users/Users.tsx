@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useCallback, useRef, useState, useTransition } from "react";
 import { Plus, Search, ChevronDown, X } from "lucide-react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -18,9 +18,18 @@ import { UsersErrorState } from "./UserErrorState";
 import { UsersEmptyState } from "./UserEmptyState";
 import { AdminPageLayout } from "@/components/admin/admin-page-layout";
 import {
+  useAdminEscapeShortcut,
+  useAdminClearFiltersShortcut,
+  useAdminFocusSearchShortcut,
+  useAdminNewShortcut,
+  useAdminRefreshShortcut,
+} from "@/components/admin/admin-shortcut-provider";
+import { useAdminQueryRefresh } from "@/hooks/useAdminQueryRefresh";
+import {
   adminInputClass,
   adminPrimaryButtonClass,
 } from "@/components/admin/admin-styles";
+import { cn } from "@/lib/utils";
 
 type Role = "admin" | "instructor" | "student" | "all";
 
@@ -40,6 +49,22 @@ export function UsersPageClient() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [roleOpen, setRoleOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const toggleCreate = useCallback(
+    () => setIsCreateOpen((open) => !open),
+    [],
+  );
+  const focusSearch = useCallback(() => searchInputRef.current?.focus(), []);
+  const handleEscape = useCallback(() => {
+    if (isCreateOpen) setIsCreateOpen(false);
+    else if (selectedUser) setSelectedUser(null);
+    else if (roleOpen) setRoleOpen(false);
+  }, [isCreateOpen, selectedUser, roleOpen]);
+
+  useAdminNewShortcut(toggleCreate);
+  useAdminFocusSearchShortcut(focusSearch);
+  useAdminEscapeShortcut(handleEscape);
 
   const page = Number(searchParams.get("page") ?? "1");
   const search = searchParams.get("search") ?? "";
@@ -71,6 +96,11 @@ export function UsersPageClient() {
     updateParams({ search: null });
   }
 
+  const clearAllFilters = useCallback(() => {
+    setSearchInput("");
+    updateParams({ search: null, role: null });
+  }, [searchParams, pathname, router]);
+
   function handleRoleSelect(value: Role) {
     setRoleOpen(false);
     updateParams({ role: value });
@@ -89,7 +119,7 @@ export function UsersPageClient() {
     return p.toString();
   })();
 
-  const { data, isFetching, isPending, isError, error, refetch } = useQuery({
+  const { data, isPending, isRefetching, isError, error, refetch } = useQuery({
     queryKey: ["admin-users", page, search, role],
     queryFn: async () => {
       const res = await api.get<UsersList>(`/admin/users?${queryString}`);
@@ -99,6 +129,9 @@ export function UsersPageClient() {
     gcTime: 10 * 60 * 60,
   });
 
+  useAdminRefreshShortcut(useAdminQueryRefresh(refetch));
+  useAdminClearFiltersShortcut(clearAllFilters);
+
   const users = data?.data;
   const totalUsers = data?.meta.total ?? 0;
   const totalPages = data?.meta.totalPages ?? 1;
@@ -107,18 +140,20 @@ export function UsersPageClient() {
 
   const currentRoleLabel = ROLES.find((r) => r.value === role)?.label ?? "All";
   const hasActiveFilters = search || role !== "all";
-
-  if (isError || error) {
-    return <UsersErrorState onRetry={() => refetch()} />;
-  }
+  const isInitialLoading = isPending && !data;
+  const isInitialError = isError && !data;
+  const errorMessage =
+    error instanceof Error ? error.message : "Something went wrong";
 
   return (
     <AdminPageLayout
       title="Users"
       description={
-        isFetching || isPending
+        isInitialLoading
           ? "Loading user accounts…"
-          : `${totalUsers} accounts in the system`
+          : isRefetching
+            ? "Refreshing user accounts…"
+            : `${totalUsers} accounts in the system`
       }
       maxWidth="wide"
       action={
@@ -139,6 +174,7 @@ export function UsersPageClient() {
               className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[rgba(47,78,64,0.4)]"
             />
             <input
+              ref={searchInputRef}
               type="text"
               value={searchInput}
               onChange={handleSearchChange}
@@ -221,10 +257,7 @@ export function UsersPageClient() {
               </span>
             )}
             <button
-              onClick={() => {
-                setSearchInput("");
-                updateParams({ search: null, role: null });
-              }}
+              onClick={clearAllFilters}
               className="font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-[0.08em] text-[rgba(47,78,64,0.45)] underline underline-offset-2 transition-colors hover:text-(--brand-green)"
             >
               Clear all
@@ -232,17 +265,26 @@ export function UsersPageClient() {
           </div>
         )}
 
-        {(isFetching && data) || isPending ? (
-          <div className="pointer-events-none opacity-60">
-            <UsersTableSkeleton />
-          </div>
+        {isInitialLoading ? (
+          <UsersTableSkeleton />
+        ) : isInitialError ? (
+          <UsersErrorState
+            variant="inline"
+            message={errorMessage}
+            onRetry={() => void refetch()}
+          />
         ) : users?.length === 0 ? (
           <UsersEmptyState
             role={role === "all" ? "users" : role}
             onCreateUser={() => setIsCreateOpen(true)}
           />
         ) : users && users.length > 0 ? (
-          <>
+          <div
+            className={cn(
+              "space-y-6 transition-opacity",
+              isRefetching && "pointer-events-none opacity-60",
+            )}
+          >
             <StatsBar
               total={data.meta.total}
               roleCount={{ ...data.meta.roleCounts }}
@@ -261,7 +303,7 @@ export function UsersPageClient() {
                 />
               )}
             </div>
-          </>
+          </div>
         ) : null}
       </div>
 
