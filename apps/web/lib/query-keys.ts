@@ -89,4 +89,24 @@ export const queryKeys = {
     student: (studentId: string) =>
       ["admin-certificates", "student", studentId] as const,
   },
+  studentFinance: {
+    payments: (filters: {
+      page: number;
+      from: string;
+      to: string;
+      search: string;
+    }) => ["admin-students", "payments", filters] as const,
+    discounts: (filters: {
+      page: number;
+      from: string;
+      to: string;
+      search: string;
+    }) => ["admin-students", "discounts", filters] as const,
+    scholarships: (filters: {
+      page: number;
+      from: string;
+      to: string;
+      search: string;
+    }) => ["admin-students", "scholarships", filters] as const,
+  },
 };

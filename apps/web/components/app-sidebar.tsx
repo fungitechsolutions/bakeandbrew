@@ -32,6 +32,8 @@ import {
   TrendingUp,
   User,
   Wallet,
+  Percent,
+  GraduationCap,
 } from "lucide-react";
 import { siteInfo } from "@/utils/site-info";
 
@@ -60,7 +62,13 @@ const navSections = [
         title: "All Students",
         url: "/students",
         icon: <StudentIcon />,
-        excludeUrls: ["/students/outstanding", "/students/sales"],
+        excludeUrls: [
+          "/students/outstanding",
+          "/students/sales",
+          "/students/payments",
+          "/students/discounts",
+          "/students/scholarships",
+        ],
       },
       {
         title: "Outstanding",
@@ -71,6 +79,21 @@ const navSections = [
         title: "Sales Revenue",
         url: "/students/sales",
         icon: <BarChart3 />,
+      },
+      {
+        title: "Payments",
+        url: "/students/payments",
+        icon: <Wallet />,
+      },
+      {
+        title: "Discounts",
+        url: "/students/discounts",
+        icon: <Percent />,
+      },
+      {
+        title: "Scholarships",
+        url: "/students/scholarships",
+        icon: <GraduationCap />,
       },
     ],
   },
