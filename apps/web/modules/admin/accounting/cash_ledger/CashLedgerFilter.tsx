@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import { CalendarDays } from "lucide-react";
 import { NepaliDatePicker } from "nepali-datepicker-reactjs";
 import { toast } from "sonner";
@@ -10,6 +11,7 @@ import {
   accountingFieldInputClass,
   accountingLabelClass,
 } from "../shared/accounting-styles";
+import { useAdminClearFiltersShortcut } from "@/components/admin/admin-shortcut-provider";
 
 export type CashLedgerFilters = {
   fromBsDate: string | null;
@@ -55,14 +57,16 @@ export function CashLedgerFilters({
     }
   }
 
-  function handleClear() {
+  const handleClear = useCallback(() => {
     onChange({
       fromDate: null,
       toDate: null,
       fromBsDate: null,
       toBsDate: null,
     });
-  }
+  }, [onChange]);
+
+  useAdminClearFiltersShortcut(handleClear);
 
   return (
     <AccountingFilterShell hasActiveFilters={hasFilters} onClear={handleClear}>

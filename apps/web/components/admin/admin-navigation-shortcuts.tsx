@@ -4,18 +4,8 @@ import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
 import { isAdminRole } from "@/lib/auth/roles";
+import { isTypingTarget } from "@/lib/keyboard";
 import { useAuthStore } from "@/store/auth";
-
-function isTypingTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false;
-  const tag = target.tagName;
-  return (
-    tag === "INPUT" ||
-    tag === "TEXTAREA" ||
-    tag === "SELECT" ||
-    target.isContentEditable
-  );
-}
 
 export function AdminNavigationShortcuts() {
   const pathname = usePathname();

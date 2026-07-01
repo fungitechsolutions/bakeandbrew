@@ -95,11 +95,13 @@ export function StudentDetailGrid({
           discounts={discounts}
           studentID={student.id}
           currentStatus={currentStatus}
+          balanceDue={balanceDue}
         />
         <ScholarshipSection
           scholarship={scholarship}
           studentID={student.id}
           currentStatus={currentStatus}
+          balanceDue={balanceDue}
         />
       </div>
     </div>

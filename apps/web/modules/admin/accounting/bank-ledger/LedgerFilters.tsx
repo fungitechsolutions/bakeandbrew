@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import { CalendarDays } from "lucide-react";
 import {
   Select,
@@ -19,6 +20,7 @@ import {
   accountingLabelClass,
   accountingSelectTriggerClass,
 } from "../shared/accounting-styles";
+import { useAdminClearFiltersShortcut } from "@/components/admin/admin-shortcut-provider";
 
 export type FilterState = {
   bankId: string;
@@ -110,7 +112,7 @@ export function LedgerFilters({
     !!filters.fromBsDate ||
     !!filters.toBsDate;
 
-  function handleClear() {
+  const handleClear = useCallback(() => {
     onChange({
       bankId: "all",
       bankName: "all",
@@ -121,7 +123,9 @@ export function LedgerFilters({
       fromBsDate: null,
       toBsDate: null,
     });
-  }
+  }, [onChange]);
+
+  useAdminClearFiltersShortcut(handleClear);
 
   return (
     <AccountingFilterShell

@@ -22,7 +22,9 @@ import {
   BookOpenCheck,
   Building2,
   ClipboardList,
+  CreditCard,
   LayoutDashboard,
+  Keyboard,
   Package,
   Receipt,
   Settings,
@@ -39,6 +41,7 @@ const navSections = [
     items: [
       { title: "Dashboard", url: "/", icon: <LayoutDashboard /> },
       { title: "Analytics", url: "/analytics", icon: <TrendingUp /> },
+      { title: "Shortcuts", url: "/shortcuts", icon: <Keyboard /> },
     ],
   },
   {
@@ -88,7 +91,12 @@ const navSections = [
         title: "Banks",
         url: "/banks",
         icon: <Building2 />,
-        excludeUrls: ["/banks/ledger"],
+        excludeUrls: ["/banks/ledger", "/banks/accounts"],
+      },
+      {
+        title: "Bank Accounts",
+        url: "/banks/accounts",
+        icon: <CreditCard />,
       },
       {
         title: "Suppliers",

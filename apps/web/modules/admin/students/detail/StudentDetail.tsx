@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Loader2, Printer, Stamp } from "lucide-react";
 import {
   AddPayment,
@@ -34,6 +34,9 @@ import {
   adminPrimaryButtonClass,
   adminPrimaryButtonDisabledClass,
 } from "@/components/admin/admin-styles";
+import { useAdminRefreshShortcut, useAdminBackShortcut, useAdminPaymentShortcut } from "@/components/admin/admin-shortcut-provider";
+import { useAdminRouterRefresh } from "@/hooks/useAdminRouterRefresh";
+import { canPerformStudentActions } from "./student-status-actions";
 import { cn } from "@/lib/utils";
 import { detailPanelClass } from "./detail-styles";
 
@@ -108,6 +111,9 @@ export default function StudentDetailPage({
   const [currentStatus, setCurrentStatus] = useState<Status>(student.status);
   const router = useRouter();
 
+  useAdminRefreshShortcut(useAdminRouterRefresh());
+  useAdminBackShortcut(useCallback(() => router.push("/admin/students"), [router]));
+
   const totalPaid = payments.reduce((s, p) => s + p.amount, 0) / 100;
   const totalFee = courses.reduce((s, c) => s + c.feeAtEnrollment, 0) / 100;
   const discountAmount = discounts.reduce((s, d) => s + d.amount, 0) / 100;
@@ -115,6 +121,15 @@ export default function StudentDetailPage({
     ? scholarships.amount / 100
     : 0;
   const balanceDue = totalFee - totalPaid - discountAmount - scholarshipAmount;
+
+  const paymentDisabled =
+    balanceDue <= 0 || !canPerformStudentActions(currentStatus);
+
+  useAdminPaymentShortcut(
+    useCallback(() => {
+      if (!paymentDisabled) setShowPaymentModal(true);
+    }, [paymentDisabled]),
+  );
 
   const { data: certificateResponse, isLoading: isLoadingCertificate } =
     useStudentCertificate(student.id, showCertificate);

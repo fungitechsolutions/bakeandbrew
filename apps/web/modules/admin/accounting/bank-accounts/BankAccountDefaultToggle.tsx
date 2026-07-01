@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { StatusToggle } from "@/components/admin/status-toggle";
+
 interface BankAccountDefaultToggleProps {
   accountId: string;
   isDefault: boolean;
@@ -34,31 +36,18 @@ export function BankAccountDefaultToggle({
 
   return (
     <div className="group relative inline-flex">
-      <button
-        type="button"
-        onClick={handleClick}
+      <StatusToggle
+        checked={optimistic}
         disabled={disabled}
-        aria-label={
+        ariaLabel={
           optimistic ? "Default account (locked)" : "Set as default account"
         }
-        aria-pressed={optimistic}
-        className={[
-          "relative inline-flex h-[22px] w-10 p-[2px] transition-colors duration-200",
-          disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer",
-          optimistic ? "bg-(--brand-green)" : "bg-[rgba(47,78,64,0.2)]",
-        ].join(" ")}
-      >
-        <span
-          className={[
-            "block h-[18px] w-[18px] bg-white shadow-sm transition-transform duration-200",
-            optimistic ? "translate-x-[18px]" : "translate-x-0",
-          ].join(" ")}
-        />
-      </button>
+        onChange={handleClick}
+      />
 
       {isLocked ? (
         <div className="absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 group-hover:block">
-          <div className="whitespace-nowrap bg-[#1a1a1a] px-2 py-1 font-(family-name:--font-dm-sans) text-[11px] text-white">
+          <div className="whitespace-nowrap rounded-sm bg-[#1a1a1a] px-2 py-1 font-(family-name:--font-dm-sans) text-[11px] text-white">
             Cannot unset default account directly. Set another account as
             default first.
           </div>
