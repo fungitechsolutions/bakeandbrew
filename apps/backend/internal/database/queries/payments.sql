@@ -26,3 +26,60 @@ p.payment_mode,
 p.remarks,
 p.added_at
 FROM payments p WHERE p.student_id = $1 ORDER BY p.added_at ASC;
+
+
+-- name: GetAllPayments :many
+SELECT
+    s.id AS student_id,
+    s.reference_no,
+    s.full_name,
+    s.photo_url,
+    u.email,
+    s.phone,
+    p.id AS payment_id,
+    p.amount,
+    p.payment_mode,
+    p.remarks,
+    p.added_by,
+    p.added_at
+FROM students s
+JOIN users u ON u.id = s.student_id
+JOIN payments p ON p.student_id = s.id
+WHERE
+    (sqlc.narg('search')::TEXT IS NULL
+        OR s.full_name ILIKE '%' || sqlc.narg('search')::TEXT || '%'
+        OR u.email ILIKE '%' || sqlc.narg('search')::TEXT || '%'
+        OR s.phone ILIKE '%' || sqlc.narg('search')::TEXT || '%'
+        OR s.reference_no ILIKE '%' || sqlc.narg('search')::TEXT || '%')
+    AND (sqlc.narg('from')::TEXT IS NULL OR p.added_at >= sqlc.narg('from')::TIMESTAMPTZ)
+    AND (sqlc.narg('to')::TEXT IS NULL OR p.added_at <= (sqlc.narg('to')::TIMESTAMPTZ + INTERVAL '1 day'))
+ORDER BY p.added_at DESC
+LIMIT $1 OFFSET $2;
+
+-- name: GetAllPaymentsCount :one
+SELECT COUNT(*)::BIGINT
+FROM students s
+JOIN users u ON u.id = s.student_id
+JOIN payments p ON p.student_id = s.id
+WHERE
+    (sqlc.narg('search')::TEXT IS NULL
+        OR s.full_name ILIKE '%' || sqlc.narg('search')::TEXT || '%'
+        OR u.email ILIKE '%' || sqlc.narg('search')::TEXT || '%'
+        OR s.phone ILIKE '%' || sqlc.narg('search')::TEXT || '%'
+        OR s.reference_no ILIKE '%' || sqlc.narg('search')::TEXT || '%')
+    AND (sqlc.narg('from')::TEXT IS NULL OR p.added_at >= sqlc.narg('from')::TIMESTAMPTZ)
+    AND (sqlc.narg('to')::TEXT IS NULL OR p.added_at <= (sqlc.narg('to')::TIMESTAMPTZ + INTERVAL '1 day'));
+
+-- name: GetAllPaymentsTotal :one
+SELECT COALESCE(SUM(p.amount), 0)::BIGINT AS total_payments
+FROM students s
+JOIN users u ON u.id = s.student_id
+JOIN payments p ON p.student_id = s.id
+WHERE
+    (sqlc.narg('search')::TEXT IS NULL
+        OR s.full_name ILIKE '%' || sqlc.narg('search')::TEXT || '%'
+        OR u.email ILIKE '%' || sqlc.narg('search')::TEXT || '%'
+        OR s.phone ILIKE '%' || sqlc.narg('search')::TEXT || '%'
+        OR s.reference_no ILIKE '%' || sqlc.narg('search')::TEXT || '%')
+    AND (sqlc.narg('from')::TEXT IS NULL OR p.added_at >= sqlc.narg('from')::TIMESTAMPTZ)
+    AND (sqlc.narg('to')::TEXT IS NULL OR p.added_at <= (sqlc.narg('to')::TIMESTAMPTZ + INTERVAL '1 day'));

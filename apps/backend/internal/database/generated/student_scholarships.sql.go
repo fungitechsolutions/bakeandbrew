@@ -56,6 +56,150 @@ func (q *Queries) DeleteScholarship(ctx context.Context, id pgtype.UUID) error {
 	return err
 }
 
+const getAllStudentScholarships = `-- name: GetAllStudentScholarships :many
+SELECT
+    s.id AS student_id,
+    s.reference_no,
+    s.full_name,
+    s.photo_url,
+    u.email,
+    s.phone,
+    ss.id AS scholarship_id,
+    ss.amount,
+    ss.percent,
+    ss.note,
+    ss.created_at
+FROM students s
+JOIN users u ON u.id = s.student_id
+JOIN student_scholarships ss ON ss.student_id = s.id
+WHERE
+    ($3::TEXT IS NULL
+        OR s.full_name ILIKE '%' || $3::TEXT || '%'
+        OR u.email ILIKE '%' || $3::TEXT || '%'
+        OR s.phone ILIKE '%' || $3::TEXT || '%'
+        OR s.reference_no ILIKE '%' || $3::TEXT || '%')
+    AND ($4::TEXT IS NULL OR ss.created_at >= $4::TIMESTAMPTZ)
+    AND ($5::TEXT IS NULL OR ss.created_at <= ($5::TIMESTAMPTZ + INTERVAL '1 day'))
+ORDER BY ss.created_at DESC
+LIMIT $1 OFFSET $2
+`
+
+type GetAllStudentScholarshipsParams struct {
+	Limit  int32       `json:"limit"`
+	Offset int32       `json:"offset"`
+	Search pgtype.Text `json:"search"`
+	From   pgtype.Text `json:"from"`
+	To     pgtype.Text `json:"to"`
+}
+
+type GetAllStudentScholarshipsRow struct {
+	StudentID     pgtype.UUID        `json:"studentId"`
+	ReferenceNo   string             `json:"referenceNo"`
+	FullName      string             `json:"fullName"`
+	PhotoUrl      pgtype.Text        `json:"photoUrl"`
+	Email         string             `json:"email"`
+	Phone         string             `json:"phone"`
+	ScholarshipID pgtype.UUID        `json:"scholarshipId"`
+	Amount        int64              `json:"amount"`
+	Percent       pgtype.Numeric     `json:"percent"`
+	Note          pgtype.Text        `json:"note"`
+	CreatedAt     pgtype.Timestamptz `json:"createdAt"`
+}
+
+func (q *Queries) GetAllStudentScholarships(ctx context.Context, arg GetAllStudentScholarshipsParams) ([]GetAllStudentScholarshipsRow, error) {
+	rows, err := q.db.Query(ctx, getAllStudentScholarships,
+		arg.Limit,
+		arg.Offset,
+		arg.Search,
+		arg.From,
+		arg.To,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllStudentScholarshipsRow
+	for rows.Next() {
+		var i GetAllStudentScholarshipsRow
+		if err := rows.Scan(
+			&i.StudentID,
+			&i.ReferenceNo,
+			&i.FullName,
+			&i.PhotoUrl,
+			&i.Email,
+			&i.Phone,
+			&i.ScholarshipID,
+			&i.Amount,
+			&i.Percent,
+			&i.Note,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllStudentScholarshipsCount = `-- name: GetAllStudentScholarshipsCount :one
+SELECT COUNT(*)::BIGINT
+FROM students s
+JOIN users u ON u.id = s.student_id
+JOIN student_scholarships ss ON ss.student_id = s.id
+WHERE
+    ($1::TEXT IS NULL
+        OR s.full_name ILIKE '%' || $1::TEXT || '%'
+        OR u.email ILIKE '%' || $1::TEXT || '%'
+        OR s.phone ILIKE '%' || $1::TEXT || '%'
+        OR s.reference_no ILIKE '%' || $1::TEXT || '%')
+    AND ($2::TEXT IS NULL OR ss.created_at >= $2::TIMESTAMPTZ)
+    AND ($3::TEXT IS NULL OR ss.created_at <= ($3::TIMESTAMPTZ + INTERVAL '1 day'))
+`
+
+type GetAllStudentScholarshipsCountParams struct {
+	Search pgtype.Text `json:"search"`
+	From   pgtype.Text `json:"from"`
+	To     pgtype.Text `json:"to"`
+}
+
+func (q *Queries) GetAllStudentScholarshipsCount(ctx context.Context, arg GetAllStudentScholarshipsCountParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getAllStudentScholarshipsCount, arg.Search, arg.From, arg.To)
+	var column_1 int64
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
+const getAllStudentScholarshipsTotal = `-- name: GetAllStudentScholarshipsTotal :one
+SELECT COALESCE(SUM(ss.amount), 0)::BIGINT AS total_scholarships
+FROM students s
+JOIN users u ON u.id = s.student_id
+JOIN student_scholarships ss ON ss.student_id = s.id
+WHERE
+    ($1::TEXT IS NULL
+        OR s.full_name ILIKE '%' || $1::TEXT || '%'
+        OR u.email ILIKE '%' || $1::TEXT || '%'
+        OR s.phone ILIKE '%' || $1::TEXT || '%'
+        OR s.reference_no ILIKE '%' || $1::TEXT || '%')
+    AND ($2::TEXT IS NULL OR ss.created_at >= $2::TIMESTAMPTZ)
+    AND ($3::TEXT IS NULL OR ss.created_at <= ($3::TIMESTAMPTZ + INTERVAL '1 day'))
+`
+
+type GetAllStudentScholarshipsTotalParams struct {
+	Search pgtype.Text `json:"search"`
+	From   pgtype.Text `json:"from"`
+	To     pgtype.Text `json:"to"`
+}
+
+func (q *Queries) GetAllStudentScholarshipsTotal(ctx context.Context, arg GetAllStudentScholarshipsTotalParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getAllStudentScholarshipsTotal, arg.Search, arg.From, arg.To)
+	var total_scholarships int64
+	err := row.Scan(&total_scholarships)
+	return total_scholarships, err
+}
+
 const getScholarshipByID = `-- name: GetScholarshipByID :one
 SELECT id, student_id, added_by, percent, note, amount, created_at FROM student_scholarships
 WHERE id = $1

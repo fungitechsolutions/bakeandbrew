@@ -55,6 +55,153 @@ func (q *Queries) DeletePayment(ctx context.Context, id pgtype.UUID) error {
 	return err
 }
 
+const getAllPayments = `-- name: GetAllPayments :many
+SELECT
+    s.id AS student_id,
+    s.reference_no,
+    s.full_name,
+    s.photo_url,
+    u.email,
+    s.phone,
+    p.id AS payment_id,
+    p.amount,
+    p.payment_mode,
+    p.remarks,
+    p.added_by,
+    p.added_at
+FROM students s
+JOIN users u ON u.id = s.student_id
+JOIN payments p ON p.student_id = s.id
+WHERE
+    ($3::TEXT IS NULL
+        OR s.full_name ILIKE '%' || $3::TEXT || '%'
+        OR u.email ILIKE '%' || $3::TEXT || '%'
+        OR s.phone ILIKE '%' || $3::TEXT || '%'
+        OR s.reference_no ILIKE '%' || $3::TEXT || '%')
+    AND ($4::TEXT IS NULL OR p.added_at >= $4::TIMESTAMPTZ)
+    AND ($5::TEXT IS NULL OR p.added_at <= ($5::TIMESTAMPTZ + INTERVAL '1 day'))
+ORDER BY p.added_at DESC
+LIMIT $1 OFFSET $2
+`
+
+type GetAllPaymentsParams struct {
+	Limit  int32       `json:"limit"`
+	Offset int32       `json:"offset"`
+	Search pgtype.Text `json:"search"`
+	From   pgtype.Text `json:"from"`
+	To     pgtype.Text `json:"to"`
+}
+
+type GetAllPaymentsRow struct {
+	StudentID   pgtype.UUID        `json:"studentId"`
+	ReferenceNo string             `json:"referenceNo"`
+	FullName    string             `json:"fullName"`
+	PhotoUrl    pgtype.Text        `json:"photoUrl"`
+	Email       string             `json:"email"`
+	Phone       string             `json:"phone"`
+	PaymentID   pgtype.UUID        `json:"paymentId"`
+	Amount      int32              `json:"amount"`
+	PaymentMode string             `json:"paymentMode"`
+	Remarks     pgtype.Text        `json:"remarks"`
+	AddedBy     pgtype.UUID        `json:"addedBy"`
+	AddedAt     pgtype.Timestamptz `json:"addedAt"`
+}
+
+func (q *Queries) GetAllPayments(ctx context.Context, arg GetAllPaymentsParams) ([]GetAllPaymentsRow, error) {
+	rows, err := q.db.Query(ctx, getAllPayments,
+		arg.Limit,
+		arg.Offset,
+		arg.Search,
+		arg.From,
+		arg.To,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllPaymentsRow
+	for rows.Next() {
+		var i GetAllPaymentsRow
+		if err := rows.Scan(
+			&i.StudentID,
+			&i.ReferenceNo,
+			&i.FullName,
+			&i.PhotoUrl,
+			&i.Email,
+			&i.Phone,
+			&i.PaymentID,
+			&i.Amount,
+			&i.PaymentMode,
+			&i.Remarks,
+			&i.AddedBy,
+			&i.AddedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllPaymentsCount = `-- name: GetAllPaymentsCount :one
+SELECT COUNT(*)::BIGINT
+FROM students s
+JOIN users u ON u.id = s.student_id
+JOIN payments p ON p.student_id = s.id
+WHERE
+    ($1::TEXT IS NULL
+        OR s.full_name ILIKE '%' || $1::TEXT || '%'
+        OR u.email ILIKE '%' || $1::TEXT || '%'
+        OR s.phone ILIKE '%' || $1::TEXT || '%'
+        OR s.reference_no ILIKE '%' || $1::TEXT || '%')
+    AND ($2::TEXT IS NULL OR p.added_at >= $2::TIMESTAMPTZ)
+    AND ($3::TEXT IS NULL OR p.added_at <= ($3::TIMESTAMPTZ + INTERVAL '1 day'))
+`
+
+type GetAllPaymentsCountParams struct {
+	Search pgtype.Text `json:"search"`
+	From   pgtype.Text `json:"from"`
+	To     pgtype.Text `json:"to"`
+}
+
+func (q *Queries) GetAllPaymentsCount(ctx context.Context, arg GetAllPaymentsCountParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getAllPaymentsCount, arg.Search, arg.From, arg.To)
+	var column_1 int64
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
+const getAllPaymentsTotal = `-- name: GetAllPaymentsTotal :one
+SELECT COALESCE(SUM(p.amount), 0)::BIGINT AS total_payments
+FROM students s
+JOIN users u ON u.id = s.student_id
+JOIN payments p ON p.student_id = s.id
+WHERE
+    ($1::TEXT IS NULL
+        OR s.full_name ILIKE '%' || $1::TEXT || '%'
+        OR u.email ILIKE '%' || $1::TEXT || '%'
+        OR s.phone ILIKE '%' || $1::TEXT || '%'
+        OR s.reference_no ILIKE '%' || $1::TEXT || '%')
+    AND ($2::TEXT IS NULL OR p.added_at >= $2::TIMESTAMPTZ)
+    AND ($3::TEXT IS NULL OR p.added_at <= ($3::TIMESTAMPTZ + INTERVAL '1 day'))
+`
+
+type GetAllPaymentsTotalParams struct {
+	Search pgtype.Text `json:"search"`
+	From   pgtype.Text `json:"from"`
+	To     pgtype.Text `json:"to"`
+}
+
+func (q *Queries) GetAllPaymentsTotal(ctx context.Context, arg GetAllPaymentsTotalParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getAllPaymentsTotal, arg.Search, arg.From, arg.To)
+	var total_payments int64
+	err := row.Scan(&total_payments)
+	return total_payments, err
+}
+
 const getPaymentsByStudent = `-- name: GetPaymentsByStudent :many
 SELECT p.id, p.student_id, p.amount, p.added_by, p.added_at, p.remarks, p.payment_mode, a.name AS added_by_name
 FROM payments p

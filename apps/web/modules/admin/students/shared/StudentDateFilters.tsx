@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { CalendarDays, Search, X } from "lucide-react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { NepaliDatePicker } from "nepali-datepicker-reactjs";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 
 import { adminInputClass, adminSecondaryButtonClass } from "@/components/admin/admin-styles";
 import { cn } from "@/lib/utils";
+import { useDebounce } from "@/modules/admin/analytics/hooks/useDebounce";
 import { PARAM_FROM_BS, PARAM_TO_BS } from "./student-date-filter-utils";
 import {
   useAdminClearFiltersShortcut,
@@ -35,6 +36,8 @@ export function StudentDateFilters({
   const toBs = searchParams.get(PARAM_TO_BS) ?? "";
   const search = searchParams.get("search") ?? "";
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [searchInput, setSearchInput] = useState(search);
+  const debouncedSearch = useDebounce(searchInput, 400);
 
   const updateParams = useCallback(
     (updates: Record<string, string | null>) => {
@@ -48,6 +51,18 @@ export function StudentDateFilters({
     },
     [router, pathname, searchParams],
   );
+
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
+
+  useEffect(() => {
+    if (!showSearch) return;
+    const trimmed = debouncedSearch.trim();
+    const current = searchParams.get("search") ?? "";
+    if (trimmed === current) return;
+    updateParams({ search: trimmed || null });
+  }, [debouncedSearch, showSearch, searchParams, updateParams]);
 
   const handleFromBs = (bsValue: string) => {
     if (!bsValue) {
@@ -76,6 +91,7 @@ export function StudentDateFilters({
   };
 
   const clearAll = useCallback(() => {
+    setSearchInput("");
     router.push(pathname);
   }, [router, pathname]);
 
@@ -88,7 +104,8 @@ export function StudentDateFilters({
   useAdminClearFiltersShortcut(clearAll);
   useAdminFocusSearchShortcut(focusSearch);
 
-  const hasFilters = fromBs || toBs || (showSearch && search);
+  const hasFilters =
+    fromBs || toBs || (showSearch && (search || searchInput.trim()));
 
   const datePickerClass = cn(
     adminInputClass,
@@ -126,17 +143,8 @@ export function StudentDateFilters({
                 type="text"
                 className={cn(adminInputClass, "pl-9 normal-case tracking-normal")}
                 placeholder="Name or email…"
-                defaultValue={search}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    updateParams({
-                      search: (e.target as HTMLInputElement).value || null,
-                    });
-                  }
-                }}
-                onBlur={(e) =>
-                  updateParams({ search: e.target.value || null })
-                }
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
               />
             </div>
           </div>

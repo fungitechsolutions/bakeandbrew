@@ -54,6 +54,21 @@ type AdminRepository interface {
 	UpdateUserPassword(ctx context.Context, params db.UpdateUserPasswordParams) (db.User, error)
 	GetUserByID(ctx context.Context, id pgtype.UUID) (db.User, error)
 	UpdateUserProfile(ctx context.Context, params db.UpdateUserProfileParams) (db.User, error)
+
+	// admin/students/payments
+	GetAllPayments(ctx context.Context, params db.GetAllPaymentsParams) ([]db.GetAllPaymentsRow, error)
+	GetAllPaymentsCount(ctx context.Context, params db.GetAllPaymentsCountParams) (int64, error)
+	GetAllPaymentsTotal(ctx context.Context, params db.GetAllPaymentsTotalParams) (int64, error)
+
+	// admin/students/discounts
+	GetAllStudentDiscounts(ctx context.Context, params db.GetAllStudentDiscountsParams) ([]db.GetAllStudentDiscountsRow, error)
+	GetAllStudentDiscountsCount(ctx context.Context, params db.GetAllStudentDiscountsCountParams) (int64, error)
+	GetAllStudentDiscountsTotal(ctx context.Context, params db.GetAllStudentDiscountsTotalParams) (int64, error)
+
+	// admin/students/scholarships
+	GetAllStudentScholarships(ctx context.Context, params db.GetAllStudentScholarshipsParams) ([]db.GetAllStudentScholarshipsRow, error)
+	GetAllStudentScholarshipsCount(ctx context.Context, params db.GetAllStudentScholarshipsCountParams) (int64, error)
+	GetAllStudentScholarshipsTotal(ctx context.Context, params db.GetAllStudentScholarshipsTotalParams) (int64, error)
 }
 
 type AdminPaymentTxRepository interface {
