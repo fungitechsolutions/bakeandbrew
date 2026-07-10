@@ -32,6 +32,9 @@ const (
 	InvalidStudentStatus = "INVALID_STUDENT_STATUS"
 	StudentNotRegistered = "STUDENT_NOT_REGISTERED"
 
+	// student payments
+	PaymentNotFound = "PAYMENT_NOT_FOUND"
+
 	// course
 	CourseNotFound      = "COURSE_NOT_FOUND"
 	MissingCourseID     = "MISSING_COURSE_ID"
@@ -62,4 +65,32 @@ const (
 	// student scholarships
 	MissingStudentScholarshipID = "MISSING_STUDENT_SCHOLARSHIP_ID"
 	ScholarshipNotFound         = "SCHOLARSHIP_NOT_FOUND"
+
+	// banks
+	BankAlreadyExists        = "BANK_ALREADY_EXISTS"
+	DefaultBankAlreadyExists = "DEFAULT_BANK_ALREADY_EXISTS"
+	MissingBankID            = "MISSING_BANK_ID"
+	BankNotFound             = "BANK_NOT_FOUND"
+	CannotDeleteDefaultBank  = "CANNOT_DELETE_DEFAULT_BANK"
+	CannotUnsetDefaultBank   = "CANNOT_UNSET_DEFAULT_BANK"
+
+	// bank accounts
+	BankAccountAlreadyExists        = "BANK_ACCOUNT_ALREADY_EXISTS"
+	DefaultBankAccountAlreadyExists = "DEFAULT_BANK_ACCOUNT_ALREADY_EXISTS"
+	BankAccountNotFound             = "BANK_ACCOUNT_NOT_FOUND"
+	BankAccountHasLedgerEntries     = "BANK_ACCOUNT_HAS_LEDGER_ENTRIES"
+	CannotDeleteDefaultBankAccount  = "CANNOT_DELETE_DEFAULT_BANK_ACCOUNT"
+	CannotUnsetDefaultBankAccount   = "CANNOT_UNSET_DEFAULT_BANK_ACCOUNT"
+	NoDefaultBankAccount            = "NO_DEFAULT_BANK_ACCOUNT"
+
+	// suppliers
+	CompanyAlreadyExists = "COMPANY_ALREADY_EXISTS"
+	VatNoAlreadyExists   = "VAT_NO_ALREADY_EXISTS"
+	SupplierNotFound     = "SUPPLIER_NOT_FOUND"
+	MissingSupplierID    = "MISSING_SUPPLIER_ID"
+	StockNotFound        = "STOCK_NOT_FOUND"
+
+	// certificates
+	CertificateAlreadyExists = "CERTIFICATE_ALREADY_EXISTS"
+	CertificateNotFound      = "CERTIFICATE_NOT_FOUND"
 )

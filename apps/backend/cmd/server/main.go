@@ -12,18 +12,21 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/suprimkhatri77/sms/backend/internal/config"
+	appconfig "github.com/suprimkhatri77/sms/backend/internal/config"
 	"github.com/suprimkhatri77/sms/backend/internal/database"
+	accountingRepository "github.com/suprimkhatri77/sms/backend/internal/repository/accounting"
+
 	dbgen "github.com/suprimkhatri77/sms/backend/internal/database/generated"
 	"github.com/suprimkhatri77/sms/backend/internal/middleware"
 	"github.com/suprimkhatri77/sms/backend/internal/pkg/cloudinary"
 	"github.com/suprimkhatri77/sms/backend/internal/repository"
 	"github.com/suprimkhatri77/sms/backend/internal/routes"
+	routeconfig "github.com/suprimkhatri77/sms/backend/internal/routes/config"
 	"github.com/suprimkhatri77/sms/backend/internal/validator"
 )
 
 func main() {
-	cfg, err := config.Load()
+	cfg, err := appconfig.Load()
 	if err != nil {
 		log.Fatalf("config: %v", err)
 	}
@@ -45,10 +48,12 @@ func main() {
 	}
 
 	ctx := context.Background()
-	db, err := database.New(ctx, cfg.DatabaseURL)
+	db, err := database.ConnectWithRetry(ctx, cfg.DatabaseURL, 10)
 	if err != nil {
-		log.Fatalf("database: %v", err)
+		slog.Error("error", "err", err)
+		os.Exit(1)
 	}
+
 	defer db.Close()
 	queries := dbgen.New(db.Pool)
 
@@ -71,12 +76,13 @@ func main() {
 	r.Use(gin.Logger())
 	r.Use(middleware.CORS(cfg))
 
-	routes.Setup(r, routes.Config{
-		Config:      cfg,
-		Queries:     queries,
-		CldClient:   cldClient,
-		StudentRepo: repository.NewAdmissionRepository(queries),
-		PgxPool:     db.Pool,
+	routes.Setup(r, routeconfig.Config{
+		Config:             cfg,
+		Queries:            queries,
+		CldClient:          cldClient,
+		StudentRepo:        repository.NewAdmissionRepository(queries),
+		SupplierLedgerRepo: accountingRepository.NewSupplierLedgerTxRepository(queries, db.Pool),
+		PgxPool:            db.Pool,
 	})
 
 	srv := &http.Server{
@@ -85,18 +91,19 @@ func main() {
 	}
 
 	go func() {
-		log.Printf("server listening on %s", srv.Addr)
+		slog.Info("server listening", slog.String("addr", srv.Addr))
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %v", err)
+			slog.Error("server listen failed", slog.Any("error", err))
+			os.Exit(1)
 		}
 	}()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Println("shutting down...")
+	slog.Info("shutting down server")
 	if err := srv.Shutdown(context.Background()); err != nil {
-		log.Printf("server shutdown: %v", err)
+		slog.Error("server shutdown failed", slog.Any("error", err))
 	}
-	log.Println("server stopped")
+	slog.Info("server stopped")
 }

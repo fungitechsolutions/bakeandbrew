@@ -96,11 +96,23 @@ func (q *Queries) GetWastageByID(ctx context.Context, id pgtype.UUID) (GetWastag
 }
 
 const getWastageCount = `-- name: GetWastageCount :one
-SELECT COUNT(*) FROM wastage
+SELECT COUNT(*)
+FROM wastage w
+JOIN products p ON p.id = w.product_id
+WHERE
+    ($1::TEXT IS NULL OR p.name ILIKE '%' || $1::TEXT || '%')
+    AND ($2::TEXT IS NULL OR w.date >= $2::TEXT)
+    AND ($3::TEXT IS NULL OR w.date <= $3::TEXT)
 `
 
-func (q *Queries) GetWastageCount(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, getWastageCount)
+type GetWastageCountParams struct {
+	ProductName pgtype.Text `json:"productName"`
+	From        pgtype.Text `json:"from"`
+	To          pgtype.Text `json:"to"`
+}
+
+func (q *Queries) GetWastageCount(ctx context.Context, arg GetWastageCountParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getWastageCount, arg.ProductName, arg.From, arg.To)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -113,13 +125,24 @@ SELECT
     p.unit AS product_unit
 FROM wastage w
 JOIN products p ON p.id = w.product_id
-ORDER BY w.created_at DESC
+WHERE
+    ($3::TEXT IS NULL OR p.name ILIKE '%' || $3::TEXT || '%')
+    AND ($4::TEXT IS NULL OR w.date >= $4::TEXT)
+    AND ($5::TEXT IS NULL OR w.date <= $5::TEXT)
+ORDER BY
+    CASE WHEN $6::TEXT = 'asc' THEN w.rate END ASC,
+    CASE WHEN $6::TEXT = 'desc' THEN w.rate END DESC,
+    w.created_at DESC
 LIMIT $1 OFFSET $2
 `
 
 type ListWastageParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+	Limit       int32       `json:"limit"`
+	Offset      int32       `json:"offset"`
+	ProductName pgtype.Text `json:"productName"`
+	From        pgtype.Text `json:"from"`
+	To          pgtype.Text `json:"to"`
+	SortByRate  pgtype.Text `json:"sortByRate"`
 }
 
 type ListWastageRow struct {
@@ -135,7 +158,14 @@ type ListWastageRow struct {
 }
 
 func (q *Queries) ListWastage(ctx context.Context, arg ListWastageParams) ([]ListWastageRow, error) {
-	rows, err := q.db.Query(ctx, listWastage, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listWastage,
+		arg.Limit,
+		arg.Offset,
+		arg.ProductName,
+		arg.From,
+		arg.To,
+		arg.SortByRate,
+	)
 	if err != nil {
 		return nil, err
 	}

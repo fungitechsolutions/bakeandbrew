@@ -336,6 +336,15 @@ export const inquiriesListResponseSchema = z.discriminatedUnion("success", [
       ),
       unreadCount: z.number(),
       readCount: z.number(),
+      sources: z.array(
+        z.enum([
+          "facebook",
+          "tiktok",
+          "instagram",
+          "referral",
+          "inperson",
+        ]),
+      ),
     }),
     meta: z.object({
       total: z.number(),
@@ -377,6 +386,8 @@ export const analyticsResponseSchema = z.discriminatedUnion("success", [
         totalStudents: z.number(),
         pendingApprovals: z.number(),
         totalRevenue: z.number(),
+        totalDiscounts: z.number(),
+        totalScholarships: z.number(),
         studentsWithBalance: z.number(),
       }),
       monthlyRevenue: z.array(

@@ -17,33 +17,56 @@ SELECT
     p.name AS product_name,
     p.unit AS product_unit,
 
-    COALESCE(SUM(si.qty), 0)::INTEGER                           AS stock_in_qty,
-    COALESCE(SUM(so.qty), 0)::INTEGER                           AS stock_out_qty,
-    COALESCE(SUM(w.qty), 0)::INTEGER                            AS wastage_qty,
+    COALESCE(si.total_qty, 0)::INTEGER AS stock_in_qty,
+    COALESCE(so.total_qty, 0)::INTEGER AS stock_out_qty,
+    COALESCE(w.total_qty, 0)::INTEGER AS wastage_qty,
 
-    (
-        COALESCE(SUM(si.qty), 0) -
-        COALESCE(SUM(so.qty), 0) -
-        COALESCE(SUM(w.qty), 0)
-    )::INTEGER                                                   AS closing_qty,
+    (COALESCE(si.total_qty, 0) - COALESCE(so.total_qty, 0) - COALESCE(w.total_qty, 0))::INTEGER AS closing_qty,
 
-    COALESCE(SUM(si.qty * si.rate), 0)::NUMERIC(14,2)           AS stock_in_amount,
-    COALESCE(SUM(so.qty * so.rate), 0)::NUMERIC(14,2)           AS stock_out_amount,
-    COALESCE(SUM(w.qty * w.rate), 0)::NUMERIC(14,2)             AS wastage_amount,
+    COALESCE(si.total_amount, 0)::NUMERIC(14,2) AS stock_in_amount,
+    COALESCE(so.total_amount, 0)::NUMERIC(14,2) AS stock_out_amount,
+    COALESCE(w.total_amount, 0)::NUMERIC(14,2) AS wastage_amount,
 
-    (
-        COALESCE(SUM(si.qty * si.rate), 0) -
-        COALESCE(SUM(so.qty * so.rate), 0) -
-        COALESCE(SUM(w.qty * w.rate), 0)
-    )::NUMERIC(14,2)                                             AS closing_amount
+    (COALESCE(si.total_amount, 0) - COALESCE(so.total_amount, 0) - COALESCE(w.total_amount, 0))::NUMERIC(14,2) AS closing_amount
 
 FROM products p
-LEFT JOIN stock_in si ON si.product_id = p.id
-LEFT JOIN stock_out so ON so.product_id = p.id
-LEFT JOIN wastage w ON w.product_id = p.id
-GROUP BY p.id, p.name, p.unit
+LEFT JOIN (
+    SELECT product_id,
+           SUM(qty) AS total_qty,
+           SUM(qty * rate) AS total_amount
+    FROM stock_in
+    WHERE
+        ($1::TEXT IS NULL OR date >= $1::TEXT)
+        AND ($2::TEXT IS NULL OR date <= $2::TEXT)
+    GROUP BY product_id
+) si ON si.product_id = p.id
+LEFT JOIN (
+    SELECT product_id,
+           SUM(qty) AS total_qty,
+           SUM(qty * rate) AS total_amount
+    FROM stock_out
+    WHERE
+        ($1::TEXT IS NULL OR date >= $1::TEXT)
+        AND ($2::TEXT IS NULL OR date <= $2::TEXT)
+    GROUP BY product_id
+) so ON so.product_id = p.id
+LEFT JOIN (
+    SELECT product_id,
+           SUM(qty) AS total_qty,
+           SUM(qty * rate) AS total_amount
+    FROM wastage
+    WHERE
+        ($1::TEXT IS NULL OR date >= $1::TEXT)
+        AND ($2::TEXT IS NULL OR date <= $2::TEXT)
+    GROUP BY product_id
+) w ON w.product_id = p.id
 ORDER BY p.name ASC
 `
+
+type GetInventorySummaryParams struct {
+	From pgtype.Text `json:"from"`
+	To   pgtype.Text `json:"to"`
+}
 
 type GetInventorySummaryRow struct {
 	ProductID      pgtype.UUID    `json:"productId"`
@@ -59,11 +82,8 @@ type GetInventorySummaryRow struct {
 	ClosingAmount  pgtype.Numeric `json:"closingAmount"`
 }
 
-// Full summary per product:
-// stock_in_qty, stock_out_qty, wastage_qty, closing_qty
-// stock_in_amount, stock_out_amount, wastage_amount, closing_amount
-func (q *Queries) GetInventorySummary(ctx context.Context) ([]GetInventorySummaryRow, error) {
-	rows, err := q.db.Query(ctx, getInventorySummary)
+func (q *Queries) GetInventorySummary(ctx context.Context, arg GetInventorySummaryParams) ([]GetInventorySummaryRow, error) {
+	rows, err := q.db.Query(ctx, getInventorySummary, arg.From, arg.To)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +167,6 @@ type GetInventorySummaryByDateRangeRow struct {
 	ClosingAmount  pgtype.Numeric `json:"closingAmount"`
 }
 
-// Same summary but filtered to a BS date range across all three tables
 func (q *Queries) GetInventorySummaryByDateRange(ctx context.Context, arg GetInventorySummaryByDateRangeParams) ([]GetInventorySummaryByDateRangeRow, error) {
 	rows, err := q.db.Query(ctx, getInventorySummaryByDateRange, arg.FromDate, arg.ToDate)
 	if err != nil {
@@ -228,7 +247,6 @@ type GetInventorySummaryByProductRow struct {
 	ClosingAmount  pgtype.Numeric `json:"closingAmount"`
 }
 
-// Single product summary, all time
 func (q *Queries) GetInventorySummaryByProduct(ctx context.Context, id pgtype.UUID) (GetInventorySummaryByProductRow, error) {
 	row := q.db.QueryRow(ctx, getInventorySummaryByProduct, id)
 	var i GetInventorySummaryByProductRow

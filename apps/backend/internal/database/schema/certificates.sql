@@ -1,7 +1,8 @@
 CREATE TABLE certificates (
-    id         SERIAL PRIMARY KEY,
+    id         TEXT PRIMARY KEY,
     student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
     issued_by  UUID NOT NULL REFERENCES users(id),
     issued_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    remarks    VARCHAR
+    remarks    VARCHAR,
+    type       TEXT NOT NULL DEFAULT 'normal' CHECK (type IN ('normal', 'workshop'))
 );

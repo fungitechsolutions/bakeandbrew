@@ -1,13 +1,23 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { InventoryPageHeader } from "../shared/InventoryPageHeader";
+import { Plus } from "lucide-react";
 import { StockOutTable } from "./StockOutTable";
 import { StockOutDialog } from "./StockOutDialog";
 import { ConfirmDialog } from "../shared/ConfirmDialog";
-import { Button } from "@/components/ui/button";
-import { CalendarIcon, Plus, Search, X } from "lucide-react";
+import { useDebounce } from "@/modules/admin/analytics/hooks/useDebounce";
+import { AdminPageLayout } from "@/components/admin/admin-page-layout";
+import {
+  useAdminEscapeShortcut,
+  useAdminClearFiltersShortcut,
+  useAdminFocusSearchShortcut,
+  useAdminNewShortcut,
+  useAdminRefreshShortcut,
+} from "@/components/admin/admin-shortcut-provider";
+import { useAdminQueryRefresh } from "@/hooks/useAdminQueryRefresh";
+import { adminPrimaryButtonClass } from "@/components/admin/admin-styles";
+import { InventoryTransactionFilters } from "../shared/InventoryTransactionFilters";
 import {
   CreateStockOutResponse,
   DeleteStockOutResponse,
@@ -21,14 +31,6 @@ import StockOutLoading from "./StockOutLoading";
 import StockOutError from "./StockOutError";
 import axios from "axios";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 type StockOut = Extract<
   ListStockOutResponse,
@@ -46,7 +48,6 @@ export function StockOutClient() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // --- Filter state ---
   const [search, setSearch] = useState(searchParams.get("search") ?? "");
   const [dateFrom, setDateFrom] = useState(searchParams.get("from") ?? "");
   const [dateTo, setDateTo] = useState(searchParams.get("to") ?? "");
@@ -58,14 +59,13 @@ export function StockOutClient() {
     (searchParams.get("sort") as "asc" | "desc") ?? "",
   );
 
-  // --- Existing state ---
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<StockOut | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<StockOut | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const queryClient = useQueryClient();
+  const debouncedSearch = useDebounce(search, 400);
 
-  // --- URL param helper ---
   const updateParams = useCallback(
     (updates: Record<string, string>) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -79,11 +79,13 @@ export function StockOutClient() {
     [searchParams, pathname, router],
   );
 
-  // --- Filter handlers ---
+  useEffect(() => {
+    updateParams({ search: debouncedSearch.trim() });
+  }, [debouncedSearch]);
+
   const handleSearchChange = (value: string) => {
+    if (value.startsWith(" ")) return;
     setSearch(value);
-    // swap for: debouncedSearch(value) → updateParams({ search: value })
-    updateParams({ search: value });
     setCurrentPage(1);
   };
 
@@ -100,7 +102,7 @@ export function StockOutClient() {
     setCurrentPage(1);
   };
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     setSearch("");
     setPendingFrom("");
     setPendingTo("");
@@ -109,17 +111,30 @@ export function StockOutClient() {
     setPriceSort("");
     setCurrentPage(1);
     router.push(pathname);
-  };
+  }, [pathname, router]);
 
   const hasActiveFilters = !!search || !!dateFrom || !!dateTo || !!priceSort;
   const hasPendingDateChange = pendingFrom !== dateFrom || pendingTo !== dateTo;
 
-  // --- Existing queries & mutations (unchanged) ---
   const { data, isPending, isError, refetch, error } = useQuery({
-    queryKey: ["admin-inventory-stock-out", currentPage],
+    queryKey: [
+      "admin-inventory-stock-out",
+      currentPage,
+      debouncedSearch.trim(),
+      dateFrom,
+      dateTo,
+      priceSort,
+    ],
     queryFn: async () => {
+      const params = new URLSearchParams();
+      params.set("page", currentPage.toString());
+      const trimmedSearch = debouncedSearch.trim();
+      if (trimmedSearch) params.set("search", trimmedSearch);
+      if (dateFrom) params.set("from", dateFrom);
+      if (dateTo) params.set("to", dateTo);
+      if (priceSort) params.set("sort_by_rate", priceSort);
       const res = await api.get<ListStockOutResponse>(
-        `/admin/inventory/stock/out?page=${currentPage}`,
+        `/admin/inventory/stock/out?${params.toString()}`,
       );
       return res.data;
     },
@@ -128,7 +143,7 @@ export function StockOutClient() {
   });
 
   const { data: productsData, isPending: productsPending } = useQuery({
-    queryKey: ["admin-inventory-stock-in"],
+    queryKey: ["admin-inventory-stock-out-products"],
     queryFn: async () => {
       const res = await api.get<GetProductResponse>(
         `/admin/inventory/products`,
@@ -202,40 +217,6 @@ export function StockOutClient() {
     },
   });
 
-  if (isPending || !data || productsPending || !productsData)
-    return <StockOutLoading />;
-  if (isError) return <StockOutError error={error} reset={refetch} />;
-  if (!data.success || !productsData.success)
-    return (
-      <StockOutError
-        error={{ ...data, message: "Failed to process request" }}
-        reset={refetch}
-      />
-    );
-
-  const records = data.data;
-  const limit = data.meta.limit;
-  const total = data.meta.total;
-  const totalPages = data.meta.totalPages;
-
-  // --- Local filter + sort (swap for API params later) ---
-  const filtered = records
-    .filter((r) => {
-      const q = search.toLowerCase();
-      const matchesSearch =
-        !search ||
-        r.productName.toLowerCase().includes(q) ||
-        r.billNo?.toLowerCase().includes(q);
-      const matchesFrom = !dateFrom || r.date >= dateFrom;
-      const matchesTo = !dateTo || r.date <= dateTo;
-      return matchesSearch && matchesFrom && matchesTo;
-    })
-    .sort((a, b) => {
-      if (!priceSort) return 0;
-      return priceSort === "asc" ? a.rate - b.rate : b.rate - a.rate;
-    });
-
-  // --- Existing handlers (unchanged) ---
   const handleSubmit = async (data: StockOutFormData) => {
     if (editTarget) {
       await updateStockOut.mutateAsync({ id: editTarget.id, ...data });
@@ -256,137 +237,101 @@ export function StockOutClient() {
     setTimeout(() => setEditTarget(null), 200);
   };
 
+  const openCreate = useCallback(() => {
+    setEditTarget(null);
+    setDialogOpen(true);
+  }, []);
+
+  const toggleCreate = useCallback(() => {
+    if (dialogOpen && !editTarget) setDialogOpen(false);
+    else if (!dialogOpen) openCreate();
+  }, [dialogOpen, editTarget, openCreate]);
+
+  const focusSearch = useCallback(() => {
+    document.getElementById("inventory-tx-search")?.focus();
+  }, []);
+
+  useAdminNewShortcut(toggleCreate);
+  useAdminFocusSearchShortcut(focusSearch);
+  useAdminRefreshShortcut(useAdminQueryRefresh(refetch));
+  useAdminClearFiltersShortcut(handleClear);
+  useAdminEscapeShortcut(
+    useCallback(() => {
+      if (deleteTarget) setDeleteTarget(null);
+      else if (dialogOpen) handleClose();
+    }, [deleteTarget, dialogOpen, handleClose]),
+  );
+
   return (
-    <div className="space-y-4 min-h-screen bg-(--brand-cream) px-4 py-8 sm:px-6 lg:px-8 mx-auto max-w-8xl">
-      <InventoryPageHeader
-        title="Stock Out"
-        description="Record outgoing inventory and sales."
-        action={
-          <Button
-            onClick={() => {
-              setEditTarget(null);
-              setDialogOpen(true);
-            }}
-            className="bg-[var(--brand-green)] hover:bg-[var(--brand-green-2)] text-white font-[var(--font-dm-sans)] gap-2"
-          >
-            <Plus size={16} /> Add Stock Out
-          </Button>
-        }
+    <AdminPageLayout
+      title="Stock Out"
+      description="Record outgoing inventory and sales."
+      maxWidth="wide"
+      action={
+        <button
+          type="button"
+          onClick={openCreate}
+          className={adminPrimaryButtonClass}
+        >
+          <Plus size={16} />
+          Add Stock Out
+        </button>
+      }
+    >
+      <InventoryTransactionFilters
+        search={search}
+        onSearchChange={handleSearchChange}
+        searchPlaceholder="Product name or bill no…"
+        priceSort={priceSort}
+        onPriceSortChange={handlePriceSort}
+        pendingFrom={pendingFrom}
+        pendingTo={pendingTo}
+        onPendingFromChange={setPendingFrom}
+        onPendingToChange={setPendingTo}
+        hasPendingDateChange={hasPendingDateChange}
+        onApplyDates={handleApplyDates}
+        hasActiveFilters={hasActiveFilters}
+        onClear={handleClear}
       />
 
-      {/* ── Filters ── */}
-      <div className="flex flex-col gap-3">
-        {/* Row 1: Search + Price sort */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <Input
-              placeholder="Search by product name or bill no…"
-              value={search}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-9"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            />
-          </div>
-
-          <Select
-            value={priceSort}
-            onValueChange={(v) => handlePriceSort(v as "asc" | "desc" | "")}
-          >
-            <SelectTrigger
-              className="w-full sm:w-44"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            >
-              <SelectValue placeholder="Sort by rate" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">Default</SelectItem>
-              <SelectItem value="asc">Rate: Low → High</SelectItem>
-              <SelectItem value="desc">Rate: High → Low</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Row 2: Date range + Apply + Clear + count */}
-        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
-          <div className="relative">
-            <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <Input
-              type="date"
-              value={pendingFrom}
-              onChange={(e) => setPendingFrom(e.target.value)}
-              className="pl-9 w-38"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            />
-          </div>
-
-          <span className="text-muted-foreground text-sm shrink-0">to</span>
-
-          <div className="relative">
-            <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <Input
-              type="date"
-              value={pendingTo}
-              onChange={(e) => setPendingTo(e.target.value)}
-              className="pl-9 w-38"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            />
-          </div>
-
-          {hasPendingDateChange && (
-            <Button
-              size="sm"
-              onClick={handleApplyDates}
-              className="bg-[var(--brand-green)] hover:bg-[var(--brand-green-2)] text-white shrink-0"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            >
-              Apply
-            </Button>
-          )}
-
-          {hasActiveFilters && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClear}
-              className="text-muted-foreground hover:text-foreground gap-1 shrink-0"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            >
-              <X className="h-3.5 w-3.5" />
-              Clear
-            </Button>
-          )}
-
-          {hasActiveFilters && (
-            <p
-              className="text-sm text-muted-foreground ml-auto"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            >
-              {filtered.length} of {records.length} record
-              {records.length !== 1 ? "s" : ""}
-            </p>
-          )}
-        </div>
-      </div>
-
-      <StockOutTable
-        data={filtered}
-        limit={limit}
-        total={filtered.length}
-        currentPage={currentPage}
-        totalPages={Math.ceil(filtered.length / limit)}
-        onPageChange={setCurrentPage}
-        onEdit={(item) => {
-          setEditTarget(item);
-          setDialogOpen(true);
-        }}
-        onDelete={setDeleteTarget}
-      />
+      {isPending || productsPending ? (
+        <StockOutLoading />
+      ) : isError || !data || !productsData ? (
+        <StockOutError
+          error={{ message: error?.message ?? "Failed to load data" }}
+          reset={refetch}
+        />
+      ) : !data.success || !productsData.success ? (
+        <StockOutError
+          error={{
+            message: !data.success
+              ? data.message
+              : !productsData.success
+                ? productsData.message
+                : "Failed to process request",
+          }}
+          reset={refetch}
+        />
+      ) : (
+        <StockOutTable
+          data={data.data}
+          limit={data.meta.limit}
+          total={data.meta.total}
+          currentPage={currentPage}
+          totalPages={data.meta.totalPages}
+          onPageChange={setCurrentPage}
+          onEdit={(item) => {
+            setEditTarget(item);
+            setDialogOpen(true);
+          }}
+          onDelete={setDeleteTarget}
+        />
+      )}
 
       <StockOutDialog
         open={dialogOpen}
-        products={productsData.data}
-        stockOut={records}
+        products={productsData?.success ? productsData.data : []}
+        stockOut={data?.success ? data.data : []}
         onClose={handleClose}
         onSubmit={handleSubmit}
         initialData={editTarget}
@@ -400,6 +345,6 @@ export function StockOutClient() {
           onCancel={() => setDeleteTarget(null)}
         />
       )}
-    </div>
+    </AdminPageLayout>
   );
 }

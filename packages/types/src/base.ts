@@ -15,7 +15,7 @@ export const fieldErrorSchema = z.object({
 export const apiErrorSchema = z.object({
   success: z.boolean(),
   message: z.string(),
-  code: z.string().optional(),
+  code: z.string(),
   errors: z.array(fieldErrorSchema).optional(),
 });
 
@@ -42,3 +42,12 @@ const baseErrorResponse = z.object({
 });
 
 export type BaseErrorResponse = z.infer<typeof baseErrorResponse>;
+
+export const paginationMetaSchema = z.object({
+  total: z.number(),
+  page: z.number(),
+  totalPages: z.number(),
+  limit: z.number(),
+});
+
+export type PaginationMeta = z.infer<typeof paginationMetaSchema>;

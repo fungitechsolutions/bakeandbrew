@@ -1,6 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { User } from "@repo/types";
 import { jwtDecode } from "jwt-decode";
+import { getApiUrl } from "@/lib/api-url";
+
+function clearAuthCookies(response: NextResponse) {
+  const cookieOptions = {
+    maxAge: 0,
+    path: "/",
+    domain:
+      process.env.NODE_ENV === "production"
+        ? process.env.COOKIE_DOMAIN
+        : "",
+    secure: process.env.NODE_ENV === "production",
+  };
+
+  response.cookies.set("access_token", "", {
+    ...cookieOptions,
+    httpOnly: true,
+  });
+  response.cookies.set("refresh_token", "", {
+    ...cookieOptions,
+    httpOnly: true,
+  });
+  response.cookies.set("is_logged_in", "", {
+    ...cookieOptions,
+    httpOnly: false,
+  });
+}
 
 function clearAuthCookies(response: NextResponse) {
   const cookieOptions = {
@@ -44,13 +70,10 @@ export async function attemptRefresh(
 ) {
   try {
     console.log("attemptRefresh called, path:", req.nextUrl.pathname);
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/refresh`,
-      {
-        method: "POST",
-        headers: { Cookie: `refresh_token=${refreshToken}` },
-      },
-    );
+    const res = await fetch(`${getApiUrl()}/api/v1/auth/refresh`, {
+      method: "POST",
+      headers: { Cookie: `refresh_token=${refreshToken}` },
+    });
 
     console.log("refresh response status:", res.status);
 
@@ -186,13 +209,10 @@ export async function getSessionFromRequest(
     if (user) return user;
   }
 
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/refresh`,
-    {
-      method: "POST",
-      headers: { Cookie: `refresh_token=${refreshToken}` },
-    },
-  );
+  const res = await fetch(`${getApiUrl()}/api/v1/auth/refresh`, {
+    method: "POST",
+    headers: { Cookie: `refresh_token=${refreshToken}` },
+  });
 
   if (!res.ok) return null;
 

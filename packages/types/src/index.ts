@@ -16,6 +16,7 @@ export {
   type APIResponse,
   type APIError,
   type BaseErrorResponse,
+  type PaginationMeta,
 } from "./base";
 
 export {
@@ -37,6 +38,7 @@ export { type ImageUploadResponse } from "./upload";
 export {
   createProductResponseSchema,
   createStockInSchema,
+  updateStockInSchema,
   createStockOutSchema,
   editStockOutSchema,
   createWastageSchema,
@@ -48,6 +50,7 @@ export {
   type DeleteProductResponse,
   type CreateStockInResponse,
   type CreateStockInInput,
+  type UpdateStockInInput,
   type ListStockInResponse,
   type DeleteStockInResponse,
   type CreateStockOutInput,
@@ -128,7 +131,125 @@ export {
   type UpdateStudentInfoResponse,
 } from "./admin/students/personal-info";
 
+export {
+  updateStudentImageInputSchema,
+  type UpdateStudentImageInput,
+  type UpdateStudentImageResponse,
+} from "./admin/students/image";
+
+export {
+  certificateTypeSchema,
+  issueCertificateInputSchema,
+  certificateRecordSchema,
+  issueCertificateResponseSchema,
+  studentCertificateSchema,
+  getStudentCertificateResponseSchema,
+  type IssueCertificateInput,
+  type CertificateRecord,
+  type IssueCertificateResponse,
+  type StudentCertificate,
+  type GetStudentCertificateResponse,
+} from "./admin/certificates";
+
 export { type GetStudentPendingOverviewResponse } from "./student_portal/pending-overview";
 export { type GetStudentRejectedOverviewResponse } from "./student_portal/rejected-overview";
 export { type GetStudentDiscountsResponse } from "./student_portal/discounts";
 export { type GetStudentPortalScholarshipResponse } from "./student_portal/scholarship";
+
+export {
+  certificateDetailsSchema,
+  getCertificateDetailsResponseSchema,
+  type CertificateDetails,
+  type GetCertificateDetailsResponse,
+} from "./certificates";
+
+export {
+  createBankInputSchema,
+  updateBankInputSchema,
+  type CreateBankInput,
+  type UpdateBankInput,
+  type CreateBankResponse,
+  type UpdateBankResponse,
+  type GetBanksResponse,
+  type DeleteBankResponse,
+  type SetDefaultBankResponse,
+  type Bank,
+} from "./admin/accounting/bank";
+
+export {
+  createBankAccountInputSchema,
+  updateBankAccountInputSchema,
+  type CreateBankAccountInput,
+  type UpdateBankAccountInput,
+  type DeleteBankAccountResponse,
+  type CreateBankAccountResponse,
+  type UpdateBankAccountResponse,
+  type GetBankAccountResponse,
+  type BankAccountsData,
+  type BankAccount,
+  type SetDefaultBankAccountResponse,
+} from "./admin/accounting/bank_accounts";
+
+export {
+  createBankLedgerEntrySchema,
+  type CreateBankLedgerEntryInput,
+  type CreateBankLedgerEntryResponse,
+  type BankLedger,
+  type GetBankLedgerResponse,
+  type BankLedgerData,
+  type BankLedgerSummary,
+  type GetBankLedgerSummaryRepsonse,
+  type BankAccountForDropdown,
+  type GetBankAccountsForDropdownResponse,
+} from "./admin/accounting/bank_ledger";
+
+export {
+  createCashLedgerEntrySchema,
+  type CreateCashLedgerEntryInput,
+  type CreateCashLedgerEntryResponse,
+  type CashLedger,
+  type GetCashLedgerResponse,
+  type CashLedgerData,
+  type CashLedgerSummary,
+  type GetCashLedgerSummaryResponse,
+} from "./admin/accounting/cash_ledger";
+
+export {
+  createSupplierSchema,
+  updateSupplierSchema,
+  type CreateSupplierInput,
+  type UpdateSupplierInput,
+  type CreateSupplierResponse,
+  type UpdateSupplierResponse,
+  type DeleteSupplierResponse,
+  type GetSupplierResponse,
+  type SuppliersData,
+  type Supplier,
+} from "./admin/accounting/suppliers";
+
+export {
+  createSupplierLedgerEntryInput,
+  type GetSupplierLedgerSummaryResponse,
+  type CreateSupplierLedgerEntryInput,
+  type CreateSupplierLedgerEntryResponse,
+  type SupplierLedger,
+  type GetSupplierLedgerResponse,
+  type SupplierLedgerSummary,
+  type SupplierLedgerData,
+} from "./admin/accounting/supplier_ledger";
+
+export {
+  type BatchResponse,
+  type GetDistinctBatchesResponse,
+} from "./admin/students/batch";
+
+export {
+  updateProfileInputSchema,
+  updatePasswordFormSchema,
+  updatePasswordInputSchema,
+  type UpdateProfileInput,
+  type UpdateProfileResponse,
+  type UpdatePasswordFormInput,
+  type UpdatePasswordInput,
+  type UpdatePasswordResponse,
+} from "./admin/profile";

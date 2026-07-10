@@ -11,12 +11,17 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useForm } from "@tanstack/react-form-nextjs";
-import { LoginInput, loginInputSchema, LoginResponse } from "@repo/types";
+import {
+  APIError,
+  LoginInput,
+  loginInputSchema,
+  LoginResponse,
+} from "@repo/types";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
-import { ApiError, mapFieldErrors } from "@/utils/api";
+import { mapFieldErrors } from "@/utils/api";
 import { useRouter } from "next/navigation";
 import api from "@/lib/axios";
 import Link from "next/link";
@@ -32,7 +37,7 @@ export function LoginForm({
   const router = useRouter();
   const { mutate, isPending, reset } = useMutation<
     Extract<LoginResponse, { success: true }>,
-    AxiosError<ApiError>,
+    AxiosError<APIError>,
     LoginInput
   >({
     mutationFn: async (data) => {

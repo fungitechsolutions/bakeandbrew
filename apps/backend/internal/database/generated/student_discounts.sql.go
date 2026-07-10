@@ -59,6 +59,153 @@ func (q *Queries) DeleteDiscount(ctx context.Context, id pgtype.UUID) error {
 	return err
 }
 
+const getAllStudentDiscounts = `-- name: GetAllStudentDiscounts :many
+SELECT
+    s.id AS student_id,
+    s.reference_no,
+    s.full_name,
+    s.photo_url,
+    u.email,
+    s.phone,
+    sd.id AS discount_id,
+    sd.amount,
+    sd.percent,
+    sd.type,
+    sd.note,
+    sd.created_at
+FROM students s
+JOIN users u ON u.id = s.student_id
+JOIN student_discounts sd ON sd.student_id = s.id
+WHERE
+    ($3::TEXT IS NULL
+        OR s.full_name ILIKE '%' || $3::TEXT || '%'
+        OR u.email ILIKE '%' || $3::TEXT || '%'
+        OR s.phone ILIKE '%' || $3::TEXT || '%'
+        OR s.reference_no ILIKE '%' || $3::TEXT || '%')
+    AND ($4::TEXT IS NULL OR sd.created_at >= $4::TIMESTAMPTZ)
+    AND ($5::TEXT IS NULL OR sd.created_at <= ($5::TIMESTAMPTZ + INTERVAL '1 day'))
+ORDER BY sd.created_at DESC
+LIMIT $1 OFFSET $2
+`
+
+type GetAllStudentDiscountsParams struct {
+	Limit  int32       `json:"limit"`
+	Offset int32       `json:"offset"`
+	Search pgtype.Text `json:"search"`
+	From   pgtype.Text `json:"from"`
+	To     pgtype.Text `json:"to"`
+}
+
+type GetAllStudentDiscountsRow struct {
+	StudentID   pgtype.UUID        `json:"studentId"`
+	ReferenceNo string             `json:"referenceNo"`
+	FullName    string             `json:"fullName"`
+	PhotoUrl    pgtype.Text        `json:"photoUrl"`
+	Email       string             `json:"email"`
+	Phone       string             `json:"phone"`
+	DiscountID  pgtype.UUID        `json:"discountId"`
+	Amount      int64              `json:"amount"`
+	Percent     pgtype.Numeric     `json:"percent"`
+	Type        string             `json:"type"`
+	Note        pgtype.Text        `json:"note"`
+	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
+}
+
+func (q *Queries) GetAllStudentDiscounts(ctx context.Context, arg GetAllStudentDiscountsParams) ([]GetAllStudentDiscountsRow, error) {
+	rows, err := q.db.Query(ctx, getAllStudentDiscounts,
+		arg.Limit,
+		arg.Offset,
+		arg.Search,
+		arg.From,
+		arg.To,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllStudentDiscountsRow
+	for rows.Next() {
+		var i GetAllStudentDiscountsRow
+		if err := rows.Scan(
+			&i.StudentID,
+			&i.ReferenceNo,
+			&i.FullName,
+			&i.PhotoUrl,
+			&i.Email,
+			&i.Phone,
+			&i.DiscountID,
+			&i.Amount,
+			&i.Percent,
+			&i.Type,
+			&i.Note,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllStudentDiscountsCount = `-- name: GetAllStudentDiscountsCount :one
+SELECT COUNT(*)::BIGINT
+FROM students s
+JOIN users u ON u.id = s.student_id
+JOIN student_discounts sd ON sd.student_id = s.id
+WHERE
+    ($1::TEXT IS NULL
+        OR s.full_name ILIKE '%' || $1::TEXT || '%'
+        OR u.email ILIKE '%' || $1::TEXT || '%'
+        OR s.phone ILIKE '%' || $1::TEXT || '%'
+        OR s.reference_no ILIKE '%' || $1::TEXT || '%')
+    AND ($2::TEXT IS NULL OR sd.created_at >= $2::TIMESTAMPTZ)
+    AND ($3::TEXT IS NULL OR sd.created_at <= ($3::TIMESTAMPTZ + INTERVAL '1 day'))
+`
+
+type GetAllStudentDiscountsCountParams struct {
+	Search pgtype.Text `json:"search"`
+	From   pgtype.Text `json:"from"`
+	To     pgtype.Text `json:"to"`
+}
+
+func (q *Queries) GetAllStudentDiscountsCount(ctx context.Context, arg GetAllStudentDiscountsCountParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getAllStudentDiscountsCount, arg.Search, arg.From, arg.To)
+	var column_1 int64
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
+const getAllStudentDiscountsTotal = `-- name: GetAllStudentDiscountsTotal :one
+SELECT COALESCE(SUM(sd.amount), 0)::BIGINT AS total_discounts
+FROM students s
+JOIN users u ON u.id = s.student_id
+JOIN student_discounts sd ON sd.student_id = s.id
+WHERE
+    ($1::TEXT IS NULL
+        OR s.full_name ILIKE '%' || $1::TEXT || '%'
+        OR u.email ILIKE '%' || $1::TEXT || '%'
+        OR s.phone ILIKE '%' || $1::TEXT || '%'
+        OR s.reference_no ILIKE '%' || $1::TEXT || '%')
+    AND ($2::TEXT IS NULL OR sd.created_at >= $2::TIMESTAMPTZ)
+    AND ($3::TEXT IS NULL OR sd.created_at <= ($3::TIMESTAMPTZ + INTERVAL '1 day'))
+`
+
+type GetAllStudentDiscountsTotalParams struct {
+	Search pgtype.Text `json:"search"`
+	From   pgtype.Text `json:"from"`
+	To     pgtype.Text `json:"to"`
+}
+
+func (q *Queries) GetAllStudentDiscountsTotal(ctx context.Context, arg GetAllStudentDiscountsTotalParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getAllStudentDiscountsTotal, arg.Search, arg.From, arg.To)
+	var total_discounts int64
+	err := row.Scan(&total_discounts)
+	return total_discounts, err
+}
+
 const getDiscountByID = `-- name: GetDiscountByID :one
 SELECT id, student_id, added_by, type, percent, note, amount, created_at FROM student_discounts
 WHERE id = $1

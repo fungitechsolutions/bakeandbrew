@@ -1,7 +1,10 @@
 package inquiries
 
 import (
+	"log/slog"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
@@ -10,6 +13,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
 
+const handlerMarkInquiryRead = "MarkInquiryRead"
+
 func MarkInquiryRead(queries repository.AdminRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
@@ -17,6 +22,8 @@ func MarkInquiryRead(queries repository.AdminRepository) gin.HandlerFunc {
 		inquiryIDFromParams := c.Param("inquiryID")
 
 		if inquiryIDFromParams == "" {
+			applog.Warn(c, handlerMarkInquiryRead, "invalid request",
+				slog.String("inquiryID_raw", inquiryIDFromParams))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Missing inquiry ID",
@@ -27,6 +34,9 @@ func MarkInquiryRead(queries repository.AdminRepository) gin.HandlerFunc {
 
 		inquiryID, err := utils.ConvertToUUID(inquiryIDFromParams)
 		if err != nil {
+			applog.Warn(c, handlerMarkInquiryRead, "invalid request",
+				slog.String("inquiryID_raw", inquiryIDFromParams),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid ID format",
@@ -38,6 +48,9 @@ func MarkInquiryRead(queries repository.AdminRepository) gin.HandlerFunc {
 		result, err := queries.MarkInquiryRead(ctx, inquiryID)
 		if err != nil {
 
+			applog.Error(c, handlerMarkInquiryRead, "failed to process request",
+				slog.String("inquiryID_raw", inquiryIDFromParams),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -47,6 +60,7 @@ func MarkInquiryRead(queries repository.AdminRepository) gin.HandlerFunc {
 		}
 
 		if result.RowsAffected() == 0 {
+			applog.Warn(c, handlerMarkInquiryRead, "resource not found")
 			c.JSON(http.StatusNotFound, types.APIResponse{
 				Success: false,
 				Message: "Inquiry not found",
@@ -55,6 +69,7 @@ func MarkInquiryRead(queries repository.AdminRepository) gin.HandlerFunc {
 			return
 		}
 
+		applog.Info(c, handlerMarkInquiryRead, "inquiry marked read")
 		c.JSON(http.StatusOK, types.APIResponse{
 			Success: true,
 			Message: "Inquiry marked read",

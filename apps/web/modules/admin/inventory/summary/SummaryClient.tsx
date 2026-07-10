@@ -1,37 +1,40 @@
 "use client";
 
-import { useState } from "react";
-import { InventoryPageHeader } from "../shared/InventoryPageHeader";
+import { useCallback, useState } from "react";
 import { SummaryTable } from "./SummaryTable";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Download, Filter } from "lucide-react";
-import {
-  mockSummary,
-  mockStockIn,
-  mockStockOut,
-  mockWastage,
-  mockProducts,
-} from "../lib/mock-data";
-import { computeSummary } from "../lib/utils";
-import type { InventorySummaryRow } from "../types";
+import { CalendarDays } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { InventorySummaryResponse } from "@repo/types";
 import api from "@/lib/axios";
 import SummaryLoading from "./SummaryLoading";
 import SummaryError from "./SummaryError";
+import { NepaliDatePicker } from "nepali-datepicker-reactjs";
+import { inputCls } from "../../students/detail/shared/utils";
+import { cn } from "@/lib/utils";
+import { AdminPageLayout } from "@/components/admin/admin-page-layout";
+import { adminPrimaryButtonClass } from "@/components/admin/admin-styles";
+import { InventoryFilterShell } from "../shared/InventoryFilterShell";
+import { inventoryLabelClass } from "../shared/inventory-styles";
+import { useAdminClearFiltersShortcut } from "@/components/admin/admin-shortcut-provider";
 
 export function SummaryClient() {
+  const [pendingFrom, setPendingFrom] = useState("");
+  const [pendingTo, setPendingTo] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const [filtered, setFiltered] = useState<InventorySummaryRow[] | null>(null);
+
+  const hasActiveFilter = !!fromDate || !!toDate;
+  const hasPendingChange = pendingFrom !== fromDate || pendingTo !== toDate;
 
   const { data, isPending, isError, refetch, error } = useQuery({
-    queryKey: ["admin-inventory-summary"],
+    queryKey: ["admin-inventory-summary", fromDate, toDate],
     queryFn: async () => {
+      const params = new URLSearchParams();
+      if (fromDate) params.set("from", fromDate);
+      if (toDate) params.set("to", toDate);
+      const query = params.toString();
       const res = await api.get<InventorySummaryResponse>(
-        `/admin/inventory/summary`,
+        `/admin/inventory/summary${query ? `?${query}` : ""}`,
       );
       return res.data;
     },
@@ -39,115 +42,86 @@ export function SummaryClient() {
     gcTime: 5 * 60 * 1000,
   });
 
-  if (isPending || !data) return <SummaryLoading />;
-  if (isError) return <SummaryError error={error} reset={refetch} />;
-  if (!data.success)
-    return (
-      <SummaryError
-        error={{ ...data, message: "Failed to process request" }}
-        reset={refetch}
-      />
-    );
-
-  const summary = data.data;
-  const displayData = filtered ?? summary;
-
-  const handleFilter = () => {
-    if (!fromDate && !toDate) {
-      setFiltered(null);
-      return;
-    }
-    // Re-compute summary from filtered mock transactions
-    const filteredStockIn = mockStockIn.filter((r) => {
-      if (fromDate && r.date < fromDate) return false;
-      if (toDate && r.date > toDate) return false;
-      return true;
-    });
-    const filteredStockOut = mockStockOut.filter((r) => {
-      if (fromDate && r.date < fromDate) return false;
-      if (toDate && r.date > toDate) return false;
-      return true;
-    });
-    const filteredWastage = mockWastage.filter((r) => {
-      if (fromDate && r.date < fromDate) return false;
-      if (toDate && r.date > toDate) return false;
-      return true;
-    });
-    setFiltered(
-      computeSummary(
-        mockProducts,
-        filteredStockIn,
-        filteredStockOut,
-        filteredWastage,
-      ),
-    );
+  const handleApply = () => {
+    setFromDate(pendingFrom);
+    setToDate(pendingTo);
   };
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
+    setPendingFrom("");
+    setPendingTo("");
     setFromDate("");
     setToDate("");
-    setFiltered(null);
-  };
+  }, []);
+
+  useAdminClearFiltersShortcut(handleClear);
 
   return (
-    <div className="space-y-6 min-h-screen bg-(--brand-cream) px-4 py-8 sm:px-6 lg:px-8 mx-auto max-w-7xl">
-      <InventoryPageHeader
-        title="Inventory Summary"
-        description="Overview of stock levels and valuations across all products."
-        // action={
-        //   <Button
-        //     variant="outline"
-        //     className="border-[var(--brand-green)]/30 text-[var(--brand-green)] gap-2 font-[var(--font-dm-sans)]"
-        //   >
-        //     <Download size={15} /> Export
-        //   </Button>
-        // }
-      />
-
-      {/* Date filter */}
-      {/* <div className="flex flex-wrap items-end gap-3 p-4 rounded-lg border border-[var(--brand-green)]/15 bg-[var(--brand-green)]/3">
-        <div className="space-y-1">
-          <Label className="font-[var(--font-dm-sans)] text-sm text-[var(--brand-ink)]">
-            From (BS)
-          </Label>
-          <Input
-            placeholder="2081-01-01"
-            value={fromDate}
-            onChange={(e) => setFromDate(e.target.value)}
-            className="w-36 border-[var(--brand-green)]/30 focus-visible:ring-[var(--brand-green)] bg-white"
-          />
+    <AdminPageLayout
+      title="Inventory Summary"
+      description="Overview of stock levels and valuations across all products."
+      maxWidth="wide"
+    >
+      <InventoryFilterShell
+        title="Date Range (BS)"
+        hasActiveFilters={hasActiveFilter}
+        onClear={handleClear}
+      >
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-1.5">
+            <span className={inventoryLabelClass}>From</span>
+            <div className="relative w-full">
+              <CalendarDays
+                className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-[rgba(47,78,64,0.35)]"
+                strokeWidth={1.75}
+              />
+              <NepaliDatePicker
+                inputClassName={cn(inputCls, "rounded-none pl-9")}
+                value={pendingFrom}
+                onChange={(v: string) => setPendingFrom(v)}
+                options={{ calenderLocale: "en", valueLocale: "en" }}
+              />
+            </div>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <span className={inventoryLabelClass}>To</span>
+            <div className="relative w-full">
+              <CalendarDays
+                className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-[rgba(47,78,64,0.35)]"
+                strokeWidth={1.75}
+              />
+              <NepaliDatePicker
+                inputClassName={cn(inputCls, "rounded-none pl-9")}
+                value={pendingTo}
+                onChange={(v: string) => setPendingTo(v)}
+                options={{ calenderLocale: "en", valueLocale: "en" }}
+              />
+            </div>
+          </div>
         </div>
-        <div className="space-y-1">
-          <Label className="font-[var(--font-dm-sans)] text-sm text-[var(--brand-ink)]">
-            To (BS)
-          </Label>
-          <Input
-            placeholder="2081-12-30"
-            value={toDate}
-            onChange={(e) => setToDate(e.target.value)}
-            className="w-36 border-[var(--brand-green)]/30 focus-visible:ring-[var(--brand-green)] bg-white"
-          />
-        </div>
-        <div className="flex gap-2">
-          <Button
-            onClick={handleFilter}
-            className="bg-[var(--brand-green)] hover:bg-[var(--brand-green-2)] text-white font-[var(--font-dm-sans)] gap-2"
+        {hasPendingChange ? (
+          <button
+            type="button"
+            onClick={handleApply}
+            className={cn(adminPrimaryButtonClass, "mt-4")}
           >
-            <Filter size={14} /> Apply
-          </Button>
-          {filtered && (
-            <Button
-              variant="outline"
-              onClick={handleClear}
-              className="border-[var(--brand-green)]/30 text-[var(--brand-ink)]"
-            >
-              Clear
-            </Button>
-          )}
-        </div>
-      </div> */}
+            Apply dates
+          </button>
+        ) : null}
+      </InventoryFilterShell>
 
-      <SummaryTable data={summary} />
-    </div>
+      {isPending || !data ? (
+        <SummaryLoading />
+      ) : isError ? (
+        <SummaryError error={error} reset={refetch} />
+      ) : !data.success ? (
+        <SummaryError
+          error={{ ...data, message: "Failed to process request" }}
+          reset={refetch}
+        />
+      ) : (
+        <SummaryTable data={data.data} />
+      )}
+    </AdminPageLayout>
   );
 }

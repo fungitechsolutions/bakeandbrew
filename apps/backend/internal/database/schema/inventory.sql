@@ -12,11 +12,12 @@ CREATE INDEX idx_products_name ON products(name);
 CREATE TABLE stock_in (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     product_id UUID NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
-    date TEXT NOT NULL,              -- BS date string e.g. "2081-01-15"
-    invoice_no TEXT,                 -- supplier invoice/bill no, nullable
+    date TEXT NOT NULL,
+    invoice_no TEXT,                 
     qty INTEGER NOT NULL CHECK (qty > 0),
     rate INTEGER NOT NULL CHECK (rate > 0),
     note TEXT,
+    supplier_id UUID NOT NULL REFERENCES suppliers(id) ON DELETE RESTRICT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -27,8 +28,8 @@ CREATE INDEX idx_stock_in_date ON stock_in(date);
 CREATE TABLE stock_out (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     product_id UUID NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
-    date TEXT NOT NULL,              -- BS date string
-    bill_no TEXT,                    -- physical bill no for tracing back to student, nullable
+    date TEXT NOT NULL,              
+    bill_no TEXT,                
     qty INTEGER NOT NULL CHECK (qty > 0),
     rate INTEGER NOT NULL CHECK (rate > 0),
     note TEXT,

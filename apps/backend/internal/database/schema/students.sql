@@ -6,7 +6,7 @@ CREATE TABLE students (
     serial_no      INTEGER NOT NULL,
     full_name      VARCHAR NOT NULL,
     dob_ad         DATE NOT NULL,
-    dob_bs VARCHAR(10) NOT NULL,
+    dob_bs         VARCHAR(10) NOT NULL,
     gender         VARCHAR NOT NULL,
     phone          VARCHAR NOT NULL UNIQUE,
     address        TEXT NOT NULL,
@@ -21,6 +21,7 @@ CREATE TABLE students (
     batch          TEXT,
     rejection_reason TEXT,
     updated_at TIMESTAMPTZ NOT NULL,
+    is_active      BOOLEAN NOT NULL DEFAULT TRUE,
     created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT unique_serial_per_fiscal_year UNIQUE (fiscal_year, serial_no)
 );

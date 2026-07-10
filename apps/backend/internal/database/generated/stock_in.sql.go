@@ -12,23 +12,25 @@ import (
 )
 
 const createStockIn = `-- name: CreateStockIn :one
-INSERT INTO stock_in (product_id, date, invoice_no, qty, rate, note)
-VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, product_id, date, invoice_no, qty, rate, note, created_at
+INSERT INTO stock_in (product_id, supplier_id, date, invoice_no, qty, rate, note)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING id, product_id, date, invoice_no, qty, rate, note, supplier_id, created_at
 `
 
 type CreateStockInParams struct {
-	ProductID pgtype.UUID `json:"productId"`
-	Date      string      `json:"date"`
-	InvoiceNo pgtype.Text `json:"invoiceNo"`
-	Qty       int32       `json:"qty"`
-	Rate      int32       `json:"rate"`
-	Note      pgtype.Text `json:"note"`
+	ProductID  pgtype.UUID `json:"productId"`
+	SupplierID pgtype.UUID `json:"supplierId"`
+	Date       string      `json:"date"`
+	InvoiceNo  pgtype.Text `json:"invoiceNo"`
+	Qty        int32       `json:"qty"`
+	Rate       int32       `json:"rate"`
+	Note       pgtype.Text `json:"note"`
 }
 
 func (q *Queries) CreateStockIn(ctx context.Context, arg CreateStockInParams) (StockIn, error) {
 	row := q.db.QueryRow(ctx, createStockIn,
 		arg.ProductID,
+		arg.SupplierID,
 		arg.Date,
 		arg.InvoiceNo,
 		arg.Qty,
@@ -44,6 +46,7 @@ func (q *Queries) CreateStockIn(ctx context.Context, arg CreateStockInParams) (S
 		&i.Qty,
 		&i.Rate,
 		&i.Note,
+		&i.SupplierID,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -61,25 +64,29 @@ func (q *Queries) DeleteStockIn(ctx context.Context, id pgtype.UUID) error {
 
 const getStockInByID = `-- name: GetStockInByID :one
 SELECT
-    si.id, si.product_id, si.date, si.invoice_no, si.qty, si.rate, si.note, si.created_at,
+    si.id, si.product_id, si.date, si.invoice_no, si.qty, si.rate, si.note, si.supplier_id, si.created_at,
     p.name AS product_name,
-    p.unit AS product_unit
+    p.unit AS product_unit,
+    s.company_name AS supplier_name
 FROM stock_in si
 JOIN products p ON p.id = si.product_id
+JOIN suppliers s ON s.id = si.supplier_id
 WHERE si.id = $1
 `
 
 type GetStockInByIDRow struct {
-	ID          pgtype.UUID        `json:"id"`
-	ProductID   pgtype.UUID        `json:"productId"`
-	Date        string             `json:"date"`
-	InvoiceNo   pgtype.Text        `json:"invoiceNo"`
-	Qty         int32              `json:"qty"`
-	Rate        int32              `json:"rate"`
-	Note        pgtype.Text        `json:"note"`
-	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
-	ProductName string             `json:"productName"`
-	ProductUnit string             `json:"productUnit"`
+	ID           pgtype.UUID        `json:"id"`
+	ProductID    pgtype.UUID        `json:"productId"`
+	Date         string             `json:"date"`
+	InvoiceNo    pgtype.Text        `json:"invoiceNo"`
+	Qty          int32              `json:"qty"`
+	Rate         int32              `json:"rate"`
+	Note         pgtype.Text        `json:"note"`
+	SupplierID   pgtype.UUID        `json:"supplierId"`
+	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
+	ProductName  string             `json:"productName"`
+	ProductUnit  string             `json:"productUnit"`
+	SupplierName string             `json:"supplierName"`
 }
 
 func (q *Queries) GetStockInByID(ctx context.Context, id pgtype.UUID) (GetStockInByIDRow, error) {
@@ -93,19 +100,38 @@ func (q *Queries) GetStockInByID(ctx context.Context, id pgtype.UUID) (GetStockI
 		&i.Qty,
 		&i.Rate,
 		&i.Note,
+		&i.SupplierID,
 		&i.CreatedAt,
 		&i.ProductName,
 		&i.ProductUnit,
+		&i.SupplierName,
 	)
 	return i, err
 }
 
 const getStockInCount = `-- name: GetStockInCount :one
-SELECT COUNT(*) FROM stock_in
+SELECT COUNT(*)
+FROM stock_in si
+JOIN products p ON p.id = si.product_id
+JOIN suppliers s ON s.id = si.supplier_id
+WHERE
+    ($1::TEXT IS NULL OR (
+        p.name ILIKE '%' || $1::TEXT || '%'
+        OR s.company_name ILIKE '%' || $1::TEXT || '%'
+        OR si.invoice_no ILIKE '%' || $1::TEXT || '%'
+    ))
+    AND ($2::TEXT IS NULL OR si.date >= $2::TEXT)
+    AND ($3::TEXT IS NULL OR si.date <= $3::TEXT)
 `
 
-func (q *Queries) GetStockInCount(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, getStockInCount)
+type GetStockInCountParams struct {
+	Search pgtype.Text `json:"search"`
+	From   pgtype.Text `json:"from"`
+	To     pgtype.Text `json:"to"`
+}
+
+func (q *Queries) GetStockInCount(ctx context.Context, arg GetStockInCountParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getStockInCount, arg.Search, arg.From, arg.To)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -113,35 +139,61 @@ func (q *Queries) GetStockInCount(ctx context.Context) (int64, error) {
 
 const listStockIn = `-- name: ListStockIn :many
 SELECT
-    si.id, si.product_id, si.date, si.invoice_no, si.qty, si.rate, si.note, si.created_at,
+    si.id, si.product_id, si.date, si.invoice_no, si.qty, si.rate, si.note, si.supplier_id, si.created_at,
     p.name AS product_name,
-    p.unit AS product_unit
+    p.unit AS product_unit,
+    s.company_name AS supplier_name
 FROM stock_in si
 JOIN products p ON p.id = si.product_id
-ORDER BY si.created_at DESC
+JOIN suppliers s ON s.id = si.supplier_id
+WHERE
+    ($3::TEXT IS NULL OR (
+        p.name ILIKE '%' || $3::TEXT || '%'
+        OR s.company_name ILIKE '%' || $3::TEXT || '%'
+        OR si.invoice_no ILIKE '%' || $3::TEXT || '%'
+    ))
+    AND ($4::TEXT IS NULL OR si.date >= $4::TEXT)
+    AND ($5::TEXT IS NULL OR si.date <= $5::TEXT)
+ORDER BY
+    CASE WHEN $6::TEXT = 'asc' THEN si.rate END ASC,
+    CASE WHEN $6::TEXT = 'desc' THEN si.rate END DESC,
+    si.created_at DESC
 LIMIT $1 OFFSET $2
 `
 
 type ListStockInParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+	Limit      int32       `json:"limit"`
+	Offset     int32       `json:"offset"`
+	Search     pgtype.Text `json:"search"`
+	From       pgtype.Text `json:"from"`
+	To         pgtype.Text `json:"to"`
+	SortByRate pgtype.Text `json:"sortByRate"`
 }
 
 type ListStockInRow struct {
-	ID          pgtype.UUID        `json:"id"`
-	ProductID   pgtype.UUID        `json:"productId"`
-	Date        string             `json:"date"`
-	InvoiceNo   pgtype.Text        `json:"invoiceNo"`
-	Qty         int32              `json:"qty"`
-	Rate        int32              `json:"rate"`
-	Note        pgtype.Text        `json:"note"`
-	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
-	ProductName string             `json:"productName"`
-	ProductUnit string             `json:"productUnit"`
+	ID           pgtype.UUID        `json:"id"`
+	ProductID    pgtype.UUID        `json:"productId"`
+	Date         string             `json:"date"`
+	InvoiceNo    pgtype.Text        `json:"invoiceNo"`
+	Qty          int32              `json:"qty"`
+	Rate         int32              `json:"rate"`
+	Note         pgtype.Text        `json:"note"`
+	SupplierID   pgtype.UUID        `json:"supplierId"`
+	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
+	ProductName  string             `json:"productName"`
+	ProductUnit  string             `json:"productUnit"`
+	SupplierName string             `json:"supplierName"`
 }
 
 func (q *Queries) ListStockIn(ctx context.Context, arg ListStockInParams) ([]ListStockInRow, error) {
-	rows, err := q.db.Query(ctx, listStockIn, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listStockIn,
+		arg.Limit,
+		arg.Offset,
+		arg.Search,
+		arg.From,
+		arg.To,
+		arg.SortByRate,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -157,9 +209,11 @@ func (q *Queries) ListStockIn(ctx context.Context, arg ListStockInParams) ([]Lis
 			&i.Qty,
 			&i.Rate,
 			&i.Note,
+			&i.SupplierID,
 			&i.CreatedAt,
 			&i.ProductName,
 			&i.ProductUnit,
+			&i.SupplierName,
 		); err != nil {
 			return nil, err
 		}
@@ -173,11 +227,13 @@ func (q *Queries) ListStockIn(ctx context.Context, arg ListStockInParams) ([]Lis
 
 const listStockInByDateRange = `-- name: ListStockInByDateRange :many
 SELECT
-    si.id, si.product_id, si.date, si.invoice_no, si.qty, si.rate, si.note, si.created_at,
+    si.id, si.product_id, si.date, si.invoice_no, si.qty, si.rate, si.note, si.supplier_id, si.created_at,
     p.name AS product_name,
-    p.unit AS product_unit
+    p.unit AS product_unit,
+    s.company_name AS supplier_name
 FROM stock_in si
 JOIN products p ON p.id = si.product_id
+JOIN suppliers s ON s.id = si.supplier_id
 WHERE si.date >= $1 AND si.date <= $2
 ORDER BY si.date ASC
 `
@@ -188,16 +244,18 @@ type ListStockInByDateRangeParams struct {
 }
 
 type ListStockInByDateRangeRow struct {
-	ID          pgtype.UUID        `json:"id"`
-	ProductID   pgtype.UUID        `json:"productId"`
-	Date        string             `json:"date"`
-	InvoiceNo   pgtype.Text        `json:"invoiceNo"`
-	Qty         int32              `json:"qty"`
-	Rate        int32              `json:"rate"`
-	Note        pgtype.Text        `json:"note"`
-	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
-	ProductName string             `json:"productName"`
-	ProductUnit string             `json:"productUnit"`
+	ID           pgtype.UUID        `json:"id"`
+	ProductID    pgtype.UUID        `json:"productId"`
+	Date         string             `json:"date"`
+	InvoiceNo    pgtype.Text        `json:"invoiceNo"`
+	Qty          int32              `json:"qty"`
+	Rate         int32              `json:"rate"`
+	Note         pgtype.Text        `json:"note"`
+	SupplierID   pgtype.UUID        `json:"supplierId"`
+	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
+	ProductName  string             `json:"productName"`
+	ProductUnit  string             `json:"productUnit"`
+	SupplierName string             `json:"supplierName"`
 }
 
 func (q *Queries) ListStockInByDateRange(ctx context.Context, arg ListStockInByDateRangeParams) ([]ListStockInByDateRangeRow, error) {
@@ -217,9 +275,11 @@ func (q *Queries) ListStockInByDateRange(ctx context.Context, arg ListStockInByD
 			&i.Qty,
 			&i.Rate,
 			&i.Note,
+			&i.SupplierID,
 			&i.CreatedAt,
 			&i.ProductName,
 			&i.ProductUnit,
+			&i.SupplierName,
 		); err != nil {
 			return nil, err
 		}
@@ -233,26 +293,30 @@ func (q *Queries) ListStockInByDateRange(ctx context.Context, arg ListStockInByD
 
 const listStockInByProduct = `-- name: ListStockInByProduct :many
 SELECT
-    si.id, si.product_id, si.date, si.invoice_no, si.qty, si.rate, si.note, si.created_at,
+    si.id, si.product_id, si.date, si.invoice_no, si.qty, si.rate, si.note, si.supplier_id, si.created_at,
     p.name AS product_name,
-    p.unit AS product_unit
+    p.unit AS product_unit,
+    s.company_name AS supplier_name
 FROM stock_in si
 JOIN products p ON p.id = si.product_id
+JOIN suppliers s ON s.id = si.supplier_id
 WHERE si.product_id = $1
 ORDER BY si.created_at DESC
 `
 
 type ListStockInByProductRow struct {
-	ID          pgtype.UUID        `json:"id"`
-	ProductID   pgtype.UUID        `json:"productId"`
-	Date        string             `json:"date"`
-	InvoiceNo   pgtype.Text        `json:"invoiceNo"`
-	Qty         int32              `json:"qty"`
-	Rate        int32              `json:"rate"`
-	Note        pgtype.Text        `json:"note"`
-	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
-	ProductName string             `json:"productName"`
-	ProductUnit string             `json:"productUnit"`
+	ID           pgtype.UUID        `json:"id"`
+	ProductID    pgtype.UUID        `json:"productId"`
+	Date         string             `json:"date"`
+	InvoiceNo    pgtype.Text        `json:"invoiceNo"`
+	Qty          int32              `json:"qty"`
+	Rate         int32              `json:"rate"`
+	Note         pgtype.Text        `json:"note"`
+	SupplierID   pgtype.UUID        `json:"supplierId"`
+	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
+	ProductName  string             `json:"productName"`
+	ProductUnit  string             `json:"productUnit"`
+	SupplierName string             `json:"supplierName"`
 }
 
 func (q *Queries) ListStockInByProduct(ctx context.Context, productID pgtype.UUID) ([]ListStockInByProductRow, error) {
@@ -272,9 +336,72 @@ func (q *Queries) ListStockInByProduct(ctx context.Context, productID pgtype.UUI
 			&i.Qty,
 			&i.Rate,
 			&i.Note,
+			&i.SupplierID,
 			&i.CreatedAt,
 			&i.ProductName,
 			&i.ProductUnit,
+			&i.SupplierName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listStockInBySupplier = `-- name: ListStockInBySupplier :many
+SELECT
+    si.id, si.product_id, si.date, si.invoice_no, si.qty, si.rate, si.note, si.supplier_id, si.created_at,
+    p.name AS product_name,
+    p.unit AS product_unit,
+    s.company_name AS supplier_name
+FROM stock_in si
+JOIN products p ON p.id = si.product_id
+JOIN suppliers s ON s.id = si.supplier_id
+WHERE si.supplier_id = $1
+ORDER BY si.created_at DESC
+`
+
+type ListStockInBySupplierRow struct {
+	ID           pgtype.UUID        `json:"id"`
+	ProductID    pgtype.UUID        `json:"productId"`
+	Date         string             `json:"date"`
+	InvoiceNo    pgtype.Text        `json:"invoiceNo"`
+	Qty          int32              `json:"qty"`
+	Rate         int32              `json:"rate"`
+	Note         pgtype.Text        `json:"note"`
+	SupplierID   pgtype.UUID        `json:"supplierId"`
+	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
+	ProductName  string             `json:"productName"`
+	ProductUnit  string             `json:"productUnit"`
+	SupplierName string             `json:"supplierName"`
+}
+
+func (q *Queries) ListStockInBySupplier(ctx context.Context, supplierID pgtype.UUID) ([]ListStockInBySupplierRow, error) {
+	rows, err := q.db.Query(ctx, listStockInBySupplier, supplierID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListStockInBySupplierRow
+	for rows.Next() {
+		var i ListStockInBySupplierRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProductID,
+			&i.Date,
+			&i.InvoiceNo,
+			&i.Qty,
+			&i.Rate,
+			&i.Note,
+			&i.SupplierID,
+			&i.CreatedAt,
+			&i.ProductName,
+			&i.ProductUnit,
+			&i.SupplierName,
 		); err != nil {
 			return nil, err
 		}
@@ -288,25 +415,27 @@ func (q *Queries) ListStockInByProduct(ctx context.Context, productID pgtype.UUI
 
 const updateStockIn = `-- name: UpdateStockIn :one
 UPDATE stock_in
-SET product_id = $2, date = $3, invoice_no = $4, qty = $5, rate = $6, note = $7
+SET product_id = $2, supplier_id = $3, date = $4, invoice_no = $5, qty = $6, rate = $7, note = $8
 WHERE id = $1
-RETURNING id, product_id, date, invoice_no, qty, rate, note, created_at
+RETURNING id, product_id, date, invoice_no, qty, rate, note, supplier_id, created_at
 `
 
 type UpdateStockInParams struct {
-	ID        pgtype.UUID `json:"id"`
-	ProductID pgtype.UUID `json:"productId"`
-	Date      string      `json:"date"`
-	InvoiceNo pgtype.Text `json:"invoiceNo"`
-	Qty       int32       `json:"qty"`
-	Rate      int32       `json:"rate"`
-	Note      pgtype.Text `json:"note"`
+	ID         pgtype.UUID `json:"id"`
+	ProductID  pgtype.UUID `json:"productId"`
+	SupplierID pgtype.UUID `json:"supplierId"`
+	Date       string      `json:"date"`
+	InvoiceNo  pgtype.Text `json:"invoiceNo"`
+	Qty        int32       `json:"qty"`
+	Rate       int32       `json:"rate"`
+	Note       pgtype.Text `json:"note"`
 }
 
 func (q *Queries) UpdateStockIn(ctx context.Context, arg UpdateStockInParams) (StockIn, error) {
 	row := q.db.QueryRow(ctx, updateStockIn,
 		arg.ID,
 		arg.ProductID,
+		arg.SupplierID,
 		arg.Date,
 		arg.InvoiceNo,
 		arg.Qty,
@@ -322,6 +451,7 @@ func (q *Queries) UpdateStockIn(ctx context.Context, arg UpdateStockInParams) (S
 		&i.Qty,
 		&i.Rate,
 		&i.Note,
+		&i.SupplierID,
 		&i.CreatedAt,
 	)
 	return i, err

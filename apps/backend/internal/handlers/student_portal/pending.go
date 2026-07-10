@@ -2,7 +2,10 @@ package studentPortal
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
@@ -12,6 +15,8 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
 
+const handlerGetStudentPendingOverview = "GetStudentPendingOverview"
+
 func GetStudentPendingOverview(queries repository.StudentPortal) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
@@ -19,6 +24,9 @@ func GetStudentPendingOverview(queries repository.StudentPortal) gin.HandlerFunc
 		studentIDFromContext := c.MustGet("userID").(string)
 		studentID, err := utils.ConvertToUUID(studentIDFromContext)
 		if err != nil {
+			applog.Warn(c, handlerGetStudentPendingOverview, "invalid request",
+				applog.WithStudentID(studentIDFromContext),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid ID format",
@@ -30,6 +38,9 @@ func GetStudentPendingOverview(queries repository.StudentPortal) gin.HandlerFunc
 		overview, err := queries.GetStudentPendingOverview(ctx, studentID)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
+				applog.Warn(c, handlerGetStudentPendingOverview, "resource not found",
+					applog.WithStudentID(studentIDFromContext),
+					slog.Any(applog.AttrError, err))
 				c.JSON(http.StatusNotFound, types.APIResponse{
 					Success: false,
 					Message: "Student not found",
@@ -37,6 +48,8 @@ func GetStudentPendingOverview(queries repository.StudentPortal) gin.HandlerFunc
 				})
 				return
 			}
+			applog.Error(c, handlerGetStudentPendingOverview, "failed to process request",
+				applog.WithStudentID(studentIDFromContext))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

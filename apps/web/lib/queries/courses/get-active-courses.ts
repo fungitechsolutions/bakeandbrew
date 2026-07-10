@@ -1,8 +1,8 @@
-import { env } from "@/utils/env";
 import { CoursesList } from "@repo/types";
+import { getApiUrl } from "@/lib/api-url";
 
 export async function getActiveCourses() {
-  const res = await fetch(`${env.NEXT_PUBLIC_API_URL}/api/v1/courses`, {
+  const res = await fetch(`${getApiUrl()}/api/v1/courses`, {
     method: "GET",
   });
 

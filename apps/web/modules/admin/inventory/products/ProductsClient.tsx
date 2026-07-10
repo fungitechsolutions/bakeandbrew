@@ -1,11 +1,27 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { CalendarIcon, Plus, Search, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-
-import { InventoryPageHeader } from "../shared/InventoryPageHeader";
+import { CalendarDays, Plus, Search } from "lucide-react";
+import { useDebounce } from "@/modules/admin/analytics/hooks/useDebounce";
+import { NepaliDatePicker } from "nepali-datepicker-reactjs";
+import { inputCls } from "../../students/detail/shared/utils";
+import { cn } from "@/lib/utils";
+import { AdminPageLayout } from "@/components/admin/admin-page-layout";
+import {
+  useAdminEscapeShortcut,
+  useAdminClearFiltersShortcut,
+  useAdminFocusSearchShortcut,
+  useAdminNewShortcut,
+  useAdminRefreshShortcut,
+} from "@/components/admin/admin-shortcut-provider";
+import { useAdminQueryRefresh } from "@/hooks/useAdminQueryRefresh";
+import {
+  adminInputClass,
+  adminPrimaryButtonClass,
+} from "@/components/admin/admin-styles";
+import { InventoryFilterShell } from "../shared/InventoryFilterShell";
+import { inventoryLabelClass, inventoryTableWrapClass } from "../shared/inventory-styles";
 import { ConfirmDialog } from "../shared/ConfirmDialog";
 import { Pagination } from "../shared/Pagination";
 import { ProductsTable } from "./ProductsTable";
@@ -24,8 +40,8 @@ import ProductsLoading from "./ProductsLoading";
 import { ProductsError } from "./ProductsError";
 import api from "@/lib/axios";
 import axios from "axios";
-import { Input } from "@/components/ui/input";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { BSToAD } from "bikram-sambat-js";
 
 type Product = Extract<GetProductResponse, { success: true }>["data"][number];
 
@@ -35,6 +51,7 @@ export function ProductsClient() {
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [page, setPage] = useState(1);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -49,6 +66,7 @@ export function ProductsClient() {
   );
   const [pendingTo, setPendingTo] = useState(searchParams.get("to") ?? "");
   const queryClient = useQueryClient();
+  const debouncedSearch = useDebounce(search, 400);
 
   const updateParams = useCallback(
     (updates: Record<string, string>) => {
@@ -57,24 +75,39 @@ export function ProductsClient() {
         if (v) params.set(k, v);
         else params.delete(k);
       });
-      params.delete("page"); // reset page on filter change
+      params.delete("page");
       router.push(`${pathname}?${params.toString()}`);
     },
     [searchParams, pathname, router],
   );
 
+  useEffect(() => {
+    updateParams({ search: debouncedSearch.trim() });
+  }, [debouncedSearch]);
+
   const { data, isPending, isError, refetch, error } = useQuery({
-    queryKey: ["admin-inventory-products", page],
+    queryKey: [
+      "admin-inventory-products",
+      page,
+      debouncedSearch.trim(),
+      dateFrom,
+      dateTo,
+    ],
     queryFn: async () => {
+      const params = new URLSearchParams();
+      params.set("page", page.toString());
+      const trimmedSearch = debouncedSearch.trim();
+      if (trimmedSearch) params.set("name", trimmedSearch);
+      if (dateFrom) params.set("from", BSToAD(dateFrom));
+      if (dateTo) params.set("to", BSToAD(dateTo));
       const res = await api.get<GetProductResponse>(
-        `/admin/inventory/products?page=${page}`,
+        `/admin/inventory/products?${params.toString()}`,
       );
       return res.data;
     },
-    staleTime: 30 * 1000,
-    gcTime: 5 * 60 * 1000,
+    staleTime: 10 * 1000 * 60,
+    gcTime: 20 * 60 * 1000,
   });
-
   const createProduct = useMutation({
     mutationFn: async (data: CreateProductInput) => {
       try {
@@ -95,6 +128,7 @@ export function ProductsClient() {
       });
       const previousProducts = queryClient.getQueryData<GetProductResponse>([
         "admin-inventory-products",
+        page,
       ]);
       const optimisticProduct = {
         id: crypto.randomUUID(),
@@ -104,7 +138,7 @@ export function ProductsClient() {
       };
 
       queryClient.setQueryData<GetProductResponse>(
-        ["admin-inventory-products"],
+        ["admin-inventory-products", page],
         (old) => {
           if (!old || !old.success) return old;
           return {
@@ -168,6 +202,7 @@ export function ProductsClient() {
       });
       const previousProducts = queryClient.getQueryData<GetProductResponse>([
         "admin-inventory-products",
+        page,
       ]);
       const optimisticProduct = {
         id: data.id,
@@ -177,7 +212,7 @@ export function ProductsClient() {
       };
 
       queryClient.setQueryData<GetProductResponse>(
-        ["admin-inventory-products"],
+        ["admin-inventory-products", page],
         (old) => {
           if (!old || !old.success) return old;
           return {
@@ -252,16 +287,41 @@ export function ProductsClient() {
       queryClient.invalidateQueries({ queryKey: ["admin-inventory-products"] });
     },
   });
-  if (isPending) return <ProductsLoading />;
-  if (isError) return <ProductsError error={error} reset={refetch} />;
-  if (!data || !data.success)
-    return <ProductsError error={data} reset={refetch} />;
 
-  const products = data.data;
-
-  const handleCreate = () => {
+  const openCreate = useCallback(() => {
     setEditingProduct(null);
     setDialogOpen(true);
+  }, []);
+
+  const toggleCreate = useCallback(() => {
+    if (dialogOpen && !editingProduct) setDialogOpen(false);
+    else if (!dialogOpen) openCreate();
+  }, [dialogOpen, editingProduct, openCreate]);
+
+  const focusSearch = useCallback(() => searchInputRef.current?.focus(), []);
+
+  const handleClear = useCallback(() => {
+    setSearch("");
+    setPendingFrom("");
+    setPendingTo("");
+    setDateFrom("");
+    setDateTo("");
+    router.push(pathname);
+  }, [pathname, router]);
+
+  useAdminNewShortcut(toggleCreate);
+  useAdminFocusSearchShortcut(focusSearch);
+  useAdminRefreshShortcut(useAdminQueryRefresh(refetch));
+  useAdminClearFiltersShortcut(handleClear);
+  useAdminEscapeShortcut(
+    useCallback(() => {
+      if (deletingProduct) setDeletingProduct(null);
+      else if (dialogOpen) setDialogOpen(false);
+    }, [deletingProduct, dialogOpen]),
+  );
+
+  const handleCreate = () => {
+    openCreate();
   };
 
   const handleEdit = (product: Product) => {
@@ -287,8 +347,9 @@ export function ProductsClient() {
   };
 
   const handleSearchChange = (value: string) => {
+    if (value.startsWith(" ")) return;
     setSearch(value);
-    updateParams({ search: value });
+    setPage(1);
   };
 
   const handleApplyDates = () => {
@@ -297,142 +358,99 @@ export function ProductsClient() {
     updateParams({ from: pendingFrom, to: pendingTo });
   };
 
-  const handleClear = () => {
-    setSearch("");
-    setPendingFrom("");
-    setPendingTo("");
-    setDateFrom("");
-    setDateTo("");
-    router.push(pathname);
-  };
-
-  const filtered = products.filter((p) => {
-    const matchesSearch =
-      !search || p.name.toLowerCase().includes(search.toLowerCase());
-    const created = p.createdAt ? new Date(p.createdAt) : null;
-    const matchesFrom = !dateFrom || (created && created >= new Date(dateFrom));
-    const matchesTo =
-      !dateTo || (created && created <= new Date(dateTo + "T23:59:59"));
-    return matchesSearch && matchesFrom && matchesTo;
-  });
-
-  const filteredPaginated = filtered.slice(
-    (page - 1) * data.meta.limit,
-    page * data.meta.limit,
-  );
-
   const hasActiveFilters = !!search || !!dateFrom || !!dateTo;
   const hasPendingDateChange = pendingFrom !== dateFrom || pendingTo !== dateTo;
-
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-8xl mx-auto space-y-4">
-      <InventoryPageHeader
-        title="Products"
-        description="Manage your product catalogue — add, edit, or remove products."
-        action={
-          <Button
-            onClick={handleCreate}
-            className="bg-(--brand-green) hover:bg-(--brand-green-2) text-white gap-2"
-            style={{ fontFamily: "var(--font-dm-sans)" }}
-          >
-            <Plus className="h-4 w-4" />
-            Add Product
-          </Button>
-        }
-      />
-
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        {/* Search */}
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-          <Input
-            placeholder="Search by name"
-            value={search}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-9 w-full"
-            style={{ fontFamily: "var(--font-dm-sans)" }}
-          />
-        </div>
-
-        {/* Date range + Apply */}
-        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-          <div className="relative">
-            <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <Input
-              type="date"
-              value={pendingFrom}
-              onChange={(e) => setPendingFrom(e.target.value)}
-              className="pl-9 w-36"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            />
-          </div>
-          <span className="text-muted-foreground text-sm shrink-0">to</span>
-          <div className="relative">
-            <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <Input
-              type="date"
-              value={pendingTo}
-              onChange={(e) => setPendingTo(e.target.value)}
-              className="pl-9 w-36"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            />
+    <AdminPageLayout
+      title="Products"
+      description="Manage your product catalogue — add, edit, or remove products."
+      maxWidth="wide"
+      action={
+        <button type="button" onClick={handleCreate} className={adminPrimaryButtonClass}>
+          <Plus className="h-4 w-4" />
+          Add Product
+        </button>
+      }
+    >
+      <InventoryFilterShell
+        hasActiveFilters={hasActiveFilters}
+        onClear={handleClear}
+      >
+        <div className="grid grid-cols-1 items-end gap-4 md:grid-cols-12">
+          <div className="flex min-w-0 flex-col gap-1.5 md:col-span-5">
+            <label className={inventoryLabelClass} htmlFor="product-search">
+              Name
+            </label>
+            <div className="relative w-full">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[rgba(47,78,64,0.35)]" />
+              <input
+                ref={searchInputRef}
+                id="product-search"
+                placeholder="Search by product name…"
+                value={search}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className={cn(adminInputClass, "rounded-none pl-9 normal-case tracking-normal")}
+              />
+            </div>
           </div>
 
-          {/* Apply — only shows when dates have changed */}
-          {hasPendingDateChange && (
-            <Button
-              size="sm"
-              onClick={handleApplyDates}
-              className="bg-(--brand-green) hover:bg-(--brand-green-2) text-white shrink-0"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            >
-              Apply
-            </Button>
-          )}
-
-          {hasActiveFilters && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClear}
-              className="text-muted-foreground hover:text-foreground gap-1 shrink-0"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            >
-              <X className="h-3.5 w-3.5" />
-              Clear
-            </Button>
-          )}
+          <div className="flex min-w-0 flex-col gap-1.5 md:col-span-7">
+            <span className={inventoryLabelClass}>Created date range (BS)</span>
+            <div className="flex w-full flex-wrap items-center gap-2">
+              <div className="relative min-w-[9rem] flex-1">
+                <CalendarDays className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-[rgba(47,78,64,0.35)]" strokeWidth={1.75} />
+                <NepaliDatePicker
+                  inputClassName={cn(inputCls, "rounded-none pl-9")}
+                  value={pendingFrom}
+                  onChange={(v: string) => setPendingFrom(v)}
+                  options={{ calenderLocale: "en", valueLocale: "en" }}
+                />
+              </div>
+              <span className="shrink-0 text-sm text-[rgba(47,78,64,0.45)]">to</span>
+              <div className="relative min-w-[9rem] flex-1">
+                <CalendarDays className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-[rgba(47,78,64,0.35)]" strokeWidth={1.75} />
+                <NepaliDatePicker
+                  inputClassName={cn(inputCls, "rounded-none pl-9")}
+                  value={pendingTo}
+                  onChange={(v: string) => setPendingTo(v)}
+                  options={{ calenderLocale: "en", valueLocale: "en" }}
+                />
+              </div>
+              {hasPendingDateChange ? (
+                <button type="button" onClick={handleApplyDates} className={adminPrimaryButtonClass}>
+                  Apply dates
+                </button>
+              ) : null}
+            </div>
+          </div>
         </div>
-      </div>
+      </InventoryFilterShell>
 
-      {/* Result count when filtering */}
-      {hasActiveFilters && (
-        <p
-          className="text-sm text-muted-foreground"
-          style={{ fontFamily: "var(--font-dm-sans)" }}
-        >
-          {filtered.length === 0
-            ? "No products match your filters."
-            : `Showing ${filtered.length} of ${products.length} product${products.length !== 1 ? "s" : ""}`}
-        </p>
-      )}
-
-      {products.length === 0 ? (
-        <EmptyState message="No products yet. Create your first product to get started." />
-      ) : filtered.length === 0 && hasActiveFilters ? (
-        <EmptyState message="No products match your current filters." />
+      {isPending ? (
+        <ProductsLoading />
+      ) : isError || !data ? (
+        <ProductsError error={error} reset={refetch} />
+      ) : !data.success ? (
+        <ProductsError error={data} reset={refetch} />
+      ) : data.data.length === 0 && !hasActiveFilters ? (
+        <div className={inventoryTableWrapClass}>
+          <EmptyState message="No products yet. Create your first product to get started." />
+        </div>
+      ) : data.data.length === 0 && hasActiveFilters ? (
+        <div className={inventoryTableWrapClass}>
+          <EmptyState message="No products match your current filters." />
+        </div>
       ) : (
         <>
           <ProductsTable
-            products={filteredPaginated}
+            products={data.data}
             onEdit={handleEdit}
             onDelete={handleDelete}
           />
           <Pagination
             page={page}
             meta={{
-              total: filtered.length,
+              total: data.meta.total,
               totalPages: data.meta.totalPages,
               limit: data.meta.limit,
             }}
@@ -455,6 +473,6 @@ export function ProductsClient() {
         onCancel={() => setDeletingProduct(null)}
         isLoading={isDeleting}
       />
-    </div>
+    </AdminPageLayout>
   );
 }

@@ -2,14 +2,15 @@ package payments
 
 import (
 	"errors"
-	"log"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
 	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
 	"github.com/suprimkhatri77/sms/backend/internal/repository"
@@ -18,25 +19,21 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/validator"
 )
 
-func AddPayment(queries repository.AdminRepository) gin.HandlerFunc {
+type AddPaymentRequest struct {
+	Amount      float64 `json:"amount" binding:"required,gt=0"`
+	PaymentMode string  `json:"paymentMode" binding:"required,notblank,min=1,max=50"`
+	Remarks     string  `json:"remarks,omitempty" binding:"omitempty,notblank,min=1,max=200"`
+	BsDate      string  `json:"bsDate" binding:"required,bs_date"`
+	Date        string  `json:"date" binding:"required,date_format"`
+}
+
+func AddPayment(queries repository.AdminPaymentTxRepository, pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 
 		userIDFromContext := c.MustGet("userID").(string)
 
 		studentIDFromParams := c.Param("studentID")
-		if studentIDFromParams == "" {
-			slog.Warn("missing student id",
-				slog.String("handler", "AddPayment"),
-			)
-			c.JSON(http.StatusBadRequest, types.APIResponse{
-				Success: false,
-				Message: "Missing student ID",
-				Code:    constants.MissingStudentID,
-			})
-			return
-		}
-
 		studentID, err := utils.ConvertToUUID(studentIDFromParams)
 		if err != nil {
 			slog.Warn("invalid student id format",
@@ -52,7 +49,7 @@ func AddPayment(queries repository.AdminRepository) gin.HandlerFunc {
 			return
 		}
 
-		var req types.AddPaymentRequest
+		var req AddPaymentRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			slog.Warn("invalid request body",
 				slog.String("handler", "AddPayment"),
@@ -84,7 +81,39 @@ func AddPayment(queries repository.AdminRepository) gin.HandlerFunc {
 			return
 		}
 
-		summary, err := queries.GetStudentFeeSummary(ctx, studentID)
+		adDate, err := time.Parse("2006-01-02", req.Date)
+		if err != nil {
+			slog.Error("failed to parse date",
+				slog.String("handler", "AddPayment"),
+				slog.Any("error", err),
+			)
+			c.JSON(http.StatusBadRequest, types.APIResponse{
+				Success: false,
+				Message: "Invalid date format",
+				Code:    constants.ValidationFailed,
+			})
+			return
+		}
+
+		tx, err := pool.Begin(ctx)
+		if err != nil {
+			slog.Error("failed to begin transaction",
+				slog.String("handler", "AddPayment"),
+				slog.Any("error", err),
+			)
+			c.JSON(http.StatusInternalServerError, types.APIResponse{
+				Success: false,
+				Message: "Failed to process request",
+				Code:    constants.InternalServerError,
+			})
+			return
+		}
+
+		defer tx.Rollback(ctx)
+
+		qtx := queries.WithTx(tx)
+
+		summary, err := qtx.GetStudentFeeSummary(ctx, studentID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
@@ -94,18 +123,21 @@ func AddPayment(queries repository.AdminRepository) gin.HandlerFunc {
 			return
 		}
 
-		log.Println("totalPaid: ", summary.TotalPaid)
 		effectiveFee := summary.TotalFee
-		log.Println("total fee: ", summary.TotalFee)
 		discountAmount := summary.TotalDiscountAmount
-		log.Println("dis amount: ", discountAmount)
-
 		scholarshipAmount := summary.ScholarshipAmount
-		log.Println("scholarship amount: ", scholarshipAmount)
 		alreadyCovered := summary.TotalPaid + discountAmount + scholarshipAmount
-		log.Println("already paid: ", alreadyCovered)
 		remaining := effectiveFee - alreadyCovered
-		log.Println("remaining: ", remaining)
+		slog.Debug("fee summary calculated",
+			slog.String("handler", "AddPayment"),
+			slog.String("student_id", studentIDFromParams),
+			slog.Int64("total_paid", summary.TotalPaid),
+			slog.Int64("total_fee", summary.TotalFee),
+			slog.Int64("discount_amount", discountAmount),
+			slog.Int64("scholarship_amount", scholarshipAmount),
+			slog.Int64("already_covered", alreadyCovered),
+			slog.Int64("remaining", remaining),
+		)
 		if remaining <= 0 {
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
@@ -124,7 +156,7 @@ func AddPayment(queries repository.AdminRepository) gin.HandlerFunc {
 			return
 		}
 
-		student, err := queries.GetStudentByID(ctx, studentID)
+		student, err := qtx.GetStudentByID(ctx, studentID)
 
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
@@ -161,10 +193,10 @@ func AddPayment(queries repository.AdminRepository) gin.HandlerFunc {
 			slog.Int("amount", int(amount)),
 		)
 
-		_, err = queries.AddPayment(ctx, db.AddPaymentParams{
+		payment, err := qtx.AddPayment(ctx, db.AddPaymentParams{
 			StudentID:   studentID,
 			Amount:      amount,
-			Remarks:     pgtype.Text{String: req.Remarks, Valid: true},
+			Remarks:     utils.ToNullableText(req.Remarks),
 			AddedBy:     addedBy,
 			PaymentMode: req.PaymentMode,
 		})
@@ -219,9 +251,95 @@ func AddPayment(queries repository.AdminRepository) gin.HandlerFunc {
 			slog.Int("amount", int(amount)),
 		)
 
+		if req.PaymentMode == "cash" {
+
+			_, err = qtx.CreateCashLedgerEntry(ctx, db.CreateCashLedgerEntryParams{
+				Amount:      int64(amount),
+				EntryType:   "cr",
+				Description: pgtype.Text{String: "Student payment - auto recorded", Valid: true},
+				PaymentID:   payment.ID,
+				BsDate:      req.BsDate,
+				Date:        pgtype.Timestamptz{Time: adDate, Valid: true},
+			})
+			if err != nil {
+				slog.Error("failed to create cash ledger entry",
+					slog.String("handler", "AddPayment"),
+					slog.Any("error", err),
+					// slog.String("payment_id", payment.ID.String),
+					slog.String("remarks", req.Remarks),
+				)
+				c.JSON(http.StatusInternalServerError, types.APIResponse{
+					Success: false,
+					Message: "Failed to process request",
+					Code:    constants.InternalServerError,
+				})
+				return
+			}
+		} else {
+			defaultBankAccount, err := qtx.GetDefaultBankAccount(ctx)
+			if err != nil {
+				slog.Error("failed to get default bank account",
+					slog.String("handler", "AddPayment"),
+					slog.Any("error", err),
+				)
+				if errors.Is(err, pgx.ErrNoRows) {
+					c.JSON(http.StatusBadRequest, types.APIResponse{
+						Success: false,
+						Message: "No default bank account configured. Please set a default bank account first.",
+						Code:    constants.NoDefaultBankAccount,
+					})
+					return
+				}
+				c.JSON(http.StatusInternalServerError, types.APIResponse{
+					Success: false,
+					Message: "Failed to process request",
+					Code:    constants.InternalServerError,
+				})
+				return
+			}
+			_, err = qtx.CreateBankLedgerEntry(ctx, db.CreateBankLedgerEntryParams{
+				Amount:        int64(amount),
+				EntryType:     "cr",
+				Description:   pgtype.Text{String: "Student payment - auto recorded", Valid: true},
+				PaymentID:     payment.ID,
+				BankAccountID: defaultBankAccount.ID,
+				BsDate:        req.BsDate,
+				Date:          pgtype.Timestamptz{Time: adDate, Valid: true},
+			})
+			if err != nil {
+				slog.Error("failed to create bank ledger entry",
+					slog.String("handler", "AddPayment"),
+					slog.Any("error", err),
+					// slog.String("payment_id", payment.ID.String),
+					slog.String("remarks", req.Remarks),
+				)
+				c.JSON(http.StatusInternalServerError, types.APIResponse{
+					Success: false,
+					Message: "Failed to process request",
+					Code:    constants.InternalServerError,
+				})
+				return
+			}
+
+		}
+
+		if err := tx.Commit(ctx); err != nil {
+			slog.Error("failed to commit transaction",
+				slog.String("handler", "AddPayment"),
+				slog.Any("error", err),
+			)
+			c.JSON(http.StatusInternalServerError, types.APIResponse{
+				Success: false,
+				Message: "Failed to process request",
+				Code:    constants.InternalServerError,
+			})
+			return
+		}
+
 		c.JSON(http.StatusOK, types.APIResponse{
 			Success: true,
 			Message: "Payment added",
 		})
+
 	}
 }

@@ -8,12 +8,52 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Bank struct {
+	ID        pgtype.UUID        `json:"id"`
+	Name      string             `json:"name"`
+	IsDefault bool               `json:"isDefault"`
+	CreatedAt pgtype.Timestamptz `json:"createdAt"`
+}
+
+type BankAccount struct {
+	ID            pgtype.UUID        `json:"id"`
+	BankID        pgtype.UUID        `json:"bankId"`
+	AccountName   string             `json:"accountName"`
+	AccountNumber pgtype.Text        `json:"accountNumber"`
+	IsDefault     bool               `json:"isDefault"`
+	CreatedAt     pgtype.Timestamptz `json:"createdAt"`
+}
+
+type BankLedger struct {
+	ID            pgtype.UUID        `json:"id"`
+	BankAccountID pgtype.UUID        `json:"bankAccountId"`
+	Date          pgtype.Timestamptz `json:"date"`
+	BsDate        string             `json:"bsDate"`
+	EntryType     string             `json:"entryType"`
+	Amount        int64              `json:"amount"`
+	Description   pgtype.Text        `json:"description"`
+	PaymentID     pgtype.UUID        `json:"paymentId"`
+	CreatedAt     pgtype.Timestamptz `json:"createdAt"`
+}
+
+type CashLedger struct {
+	ID          pgtype.UUID        `json:"id"`
+	Date        pgtype.Timestamptz `json:"date"`
+	BsDate      string             `json:"bsDate"`
+	EntryType   string             `json:"entryType"`
+	Amount      int64              `json:"amount"`
+	Description pgtype.Text        `json:"description"`
+	PaymentID   pgtype.UUID        `json:"paymentId"`
+	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
+}
+
 type Certificate struct {
-	ID        int32              `json:"id"`
+	ID        string             `json:"id"`
 	StudentID pgtype.UUID        `json:"studentId"`
 	IssuedBy  pgtype.UUID        `json:"issuedBy"`
 	IssuedAt  pgtype.Timestamptz `json:"issuedAt"`
 	Remarks   pgtype.Text        `json:"remarks"`
+	Type      string             `json:"type"`
 }
 
 type Course struct {
@@ -69,14 +109,15 @@ type Setting struct {
 }
 
 type StockIn struct {
-	ID        pgtype.UUID        `json:"id"`
-	ProductID pgtype.UUID        `json:"productId"`
-	Date      string             `json:"date"`
-	InvoiceNo pgtype.Text        `json:"invoiceNo"`
-	Qty       int32              `json:"qty"`
-	Rate      int32              `json:"rate"`
-	Note      pgtype.Text        `json:"note"`
-	CreatedAt pgtype.Timestamptz `json:"createdAt"`
+	ID         pgtype.UUID        `json:"id"`
+	ProductID  pgtype.UUID        `json:"productId"`
+	Date       string             `json:"date"`
+	InvoiceNo  pgtype.Text        `json:"invoiceNo"`
+	Qty        int32              `json:"qty"`
+	Rate       int32              `json:"rate"`
+	Note       pgtype.Text        `json:"note"`
+	SupplierID pgtype.UUID        `json:"supplierId"`
+	CreatedAt  pgtype.Timestamptz `json:"createdAt"`
 }
 
 type StockOut struct {
@@ -113,6 +154,7 @@ type Student struct {
 	Batch           pgtype.Text        `json:"batch"`
 	RejectionReason pgtype.Text        `json:"rejectionReason"`
 	UpdatedAt       pgtype.Timestamptz `json:"updatedAt"`
+	IsActive        bool               `json:"isActive"`
 	CreatedAt       pgtype.Timestamptz `json:"createdAt"`
 }
 
@@ -141,6 +183,27 @@ type StudentScholarship struct {
 	Note      pgtype.Text        `json:"note"`
 	Amount    int64              `json:"amount"`
 	CreatedAt pgtype.Timestamptz `json:"createdAt"`
+}
+
+type Supplier struct {
+	ID          pgtype.UUID        `json:"id"`
+	CompanyName string             `json:"companyName"`
+	VatNo       pgtype.Text        `json:"vatNo"`
+	Phone       pgtype.Text        `json:"phone"`
+	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
+}
+
+type SupplierLedger struct {
+	ID          pgtype.UUID        `json:"id"`
+	SupplierID  pgtype.UUID        `json:"supplierId"`
+	Date        pgtype.Timestamptz `json:"date"`
+	BsDate      string             `json:"bsDate"`
+	EntryType   string             `json:"entryType"`
+	Amount      int64              `json:"amount"`
+	Description pgtype.Text        `json:"description"`
+	StockInID   pgtype.UUID        `json:"stockInId"`
+	PaymentType string             `json:"paymentType"`
+	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
 }
 
 type User struct {

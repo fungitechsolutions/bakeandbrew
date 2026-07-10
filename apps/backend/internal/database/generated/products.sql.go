@@ -51,7 +51,6 @@ ORDER BY created_at DESC
 LIMIT 1
 `
 
-// used to autofill rate in stock_out and wastage forms
 func (q *Queries) GetLatestStockInRateForProduct(ctx context.Context, productID pgtype.UUID) (int32, error) {
 	row := q.db.QueryRow(ctx, getLatestStockInRateForProduct, productID)
 	var rate int32
@@ -95,10 +94,20 @@ func (q *Queries) GetProductByName(ctx context.Context, name string) (Product, e
 
 const getProductCount = `-- name: GetProductCount :one
 SELECT COUNT(*) FROM products
+WHERE
+    ($1::TEXT IS NULL OR name ILIKE '%' || $1::TEXT || '%')
+    AND ($2::DATE IS NULL OR created_at::DATE >= $2::DATE)
+    AND ($3::DATE IS NULL OR created_at::DATE <= $3::DATE)
 `
 
-func (q *Queries) GetProductCount(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, getProductCount)
+type GetProductCountParams struct {
+	Name pgtype.Text `json:"name"`
+	From pgtype.Date `json:"from"`
+	To   pgtype.Date `json:"to"`
+}
+
+func (q *Queries) GetProductCount(ctx context.Context, arg GetProductCountParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getProductCount, arg.Name, arg.From, arg.To)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -106,17 +115,30 @@ func (q *Queries) GetProductCount(ctx context.Context) (int64, error) {
 
 const listProducts = `-- name: ListProducts :many
 SELECT id, name, unit, created_at FROM products
+WHERE
+    ($3::TEXT IS NULL OR name ILIKE '%' || $3::TEXT || '%')
+    AND ($4::DATE IS NULL OR created_at::DATE >= $4::DATE)
+    AND ($5::DATE IS NULL OR created_at::DATE <= $5::DATE)
 ORDER BY name ASC
 LIMIT $1 OFFSET $2
 `
 
 type ListProductsParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+	Limit  int32       `json:"limit"`
+	Offset int32       `json:"offset"`
+	Name   pgtype.Text `json:"name"`
+	From   pgtype.Date `json:"from"`
+	To     pgtype.Date `json:"to"`
 }
 
 func (q *Queries) ListProducts(ctx context.Context, arg ListProductsParams) ([]Product, error) {
-	rows, err := q.db.Query(ctx, listProducts, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listProducts,
+		arg.Limit,
+		arg.Offset,
+		arg.Name,
+		arg.From,
+		arg.To,
+	)
 	if err != nil {
 		return nil, err
 	}

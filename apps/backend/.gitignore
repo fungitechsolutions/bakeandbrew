@@ -15,6 +15,7 @@ build-errors.log
 *.out
 
 # Output binary
+/main
 /bin/
 /build/
 

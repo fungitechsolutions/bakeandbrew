@@ -1,16 +1,5 @@
 "use client";
 
-import { z } from "zod";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -18,6 +7,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CalendarDays } from "lucide-react";
+import { NepaliDatePicker } from "nepali-datepicker-reactjs";
+import { cn } from "@/lib/utils";
+import { AdminDrawer } from "@/components/admin/admin-drawer";
+import {
+  adminPrimaryButtonClass,
+  adminSecondaryButtonClass,
+} from "@/components/admin/admin-styles";
+import { Spinner } from "@/components/ui/spinner";
+import { inputCls } from "../../students/detail/shared/utils";
+import {
+  InventoryFormField,
+  InventoryFormSection,
+  inventoryFieldInputClass,
+  inventorySelectTriggerClass,
+} from "../shared/InventoryFormField";
 import {
   CreateWastageInput,
   CreateWastageResponse,
@@ -43,9 +48,11 @@ type Props = {
   open: boolean;
   products: Product[];
   onClose: () => void;
-  onSubmit: (data: WastageFormData) => void;
+  onSubmit: (data: WastageFormData) => Promise<void> | void;
   initialData?: Wastage | null;
 };
+
+const fieldInputClass = inventoryFieldInputClass;
 
 const EMPTY_FORM = {
   reason: "",
@@ -62,20 +69,16 @@ export function WastageDialog({
   initialData,
   products,
 }: Props) {
-  const [isEdit, setIsEdit] = useState(!!initialData);
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const isEdit = !!initialData;
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [errors, setErrors] =
     useState<Partial<Record<keyof CreateWastageInput, string>>>();
 
   useEffect(() => {
     if (!open) return;
-    setTimeout(() => {
-      setIsEdit(!!initialData);
-      setErrors({});
-    }, 0);
-    if (initialData) {
-      setTimeout(() => {
+    const id = setTimeout(() => {
+      if (initialData) {
         setFormData({
           reason: initialData.reason ?? "",
           productID: initialData.productID ?? "",
@@ -83,31 +86,49 @@ export function WastageDialog({
           rate: (initialData.rate / 100).toString(),
           date: initialData.date ?? "",
         });
-      }, 0);
-    } else {
-      setTimeout(() => {
+      } else {
         setFormData(EMPTY_FORM);
-      }, 0);
-    }
-  }, [open]);
+      }
+      setErrors({});
+    }, 0);
+    return () => clearTimeout(id);
+  }, [initialData, open]);
 
-  const handleSubmit = async (data: CreateWastageInput) => {
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      setFormData(EMPTY_FORM);
+      setErrors({});
+      onClose();
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsSubmitting(true);
-    const validateFields = createWastageSchema.safeParse(data);
+
+    const payload: CreateWastageInput = {
+      ...formData,
+      quantity: Number(formData.quantity),
+      rate: Number(formData.rate),
+      reason: formData.reason || undefined,
+    };
+
+    const validateFields = createWastageSchema.safeParse(payload);
     if (!validateFields.success) {
       setIsSubmitting(false);
-      const tree = z.treeifyError(validateFields.error).properties;
+      const fieldErrors = validateFields.error.flatten().fieldErrors;
       setErrors({
-        reason: tree?.reason?.errors[0],
-        quantity: tree?.quantity?.errors[0],
-        productID: tree?.productID?.errors[0],
-        rate: tree?.rate?.errors[0],
-        date: tree?.date?.errors[0],
+        reason: fieldErrors.reason?.[0],
+        quantity: fieldErrors.quantity?.[0],
+        productID: fieldErrors.productID?.[0],
+        rate: fieldErrors.rate?.[0],
+        date: fieldErrors.date?.[0],
       });
       return;
     }
+
     try {
-      await onSubmit(data);
+      await onSubmit({ ...validateFields.data, quantity: payload.quantity });
       setFormData(EMPTY_FORM);
       setErrors({});
       onClose();
@@ -116,8 +137,6 @@ export function WastageDialog({
       toast.error(error?.message ?? "Something went wrong");
       if (error?.errors?.length) {
         setErrors(mapFieldErrors(error));
-      } else {
-        toast.error(error?.message ?? "Something went wrong");
       }
     } finally {
       setIsSubmitting(false);
@@ -129,95 +148,98 @@ export function WastageDialog({
     return products.find((p) => p.id === formData.productID);
   }, [products, formData.productID]);
 
-  return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-md bg-[var(--brand-cream)] border-[var(--brand-green)]/20">
-        <DialogHeader>
-          <DialogTitle className="font-[var(--font-playfair)] text-[var(--brand-green)] text-xl">
-            {isEdit ? "Edit Wastage" : "Log Wastage"}
-          </DialogTitle>
-        </DialogHeader>
+  const selectTriggerClass = inventorySelectTriggerClass;
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSubmit({
-              ...formData,
-              quantity: Number(formData.quantity),
-              rate: Number(formData.rate),
-            });
-          }}
-          className="space-y-4"
-        >
-          <div className="space-y-1">
-            <Label className="font-[var(--font-dm-sans)] text-[var(--brand-ink)]">
-              Product <span className="text-red-500">*</span>
-            </Label>
+  return (
+    <AdminDrawer
+      open={open}
+      onOpenChange={handleOpenChange}
+      title={isEdit ? "Edit Wastage" : "Log Wastage"}
+      description={
+        isEdit ? "Update a wastage record" : "Record damaged or lost inventory"
+      }
+      footer={
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            disabled={isSubmitting}
+            className={adminSecondaryButtonClass}
+            onClick={() => handleOpenChange(false)}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form="wastage-form"
+            disabled={isSubmitting}
+            className={adminPrimaryButtonClass}
+          >
+            {isSubmitting ? <Spinner /> : isEdit ? "Update" : "Log Wastage"}
+          </button>
+        </div>
+      }
+    >
+      <form
+        id="wastage-form"
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-10 px-8 py-10"
+      >
+        <InventoryFormSection title="Item details">
+          <InventoryFormField label="Product" required error={errors?.productID}>
             <Select
               value={formData.productID}
               onValueChange={(v) =>
-                setFormData((prev) => ({ ...prev, productID: v as string }))
+                setFormData((prev) => ({ ...prev, productID: v ?? "" }))
               }
             >
-              <SelectTrigger className="border-[var(--brand-green)]/30 focus:ring-[var(--brand-green)]">
+              <SelectTrigger className={selectTriggerClass}>
                 <SelectValue placeholder="Select product">
-                  {selectedProduct ? selectedProduct.name : "Select product"}
+                  {selectedProduct?.name}
                 </SelectValue>
               </SelectTrigger>
-              <SelectContent>
-                {products.map((p: Product) => (
+              <SelectContent className="rounded-none border border-[rgba(47,78,64,0.18)] bg-white">
+                {products.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {errors?.productID && (
-              <p className="text-xs text-red-500">{errors.productID}</p>
-            )}
-          </div>
+          </InventoryFormField>
 
-          <div className="space-y-1">
-            <Label className="font-[var(--font-dm-sans)] text-[var(--brand-ink)]">
-              Date (BS) <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              placeholder="2081-01-15"
-              value={formData.date}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, date: e.target.value }))
-              }
-              className="border-[var(--brand-green)]/30 focus-visible:ring-[var(--brand-green)]"
-            />
-            {errors?.date && (
-              <p className="text-xs text-red-500">{errors.date}</p>
-            )}
-          </div>
+          <InventoryFormField label="Date (BS)" required error={errors?.date}>
+            <div className="relative">
+              <CalendarDays
+                className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-[rgba(47,78,64,0.35)]"
+                strokeWidth={1.75}
+              />
+              <NepaliDatePicker
+                inputClassName={cn(inputCls, "rounded-none pl-9")}
+                value={formData.date}
+                onChange={(v: string) =>
+                  setFormData((prev) => ({ ...prev, date: v }))
+                }
+                options={{ calenderLocale: "en", valueLocale: "en" }}
+              />
+            </div>
+          </InventoryFormField>
+        </InventoryFormSection>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label className="font-[var(--font-dm-sans)] text-[var(--brand-ink)]">
-                Qty <span className="text-red-500">*</span>
-              </Label>
-              <Input
+        <InventoryFormSection title="Quantity & pricing">
+          <div className="grid grid-cols-2 gap-4">
+            <InventoryFormField label="Qty" required error={errors?.quantity}>
+              <input
                 type="number"
                 min={1}
                 value={formData.quantity}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, quantity: e.target.value }))
                 }
-                className="border-[var(--brand-green)]/30 focus-visible:ring-[var(--brand-green)]"
+                className={fieldInputClass}
               />
-              {errors?.quantity && (
-                <p className="text-xs text-red-500">{errors.quantity}</p>
-              )}
-            </div>
-
-            <div className="space-y-1">
-              <Label className="font-[var(--font-dm-sans)] text-[var(--brand-ink)]">
-                Rate (Rs.) <span className="text-red-500">*</span>
-              </Label>
-              <Input
+            </InventoryFormField>
+            <InventoryFormField label="Rate (Rs.)" required error={errors?.rate}>
+              <input
                 type="number"
                 min={0.01}
                 step={0.01}
@@ -225,52 +247,26 @@ export function WastageDialog({
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, rate: e.target.value }))
                 }
-                className="border-[var(--brand-green)]/30 focus-visible:ring-[var(--brand-green)]"
+                className={fieldInputClass}
               />
-              {errors?.rate && (
-                <p className="text-xs text-red-500">{errors.rate}</p>
-              )}
-            </div>
+            </InventoryFormField>
           </div>
+        </InventoryFormSection>
 
-          <div className="space-y-1">
-            <Label className="font-[var(--font-dm-sans)] text-[var(--brand-ink)]">
-              Reason{" "}
-              <span className="text-[var(--brand-brown)] text-xs">
-                (optional)
-              </span>
-            </Label>
+        <InventoryFormSection title="Additional">
+          <InventoryFormField label="Reason" optional>
             <textarea
               value={formData.reason}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, reason: e.target.value }))
               }
-              rows={2}
-              className="w-full rounded-md border border-[var(--brand-green)]/30 bg-white px-3 py-2 text-sm font-[var(--font-dm-sans)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-green)]"
-              placeholder="e.g. Damaged in transit..."
+              rows={3}
+              className={cn(fieldInputClass, "resize-none")}
+              placeholder="e.g. Damaged in transit…"
             />
-          </div>
-
-          <DialogFooter className="pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              className="border-[var(--brand-green)]/30 text-[var(--brand-ink)]"
-            >
-              Cancel
-            </Button>
-
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="bg-[var(--brand-green)] hover:bg-[var(--brand-green-2)] text-white font-[var(--font-dm-sans)]"
-            >
-              {isSubmitting ? "Saving..." : isEdit ? "Update" : "Log Wastage"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+          </InventoryFormField>
+        </InventoryFormSection>
+      </form>
+    </AdminDrawer>
   );
 }

@@ -1,9 +1,12 @@
 package students
 
 import (
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
@@ -13,6 +16,8 @@ import (
 )
 
 const PAGE_LIMIT = 21
+
+const handlerListStudents = "ListStudents"
 
 func ListStudents(queries repository.AdminRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -39,6 +44,8 @@ func ListStudents(queries repository.AdminRepository) gin.HandlerFunc {
 
 		total, err := queries.GetStudentsCount(ctx, filterParams)
 		if err != nil {
+			applog.Error(c, handlerListStudents, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -76,6 +83,8 @@ func ListStudents(queries repository.AdminRepository) gin.HandlerFunc {
 			Search: search,
 		})
 		if err != nil {
+			applog.Error(c, handlerListStudents, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

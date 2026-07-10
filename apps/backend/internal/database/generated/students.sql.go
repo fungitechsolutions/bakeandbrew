@@ -23,7 +23,7 @@ INSERT INTO students (
     $7, $8, $9, $10,
     $11, $12, 'pending', $13,
     $14, $15, $16, $17
-) RETURNING id, student_id, reference_no, fiscal_year, serial_no, full_name, dob_ad, dob_bs, gender, phone, address, guardian_name, guardian_phone, photo_url, source, status, notes, shift, shift_time, batch, rejection_reason, updated_at, created_at
+) RETURNING id, student_id, reference_no, fiscal_year, serial_no, full_name, dob_ad, dob_bs, gender, phone, address, guardian_name, guardian_phone, photo_url, source, status, notes, shift, shift_time, batch, rejection_reason, updated_at, is_active, created_at
 `
 
 type CreateStudentParams struct {
@@ -90,9 +90,34 @@ func (q *Queries) CreateStudent(ctx context.Context, arg CreateStudentParams) (S
 		&i.Batch,
 		&i.RejectionReason,
 		&i.UpdatedAt,
+		&i.IsActive,
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const getDistinctBatches = `-- name: GetDistinctBatches :many
+SELECT DISTINCT batch FROM students WHERE batch IS NOT NULL ORDER BY batch
+`
+
+func (q *Queries) GetDistinctBatches(ctx context.Context) ([]pgtype.Text, error) {
+	rows, err := q.db.Query(ctx, getDistinctBatches)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []pgtype.Text
+	for rows.Next() {
+		var batch pgtype.Text
+		if err := rows.Scan(&batch); err != nil {
+			return nil, err
+		}
+		items = append(items, batch)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getNextSerialNo = `-- name: GetNextSerialNo :one
@@ -395,7 +420,7 @@ func (q *Queries) GetStudentAdmissionStatus(ctx context.Context, studentID pgtyp
 
 const getStudentByID = `-- name: GetStudentByID :one
 SELECT 
-    s.id, s.student_id, s.reference_no, s.fiscal_year, s.serial_no, s.full_name, s.dob_ad, s.dob_bs, s.gender, s.phone, s.address, s.guardian_name, s.guardian_phone, s.photo_url, s.source, s.status, s.notes, s.shift, s.shift_time, s.batch, s.rejection_reason, s.updated_at, s.created_at,
+    s.id, s.student_id, s.reference_no, s.fiscal_year, s.serial_no, s.full_name, s.dob_ad, s.dob_bs, s.gender, s.phone, s.address, s.guardian_name, s.guardian_phone, s.photo_url, s.source, s.status, s.notes, s.shift, s.shift_time, s.batch, s.rejection_reason, s.updated_at, s.is_active, s.created_at,
     u.email
 FROM students s
 JOIN users u ON s.student_id = u.id
@@ -425,6 +450,7 @@ type GetStudentByIDRow struct {
 	Batch           pgtype.Text        `json:"batch"`
 	RejectionReason pgtype.Text        `json:"rejectionReason"`
 	UpdatedAt       pgtype.Timestamptz `json:"updatedAt"`
+	IsActive        bool               `json:"isActive"`
 	CreatedAt       pgtype.Timestamptz `json:"createdAt"`
 	Email           string             `json:"email"`
 }
@@ -455,6 +481,7 @@ func (q *Queries) GetStudentByID(ctx context.Context, id pgtype.UUID) (GetStuden
 		&i.Batch,
 		&i.RejectionReason,
 		&i.UpdatedAt,
+		&i.IsActive,
 		&i.CreatedAt,
 		&i.Email,
 	)
@@ -634,6 +661,17 @@ func (q *Queries) GetStudentRejectedOverview(ctx context.Context, studentID pgty
 	var i GetStudentRejectedOverviewRow
 	err := row.Scan(&i.FullName, &i.RejectionReason, &i.DecidedAt)
 	return i, err
+}
+
+const getStudentStatus = `-- name: GetStudentStatus :one
+SELECT status FROM students WHERE id = $1
+`
+
+func (q *Queries) GetStudentStatus(ctx context.Context, id pgtype.UUID) (string, error) {
+	row := q.db.QueryRow(ctx, getStudentStatus, id)
+	var status string
+	err := row.Scan(&status)
+	return status, err
 }
 
 const getStudentStatusByUserID = `-- name: GetStudentStatusByUserID :one
@@ -908,6 +946,19 @@ func (q *Queries) UpdateStudentGuardianInfo(ctx context.Context, arg UpdateStude
 	return q.db.Exec(ctx, updateStudentGuardianInfo, arg.ID, arg.GuardianName, arg.GuardianPhone)
 }
 
+const updateStudentImage = `-- name: UpdateStudentImage :execresult
+UPDATE students SET photo_url = $2 WHERE id = $1
+`
+
+type UpdateStudentImageParams struct {
+	ID       pgtype.UUID `json:"id"`
+	PhotoUrl pgtype.Text `json:"photoUrl"`
+}
+
+func (q *Queries) UpdateStudentImage(ctx context.Context, arg UpdateStudentImageParams) (pgconn.CommandTag, error) {
+	return q.db.Exec(ctx, updateStudentImage, arg.ID, arg.PhotoUrl)
+}
+
 const updateStudentPersonalInfo = `-- name: UpdateStudentPersonalInfo :execresult
 UPDATE students
 SET
@@ -962,7 +1013,7 @@ SET
   rejection_reason = $3,
   updated_at = NOW()
 WHERE id = $1 
-RETURNING id, student_id, reference_no, fiscal_year, serial_no, full_name, dob_ad, dob_bs, gender, phone, address, guardian_name, guardian_phone, photo_url, source, status, notes, shift, shift_time, batch, rejection_reason, updated_at, created_at
+RETURNING id, student_id, reference_no, fiscal_year, serial_no, full_name, dob_ad, dob_bs, gender, phone, address, guardian_name, guardian_phone, photo_url, source, status, notes, shift, shift_time, batch, rejection_reason, updated_at, is_active, created_at
 `
 
 type UpdateStudentStatusParams struct {
@@ -997,6 +1048,7 @@ func (q *Queries) UpdateStudentStatus(ctx context.Context, arg UpdateStudentStat
 		&i.Batch,
 		&i.RejectionReason,
 		&i.UpdatedAt,
+		&i.IsActive,
 		&i.CreatedAt,
 	)
 	return i, err

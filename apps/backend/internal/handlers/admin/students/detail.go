@@ -2,8 +2,10 @@ package students
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 	"net/http"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
@@ -14,12 +16,20 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
 
+const handlerStudentDetail = "StudentDetail"
+
+const handlerStudentEnrolledCourses = "StudentEnrolledCourses"
+
+const handlerStudentPaymentDetails = "StudentPaymentDetails"
+
 func StudentDetail(queries repository.AdminRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 
 		studentIDFromParams := c.Param("studentID")
 		if studentIDFromParams == "" {
+			applog.Warn(c, handlerStudentDetail, "invalid request",
+				applog.WithStudentID(studentIDFromParams))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Missing student ID",
@@ -30,6 +40,9 @@ func StudentDetail(queries repository.AdminRepository) gin.HandlerFunc {
 
 		studentID, err := utils.ConvertToUUID(studentIDFromParams)
 		if err != nil {
+			applog.Warn(c, handlerStudentDetail, "invalid request",
+				applog.WithStudentID(studentIDFromParams),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid ID format",
@@ -41,6 +54,9 @@ func StudentDetail(queries repository.AdminRepository) gin.HandlerFunc {
 		student, err := queries.GetStudentByID(ctx, studentID)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
+				applog.Warn(c, handlerStudentDetail, "resource not found",
+					applog.WithStudentID(studentIDFromParams),
+					slog.Any(applog.AttrError, err))
 				c.JSON(http.StatusNotFound, types.APIResponse{
 					Success: false,
 					Message: "Student not found",
@@ -48,6 +64,10 @@ func StudentDetail(queries repository.AdminRepository) gin.HandlerFunc {
 				})
 				return
 			}
+			applog.Error(c, handlerStudentDetail, "failed to fetch student",
+				applog.WithStudentID(studentIDFromParams),
+				slog.Any(applog.AttrError, err),
+			)
 			return
 		}
 
@@ -64,6 +84,8 @@ func StudentEnrolledCourses(queries repository.AdminRepository) gin.HandlerFunc 
 
 		studentIDFromParams := c.Param("studentID")
 		if studentIDFromParams == "" {
+			applog.Warn(c, handlerStudentEnrolledCourses, "invalid request",
+				applog.WithStudentID(studentIDFromParams))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Missing student ID",
@@ -74,6 +96,9 @@ func StudentEnrolledCourses(queries repository.AdminRepository) gin.HandlerFunc 
 
 		studentID, err := utils.ConvertToUUID(studentIDFromParams)
 		if err != nil {
+			applog.Warn(c, handlerStudentEnrolledCourses, "invalid request",
+				applog.WithStudentID(studentIDFromParams),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid ID format",
@@ -86,6 +111,9 @@ func StudentEnrolledCourses(queries repository.AdminRepository) gin.HandlerFunc 
 
 		if err != nil {
 
+			applog.Error(c, handlerStudentEnrolledCourses, "failed to process request",
+				applog.WithStudentID(studentIDFromParams),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -94,6 +122,7 @@ func StudentEnrolledCourses(queries repository.AdminRepository) gin.HandlerFunc 
 		}
 
 		if len(courses) == 0 {
+			applog.Warn(c, handlerStudentEnrolledCourses, "resource not found")
 			c.JSON(http.StatusNotFound, types.APIResponse{
 				Success: false,
 				Message: "Student not found or not enrolled in any courses",
@@ -101,7 +130,10 @@ func StudentEnrolledCourses(queries repository.AdminRepository) gin.HandlerFunc 
 			})
 			return
 		}
-		log.Println("data: ", courses)
+		applog.Debug(c, handlerStudentEnrolledCourses, "enrolled courses fetched",
+			applog.WithStudentID(studentIDFromParams),
+			slog.Int("count", len(courses)),
+		)
 		c.JSON(http.StatusOK, types.APIResponse{
 			Success: true,
 			Data:    courses,
@@ -115,6 +147,8 @@ func StudentPaymentDetails(queries repository.AdminRepository) gin.HandlerFunc {
 
 		studentIDFromParams := c.Param("studentID")
 		if studentIDFromParams == "" {
+			applog.Warn(c, handlerStudentPaymentDetails, "invalid request",
+				applog.WithStudentID(studentIDFromParams))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Missing student ID",
@@ -125,6 +159,9 @@ func StudentPaymentDetails(queries repository.AdminRepository) gin.HandlerFunc {
 
 		studentID, err := utils.ConvertToUUID(studentIDFromParams)
 		if err != nil {
+			applog.Warn(c, handlerStudentPaymentDetails, "invalid request",
+				applog.WithStudentID(studentIDFromParams),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid ID format",
@@ -135,6 +172,9 @@ func StudentPaymentDetails(queries repository.AdminRepository) gin.HandlerFunc {
 
 		payments, err := queries.GetPaymentsByStudent(ctx, studentID)
 		if err != nil {
+			applog.Error(c, handlerStudentPaymentDetails, "failed to process request",
+				applog.WithStudentID(studentIDFromParams),
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

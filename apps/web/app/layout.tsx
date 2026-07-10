@@ -9,6 +9,8 @@ import NavFooterWrapper from "@/components/wrapper/nav-footer-wrapper";
 import { siteInfo } from "@/utils/site-info";
 import { getCurrentUser } from "@/lib/queries/auth/get-current-user";
 import { AuthProvider } from "@/components/providers/auth-provider";
+import { AdminNavigationShortcuts } from "@/components/admin/admin-navigation-shortcuts";
+import "nepali-datepicker-reactjs/dist/index.css";
 
 export const metadata: Metadata = {
   title: `${siteInfo.company.shortName} | Professional Training`,
@@ -47,6 +49,7 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col">
         <ReactQueryProvider>
           <AuthProvider user={user} />
+          <AdminNavigationShortcuts />
           <TooltipProvider>
             <NavFooterWrapper>{children}</NavFooterWrapper>
           </TooltipProvider>

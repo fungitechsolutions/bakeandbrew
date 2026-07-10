@@ -1,6 +1,6 @@
 "use client";
 
-import { Users, Clock, DollarSign, AlertTriangle } from "lucide-react";
+import { Users, Clock, DollarSign, AlertTriangle, Percent, Award } from "lucide-react";
 import type { OverviewData, RevenueStatsData } from "../types";
 import { formatNPR } from "../types";
 import Link from "next/link";
@@ -50,6 +50,24 @@ export function OverviewCards({ overview, revenueStats }: OverviewCardsProps) {
       iconColor: "text-green-500",
     },
     {
+      label: "Total Discounts",
+      href: "/admin/students",
+      value: formatNPR(overview.totalDiscounts),
+      subtitle: "Fee reductions granted",
+      icon: Percent,
+      iconBg: "bg-violet-50",
+      iconColor: "text-violet-600",
+    },
+    {
+      label: "Total Scholarships",
+      href: "/admin/students",
+      value: formatNPR(overview.totalScholarships),
+      subtitle: "Scholarship aid awarded",
+      icon: Award,
+      iconBg: "bg-sky-50",
+      iconColor: "text-sky-600",
+    },
+    {
       label: "Outstanding Fees",
       href: "/admin/students/outstanding",
       value: overview.studentsWithBalance,
@@ -61,7 +79,7 @@ export function OverviewCards({ overview, revenueStats }: OverviewCardsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
       {cards.map((card) => (
         <Link
           href={`${card.href}`}
@@ -98,8 +116,8 @@ export function OverviewCards({ overview, revenueStats }: OverviewCardsProps) {
 
 export function OverviewCardsSkeleton() {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {Array.from({ length: 4 }).map((_, i) => (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      {Array.from({ length: 6 }).map((_, i) => (
         <div
           key={i}
           className="rounded-xl border border-slate-200/70 bg-white p-5"

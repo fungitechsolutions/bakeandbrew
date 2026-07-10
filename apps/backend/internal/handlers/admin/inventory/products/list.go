@@ -1,15 +1,27 @@
 package products
 
 import (
+	"log/slog"
 	"net/http"
 	"strconv"
+
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
 	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
 	"github.com/suprimkhatri77/sms/backend/internal/repository"
 	"github.com/suprimkhatri77/sms/backend/internal/types"
+	"github.com/suprimkhatri77/sms/backend/internal/utils"
 )
+
+const handlerListProducts = "ListProducts"
+
+type ListProductsParams struct {
+	Name string `form:"name"`
+	From string `form:"from"`
+	To   string `form:"to"`
+}
 
 func ListProducts(queries repository.InventoryRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -17,18 +29,38 @@ func ListProducts(queries repository.InventoryRepository) gin.HandlerFunc {
 
 		const LIMIT = 20
 
-		page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
-		if err != nil || page <= 0 {
+		var filter ListProductsParams
+		if err := c.ShouldBindQuery(&filter); err != nil {
+			applog.Warn(c, handlerListProducts, "invalid request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
-				Message: "Invalid page parameter",
-				Code:    constants.InvalidPageParam,
+				Message: "Invalid query parameter",
+				Code:    constants.InvalidQueryParam,
 			})
 			return
 		}
 
-		total, err := queries.GetProductCount(ctx)
+		page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+		if err != nil || page <= 0 {
+			applog.Warn(c, handlerListProducts, "invalid request",
+				slog.Any(applog.AttrError, err))
+			c.JSON(http.StatusBadRequest, types.APIResponse{
+				Success: false,
+				Message: "Invalid query parameter",
+				Code:    constants.InvalidQueryParam,
+			})
+			return
+		}
+
+		total, err := queries.GetProductCount(ctx, db.GetProductCountParams{
+			Name: utils.ToNullableText(filter.Name),
+			From: utils.ToNullableDate(filter.From),
+			To:   utils.ToNullableDate(filter.To),
+		})
 		if err != nil {
+			applog.Error(c, handlerListProducts, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",
@@ -53,6 +85,7 @@ func ListProducts(queries repository.InventoryRepository) gin.HandlerFunc {
 
 		totalPages := (total + LIMIT - 1) / LIMIT
 		if page > int(totalPages) {
+			applog.Warn(c, handlerListProducts, "invalid request")
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
 				Message: "Invalid page parameter value",
@@ -66,8 +99,13 @@ func ListProducts(queries repository.InventoryRepository) gin.HandlerFunc {
 		products, err := queries.ListProducts(ctx, db.ListProductsParams{
 			Limit:  LIMIT,
 			Offset: int32(offset),
+			Name:   utils.ToNullableText(filter.Name),
+			From:   utils.ToNullableDate(filter.From),
+			To:     utils.ToNullableDate(filter.To),
 		})
 		if err != nil {
+			applog.Error(c, handlerListProducts, "failed to process request",
+				slog.Any(applog.AttrError, err))
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

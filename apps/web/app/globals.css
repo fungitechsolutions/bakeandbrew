@@ -45,6 +45,7 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --max-width-landing: 96rem;
 }
 
 :root {
@@ -230,4 +231,12 @@ button {
 
 .animate-shimmer {
   animation: shimmer 1.5s infinite;
+}
+
+/* Plain ampersand inside Playfair / serif brand names */
+.cert-brand-amp {
+  font-family: var(--font-dm-sans), "DM Sans", system-ui, sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: 0;
 }
