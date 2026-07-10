@@ -28,31 +28,6 @@ function clearAuthCookies(response: NextResponse) {
   });
 }
 
-function clearAuthCookies(response: NextResponse) {
-  const cookieOptions = {
-    maxAge: 0,
-    path: "/",
-    domain:
-      process.env.NODE_ENV === "production"
-        ? process.env.COOKIE_DOMAIN
-        : "",
-    secure: process.env.NODE_ENV === "production",
-  };
-
-  response.cookies.set("access_token", "", {
-    ...cookieOptions,
-    httpOnly: true,
-  });
-  response.cookies.set("refresh_token", "", {
-    ...cookieOptions,
-    httpOnly: true,
-  });
-  response.cookies.set("is_logged_in", "", {
-    ...cookieOptions,
-    httpOnly: false,
-  });
-}
-
 export function getSession(token: string): User | null {
   try {
     const decoded = jwtDecode<User & { exp: number }>(token);
