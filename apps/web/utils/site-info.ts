@@ -4,17 +4,19 @@ export const siteInfo = {
     shortName: "Brew & Bake Academy",
     tagline: "Industry-first training in coffee, bakery, and hospitality.",
     panNo: "623612846",
+    registrationNo: "391969",
   },
   contact: {
     phone: "+977 9851433332",
     email: "brewandbakeacademy@gmail.com",
     address: "Butwal, Kalikanagar, Rupandehi",
+    website: "www.brewandbakeacademy.com",
     officeHours: "Sun - Fri, 7:00 AM - 5:00 PM",
   },
   social: {
-    facebook: "#",
+    facebook: "https://www.facebook.com/brewandbakeacademy/",
     instagram: "https://www.instagram.com/brewbakeacademy/",
-    tiktok: "#",
+    tiktok: "https://www.tiktok.com/@brewandbake.academy",
   },
   assets: {
     logo: "/assets/logo.png",
