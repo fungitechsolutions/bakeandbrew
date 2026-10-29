@@ -1,11 +1,9 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
-import { CalendarDays } from "lucide-react";
-import { NepaliDatePicker } from "nepali-datepicker-reactjs";
+import { BsDatePicker } from "@/components/bs-date-picker";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import { BSToAD } from "bikram-sambat-js";
+import { bsToAdString } from "@/lib/bs-date";
 import { SupplierLedgerFilters } from "./types";
 import {
   AccountingFilterShell,
@@ -44,16 +42,26 @@ export function SupplierLedgerFiltersBar({
   }
 
   function handleFromDate(bsValue: string) {
+    // "" is the picker's ✕: drop this side of the range.
+    if (!bsValue) {
+      onChange({ ...filters, fromBsDate: null, fromDate: null });
+      return;
+    }
     try {
-      onChange({ ...filters, fromBsDate: bsValue, fromDate: BSToAD(bsValue) });
+      onChange({ ...filters, fromBsDate: bsValue, fromDate: bsToAdString(bsValue) });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Invalid from date");
     }
   }
 
   function handleToDate(bsValue: string) {
+    // "" is the picker's ✕: drop this side of the range.
+    if (!bsValue) {
+      onChange({ ...filters, toBsDate: null, toDate: null });
+      return;
+    }
     try {
-      onChange({ ...filters, toBsDate: bsValue, toDate: BSToAD(bsValue) });
+      onChange({ ...filters, toBsDate: bsValue, toDate: bsToAdString(bsValue) });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Invalid to date");
     }
@@ -92,36 +100,22 @@ export function SupplierLedgerFiltersBar({
 
         <div className="flex flex-col gap-2">
           <span className={accountingLabelClass}>From Date (BS)</span>
-          <div className="relative">
-            <span className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-[rgba(47,78,64,0.4)]">
-              <CalendarDays className="h-4 w-4" strokeWidth={1.75} />
-            </span>
-            <NepaliDatePicker
-              inputClassName={cn(accountingFieldInputClass, "pl-9")}
-              value={filters.fromBsDate ?? ""}
-              onChange={(v: string) => {
-                if (v) handleFromDate(v);
-              }}
-              options={{ calenderLocale: "en", valueLocale: "en" }}
-            />
-          </div>
+          <BsDatePicker
+            fieldClassName={accountingFieldInputClass}
+            clearable
+            value={filters.fromBsDate ?? ""}
+            onChange={handleFromDate}
+          />
         </div>
 
         <div className="flex flex-col gap-2">
           <span className={accountingLabelClass}>To Date (BS)</span>
-          <div className="relative">
-            <span className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-[rgba(47,78,64,0.4)]">
-              <CalendarDays className="h-4 w-4" strokeWidth={1.75} />
-            </span>
-            <NepaliDatePicker
-              inputClassName={cn(accountingFieldInputClass, "pl-9")}
-              value={filters.toBsDate ?? ""}
-              onChange={(v: string) => {
-                if (v) handleToDate(v);
-              }}
-              options={{ calenderLocale: "en", valueLocale: "en" }}
-            />
-          </div>
+          <BsDatePicker
+            fieldClassName={accountingFieldInputClass}
+            clearable
+            value={filters.toBsDate ?? ""}
+            onChange={handleToDate}
+          />
         </div>
       </div>
     </AccountingFilterShell>

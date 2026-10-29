@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays } from "lucide-react";
 import { toast } from "sonner";
-import { NepaliDatePicker } from "nepali-datepicker-reactjs";
+import { BsDatePicker } from "@/components/bs-date-picker";
 import {
   Select,
   SelectContent,
@@ -17,7 +16,7 @@ import {
   createCashLedgerEntrySchema,
 } from "@repo/types";
 import { useForm } from "@tanstack/react-form-nextjs";
-import { BSToAD } from "bikram-sambat-js";
+import { bsToAdString } from "@/lib/bs-date";
 import { AxiosError } from "axios";
 import { APIError } from "@repo/types";
 
@@ -158,31 +157,24 @@ export function CreateCashLedgerEntryForm({
                     required
                     error={mergedError}
                   >
-                    <div className="relative">
-                      <span className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-[rgba(47,78,64,0.4)]">
-                        <CalendarDays className="h-4 w-4" strokeWidth={1.75} />
-                      </span>
-                      <NepaliDatePicker
-                        inputClassName={cn(
-                          accountingFieldInputClass,
-                          "pl-9",
-                          mergedError && "border-[#9a3412]",
-                        )}
-                        value={field.state.value}
-                        onChange={(bsValue: string) => {
-                          field.handleChange(bsValue);
-                          try {
-                            const adValue = BSToAD(bsValue);
-                            form.setFieldValue("date", adValue);
-                          } catch (err) {
-                            toast.error(
-                              err instanceof Error ? err.message : "Invalid date",
-                            );
-                          }
-                        }}
-                        options={{ calenderLocale: "en", valueLocale: "en" }}
-                      />
-                    </div>
+                    <BsDatePicker
+                      fieldClassName={cn(
+                        accountingFieldInputClass,
+                        mergedError && "border-[#9a3412]",
+                      )}
+                      value={field.state.value}
+                      onChange={(bsValue: string) => {
+                        field.handleChange(bsValue);
+                        try {
+                          const adValue = bsToAdString(bsValue);
+                          form.setFieldValue("date", adValue);
+                        } catch (err) {
+                          toast.error(
+                            err instanceof Error ? err.message : "Invalid date",
+                          );
+                        }
+                      }}
+                    />
                   </AccountingFormField>
                 );
               }}
