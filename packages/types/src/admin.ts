@@ -107,14 +107,98 @@ export type StudentEnrolledCourses = z.infer<
 
 export const changeStudentCoursesSchema = z.object({
   courseIds: z.array(z.uuid()).min(1, "Please select at least one course"),
+  // works out the change without saving it, for the confirmation step
+  dryRun: z.boolean().optional(),
+  // must be "CONFIRM" when the student has payments, discounts or a scholarship
+  confirmation: z.string().max(20).optional(),
+  reason: z.string().max(500).optional(),
+  // the preview the admin confirmed; the server refuses with a fresh one if
+  // payments or adjustments changed since
+  expected: z
+    .object({
+      totalPaid: z.number(),
+      newTotalFee: z.number(),
+      newAdjustments: z.number(),
+      excessAmount: z.number(),
+      requiresConfirmation: z.boolean(),
+    })
+    .optional(),
 });
 
 export type ChangeStudentCourses = z.infer<typeof changeStudentCoursesSchema>;
 
-export const changeStudentCoursesResponseSchema = baseAPIResponseSchema;
+const courseChangeCourseSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  // paisa
+  fee: z.number(),
+});
+
+// What a course change does to the student's fees. Amounts are in paisa.
+export const courseChangeSummarySchema = z.object({
+  oldCourses: z.array(courseChangeCourseSchema),
+  newCourses: z.array(courseChangeCourseSchema),
+  oldTotalFee: z.number(),
+  newTotalFee: z.number(),
+  totalPaid: z.number(),
+  oldAdjustments: z.number(),
+  newAdjustments: z.number(),
+  adjustments: z.array(
+    z.object({
+      kind: z.enum(["discount", "scholarship"]),
+      label: z.string(),
+      oldAmount: z.number(),
+      newAmount: z.number(),
+    }),
+  ),
+  balanceDue: z.number(),
+  excessAmount: z.number(),
+  requiresConfirmation: z.boolean(),
+});
+
+export type CourseChangeSummary = z.infer<typeof courseChangeSummarySchema>;
+
+export const changeStudentCoursesResponseSchema = baseAPIResponseSchema.extend({
+  // missing when nothing changed
+  data: courseChangeSummarySchema.nullish(),
+});
 
 export type ChangeStudentCoursesResponse = z.infer<
   typeof changeStudentCoursesResponseSchema
+>;
+
+export const studentCourseChangesResponseSchema = z.discriminatedUnion(
+  "success",
+  [
+    z.object({
+      success: z.literal(true),
+      data: z.array(
+        z.object({
+          id: z.uuid(),
+          oldCourses: z.array(courseChangeCourseSchema),
+          newCourses: z.array(courseChangeCourseSchema),
+          oldTotalFee: z.number(),
+          newTotalFee: z.number(),
+          totalPaid: z.number(),
+          oldAdjustments: z.number(),
+          newAdjustments: z.number(),
+          excessAmount: z.number(),
+          reason: z.string().nullable(),
+          createdAt: z.string(),
+          changedByName: z.string(),
+        }),
+      ),
+    }),
+    z.object({
+      success: z.literal(false),
+      message: z.string(),
+      code: z.string(),
+    }),
+  ],
+);
+
+export type StudentCourseChanges = z.infer<
+  typeof studentCourseChangesResponseSchema
 >;
 
 export const studentPaymentDetailsResponseSchema = z.discriminatedUnion(

@@ -102,3 +102,16 @@ WHERE
     AND (sqlc.narg('from')::TEXT IS NULL OR sd.created_at >= sqlc.narg('from')::TIMESTAMPTZ)
     AND (sqlc.narg('to')::TEXT IS NULL OR sd.created_at <= (sqlc.narg('to')::TIMESTAMPTZ + INTERVAL '1 day'));
 
+
+-- name: GetStudentDiscountsForCourseChange :many
+-- Oldest first; the course change shrinks the newest ones first when the
+-- new fee can't absorb them all.
+SELECT id, type, mode, amount, created_at
+FROM student_discounts
+WHERE student_id = $1
+ORDER BY created_at, id;
+
+-- name: UpdateDiscountAmount :exec
+UPDATE student_discounts
+SET amount = $2
+WHERE id = $1;

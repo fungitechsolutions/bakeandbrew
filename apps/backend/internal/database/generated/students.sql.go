@@ -12,6 +12,26 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const appendStudentNote = `-- name: AppendStudentNote :exec
+UPDATE students
+SET notes = CASE
+        WHEN notes IS NULL OR btrim(notes) = '' THEN $1::TEXT
+        ELSE notes || E'\n' || $1::TEXT
+    END,
+    updated_at = NOW()
+WHERE id = $2
+`
+
+type AppendStudentNoteParams struct {
+	Note string      `json:"note"`
+	ID   pgtype.UUID `json:"id"`
+}
+
+func (q *Queries) AppendStudentNote(ctx context.Context, arg AppendStudentNoteParams) error {
+	_, err := q.db.Exec(ctx, appendStudentNote, arg.Note, arg.ID)
+	return err
+}
+
 const createStudent = `-- name: CreateStudent :one
 INSERT INTO students (
     reference_no, fiscal_year, serial_no, full_name, dob_ad, gender,

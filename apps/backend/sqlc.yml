@@ -19,3 +19,11 @@ sql:
             go_type: "float64"
           - column: "wastage.qty"
             go_type: "float64"
+          - column: "student_course_changes.old_courses"
+            go_type:
+              import: "encoding/json"
+              type: "RawMessage"
+          - column: "student_course_changes.new_courses"
+            go_type:
+              import: "encoding/json"
+              type: "RawMessage"

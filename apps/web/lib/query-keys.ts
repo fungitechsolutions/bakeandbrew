@@ -97,6 +97,10 @@ export const queryKeys = {
     student: (studentId: string) =>
       ["admin-certificates", "student", studentId] as const,
   },
+  courseChanges: {
+    student: (studentId: string) =>
+      ["admin-students", "course-changes", studentId] as const,
+  },
   studentFinance: {
     payments: (filters: {
       page: number;

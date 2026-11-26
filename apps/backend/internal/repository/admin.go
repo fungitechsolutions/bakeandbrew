@@ -47,6 +47,7 @@ type AdminRepository interface {
 	UpdateStudentPersonalInfo(ctx context.Context, params db.UpdateStudentPersonalInfoParams) (pgconn.CommandTag, error)
 	UpdateStudentGuardianInfo(ctx context.Context, params db.UpdateStudentGuardianInfoParams) (pgconn.CommandTag, error)
 	UpdateStudentImage(ctx context.Context, params db.UpdateStudentImageParams) (pgconn.CommandTag, error)
+	ListStudentCourseChanges(ctx context.Context, studentID pgtype.UUID) ([]db.ListStudentCourseChangesRow, error)
 
 	GetDistinctBatches(ctx context.Context) ([]pgtype.Text, error)
 
@@ -131,6 +132,13 @@ type AdminStudentCoursesTxRepository interface {
 	GetCoursesByIDs(ctx context.Context, ids []pgtype.UUID) ([]db.GetCoursesByIDsRow, error)
 	RemoveStudentFromCourse(ctx context.Context, params db.RemoveStudentFromCourseParams) error
 	EnrollStudentInCourse(ctx context.Context, params db.EnrollStudentInCourseParams) error
+	GetStudentFeeSummary(ctx context.Context, id pgtype.UUID) (db.GetStudentFeeSummaryRow, error)
+	GetStudentDiscountsForCourseChange(ctx context.Context, studentID pgtype.UUID) ([]db.GetStudentDiscountsForCourseChangeRow, error)
+	GetStudentScholarshipForCourseChange(ctx context.Context, studentID pgtype.UUID) ([]db.GetStudentScholarshipForCourseChangeRow, error)
+	UpdateDiscountAmount(ctx context.Context, params db.UpdateDiscountAmountParams) error
+	UpdateScholarshipAmount(ctx context.Context, params db.UpdateScholarshipAmountParams) error
+	CreateStudentCourseChange(ctx context.Context, params db.CreateStudentCourseChangeParams) error
+	AppendStudentNote(ctx context.Context, params db.AppendStudentNoteParams) error
 }
 
 type adminStudentCoursesTxRepository struct {
@@ -167,4 +175,32 @@ func (r *adminStudentCoursesTxRepository) RemoveStudentFromCourse(ctx context.Co
 
 func (r *adminStudentCoursesTxRepository) EnrollStudentInCourse(ctx context.Context, params db.EnrollStudentInCourseParams) error {
 	return r.queries.EnrollStudentInCourse(ctx, params)
+}
+
+func (r *adminStudentCoursesTxRepository) GetStudentFeeSummary(ctx context.Context, id pgtype.UUID) (db.GetStudentFeeSummaryRow, error) {
+	return r.queries.GetStudentFeeSummary(ctx, id)
+}
+
+func (r *adminStudentCoursesTxRepository) GetStudentDiscountsForCourseChange(ctx context.Context, studentID pgtype.UUID) ([]db.GetStudentDiscountsForCourseChangeRow, error) {
+	return r.queries.GetStudentDiscountsForCourseChange(ctx, studentID)
+}
+
+func (r *adminStudentCoursesTxRepository) GetStudentScholarshipForCourseChange(ctx context.Context, studentID pgtype.UUID) ([]db.GetStudentScholarshipForCourseChangeRow, error) {
+	return r.queries.GetStudentScholarshipForCourseChange(ctx, studentID)
+}
+
+func (r *adminStudentCoursesTxRepository) UpdateDiscountAmount(ctx context.Context, params db.UpdateDiscountAmountParams) error {
+	return r.queries.UpdateDiscountAmount(ctx, params)
+}
+
+func (r *adminStudentCoursesTxRepository) UpdateScholarshipAmount(ctx context.Context, params db.UpdateScholarshipAmountParams) error {
+	return r.queries.UpdateScholarshipAmount(ctx, params)
+}
+
+func (r *adminStudentCoursesTxRepository) CreateStudentCourseChange(ctx context.Context, params db.CreateStudentCourseChangeParams) error {
+	return r.queries.CreateStudentCourseChange(ctx, params)
+}
+
+func (r *adminStudentCoursesTxRepository) AppendStudentNote(ctx context.Context, params db.AppendStudentNoteParams) error {
+	return r.queries.AppendStudentNote(ctx, params)
 }
