@@ -45,5 +45,5 @@ func setupAdminStudentRoutes(admin *gin.RouterGroup, cfg config.Config) {
 	s.DELETE("/:studentID/scholarships/:scholarshipID", adminStudentsScholarships.DeleteScholarship(repository.NewStudentScholarshipEditTxRepository(cfg.Queries), cfg.PgxPool))
 	s.GET("/:studentID/scholarships", adminStudentsScholarships.ListStudentScholarshipDetail(cfg.Queries))
 
-	s.PUT("/:studentID/image", adminStudents.UpdateStudentImage(cfg.Queries))
+	s.PUT("/:studentID/image", adminStudents.UpdateStudentImage(cfg.Queries, cfg.Config.CloudinaryCloudName))
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
 	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
 	"github.com/suprimkhatri77/sms/backend/internal/pkg/applog"
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/cloudinary"
 	"github.com/suprimkhatri77/sms/backend/internal/repository"
 	"github.com/suprimkhatri77/sms/backend/internal/types"
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
@@ -19,7 +20,7 @@ type UpdateStudentImageRequest struct {
 	ImageUrl string `json:"imageUrl" binding:"omitempty,url"`
 }
 
-func UpdateStudentImage(queries repository.AdminRepository) gin.HandlerFunc {
+func UpdateStudentImage(queries repository.AdminRepository, cloudinaryCloudName string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 
@@ -54,6 +55,24 @@ func UpdateStudentImage(queries repository.AdminRepository) gin.HandlerFunc {
 		}
 
 		utils.TrimStruct(&req)
+
+		// an empty URL clears the photo
+		if req.ImageUrl != "" && !cloudinary.IsOwnImageURL(req.ImageUrl, cloudinaryCloudName) {
+			applog.Warn(c, handlerUpdateStudentImage, "image url is not a cloudinary upload",
+				applog.WithStudentID(studentIDFromParams),
+			)
+			c.JSON(http.StatusBadRequest, types.APIResponse{
+				Success: false,
+				Message: "Image must be uploaded through the app",
+				Code:    constants.ValidationFailed,
+				Errors: []types.AppError{{
+					Code:    constants.InvalidImageURL,
+					Field:   "imageUrl",
+					Message: "Image must be uploaded through the app",
+				}},
+			})
+			return
+		}
 
 		_, err = queries.UpdateStudentImage(ctx, db.UpdateStudentImageParams{
 			ID:       studentID,

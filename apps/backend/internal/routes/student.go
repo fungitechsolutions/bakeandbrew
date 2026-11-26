@@ -9,7 +9,7 @@ import (
 
 func setupStudentRoutes(router *gin.RouterGroup, cfg config.Config) {
 	s := router.Group("/students")
-	s.POST("/admission", middleware.RequireAuth(cfg.Config), middleware.RequireRole("student"), student.CreateStudent(cfg.StudentRepo, cfg.PgxPool))
+	s.POST("/admission", middleware.RequireAuth(cfg.Config), middleware.RequireRole("student"), student.CreateStudent(cfg.StudentRepo, cfg.PgxPool, cfg.Config.CloudinaryCloudName))
 	s.GET("/admission/status", middleware.RequireAuth(cfg.Config), middleware.RequireRole("student"), student.GetStudentAdmissionStatus(cfg.StudentRepo))
 	s.POST("/inquiry", student.CreateInquiry(cfg.StudentRepo))
 }
