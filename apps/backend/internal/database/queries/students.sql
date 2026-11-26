@@ -3,7 +3,6 @@ SELECT
     s.status,
     COALESCE(sc.total_fee, 0)::BIGINT        AS total_fee,
     COALESCE(p.total_paid, 0)::BIGINT        AS total_paid,
-    COALESCE(d.total_discount_percent, 0)::NUMERIC AS total_discount_percent,
     COALESCE(d.total_discount_amount, 0)::BIGINT   AS total_discount_amount,
     COALESCE(sch.percent, 0)::NUMERIC        AS scholarship_percent,
     COALESCE(sch.amount, 0)::BIGINT          AS scholarship_amount
@@ -19,7 +18,7 @@ LEFT JOIN (
     GROUP BY student_id
 ) p ON p.student_id = s.id
 LEFT JOIN (
-    SELECT student_id, SUM(percent) AS total_discount_percent, SUM(amount) AS total_discount_amount
+    SELECT student_id, SUM(amount) AS total_discount_amount
     FROM student_discounts
     GROUP BY student_id
 ) d ON d.student_id = s.id

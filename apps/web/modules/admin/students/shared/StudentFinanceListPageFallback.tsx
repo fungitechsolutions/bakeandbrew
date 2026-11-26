@@ -18,6 +18,7 @@ type StudentFinanceListPageFallbackProps = {
   title: string;
   description: string;
   columns: FinanceTableColumn[];
+  tableClassName?: string;
   showSearch?: boolean;
 };
 
@@ -25,6 +26,7 @@ export function StudentFinanceListPageFallback({
   title,
   description,
   columns,
+  tableClassName = financeTableClass,
   showSearch = true,
 }: StudentFinanceListPageFallbackProps) {
   return (
@@ -52,7 +54,7 @@ export function StudentFinanceListPageFallback({
 
       <div className="overflow-hidden border border-[rgba(47,78,64,0.18)] bg-white">
         <div className="overflow-x-auto max-md:hidden">
-          <table className={financeTableClass}>
+          <table className={tableClassName}>
             <FinanceTableColGroup columns={columns} />
             <FinanceTableHead columns={columns} />
             <tbody>

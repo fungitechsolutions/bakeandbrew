@@ -26,12 +26,6 @@ RETURNING *;
 DELETE FROM student_discounts
 WHERE id = $1;
 
--- name: GetTotalDiscountPercentByStudent :one
-SELECT COALESCE(SUM(percent), 0)::NUMERIC AS total_discount_percent
-FROM student_discounts
-WHERE student_id = $1;
-
-
 -- name: GetStudentDiscounts :many
 SELECT 
 id,

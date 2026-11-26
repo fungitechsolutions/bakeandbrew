@@ -540,7 +540,6 @@ SELECT
     s.status,
     COALESCE(sc.total_fee, 0)::BIGINT        AS total_fee,
     COALESCE(p.total_paid, 0)::BIGINT        AS total_paid,
-    COALESCE(d.total_discount_percent, 0)::NUMERIC AS total_discount_percent,
     COALESCE(d.total_discount_amount, 0)::BIGINT   AS total_discount_amount,
     COALESCE(sch.percent, 0)::NUMERIC        AS scholarship_percent,
     COALESCE(sch.amount, 0)::BIGINT          AS scholarship_amount
@@ -556,7 +555,7 @@ LEFT JOIN (
     GROUP BY student_id
 ) p ON p.student_id = s.id
 LEFT JOIN (
-    SELECT student_id, SUM(percent) AS total_discount_percent, SUM(amount) AS total_discount_amount
+    SELECT student_id, SUM(amount) AS total_discount_amount
     FROM student_discounts
     GROUP BY student_id
 ) d ON d.student_id = s.id
@@ -565,13 +564,12 @@ WHERE s.id = $1
 `
 
 type GetStudentFeeSummaryRow struct {
-	Status               string         `json:"status"`
-	TotalFee             int64          `json:"totalFee"`
-	TotalPaid            int64          `json:"totalPaid"`
-	TotalDiscountPercent pgtype.Numeric `json:"totalDiscountPercent"`
-	TotalDiscountAmount  int64          `json:"totalDiscountAmount"`
-	ScholarshipPercent   pgtype.Numeric `json:"scholarshipPercent"`
-	ScholarshipAmount    int64          `json:"scholarshipAmount"`
+	Status              string         `json:"status"`
+	TotalFee            int64          `json:"totalFee"`
+	TotalPaid           int64          `json:"totalPaid"`
+	TotalDiscountAmount int64          `json:"totalDiscountAmount"`
+	ScholarshipPercent  pgtype.Numeric `json:"scholarshipPercent"`
+	ScholarshipAmount   int64          `json:"scholarshipAmount"`
 }
 
 func (q *Queries) GetStudentFeeSummary(ctx context.Context, id pgtype.UUID) (GetStudentFeeSummaryRow, error) {
@@ -581,7 +579,6 @@ func (q *Queries) GetStudentFeeSummary(ctx context.Context, id pgtype.UUID) (Get
 		&i.Status,
 		&i.TotalFee,
 		&i.TotalPaid,
-		&i.TotalDiscountPercent,
 		&i.TotalDiscountAmount,
 		&i.ScholarshipPercent,
 		&i.ScholarshipAmount,

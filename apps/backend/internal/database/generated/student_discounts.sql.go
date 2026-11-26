@@ -358,19 +358,6 @@ func (q *Queries) GetStudentDiscountsForCourseChange(ctx context.Context, studen
 	return items, nil
 }
 
-const getTotalDiscountPercentByStudent = `-- name: GetTotalDiscountPercentByStudent :one
-SELECT COALESCE(SUM(percent), 0)::NUMERIC AS total_discount_percent
-FROM student_discounts
-WHERE student_id = $1
-`
-
-func (q *Queries) GetTotalDiscountPercentByStudent(ctx context.Context, studentID pgtype.UUID) (pgtype.Numeric, error) {
-	row := q.db.QueryRow(ctx, getTotalDiscountPercentByStudent, studentID)
-	var total_discount_percent pgtype.Numeric
-	err := row.Scan(&total_discount_percent)
-	return total_discount_percent, err
-}
-
 const listDiscountsByStudent = `-- name: ListDiscountsByStudent :many
 SELECT 
     sd.id, sd.student_id, sd.added_by, sd.type, sd.percent, sd.note, sd.amount, sd.created_at, sd.mode,

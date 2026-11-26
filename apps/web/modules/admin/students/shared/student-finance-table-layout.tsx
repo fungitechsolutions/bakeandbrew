@@ -1,6 +1,10 @@
 export const financeTableClass =
   "w-full table-fixed border-collapse";
 
+// The discount table has six columns, too many to squeeze into a narrow content
+// area: below this width it scrolls in its overflow-x-auto wrapper instead.
+export const discountTableClass = `${financeTableClass} min-w-[700px]`;
+
 export const financeThClass =
   "px-5 py-3.5 text-left font-(family-name:--font-dm-sans) text-[10px] font-semibold uppercase tracking-widest text-[rgba(47,78,64,0.45)] bg-[rgba(47,78,64,0.03)] border-b border-[rgba(47,78,64,0.12)] whitespace-nowrap";
 
@@ -109,7 +113,8 @@ export const DISCOUNT_TABLE_COLUMNS: FinanceTableColumn[] = [
     key: "type",
     label: "Type",
     width: "14%",
-    cellClassName: "whitespace-nowrap",
+    // Wraps: a type can be up to 50 characters, wider than the column.
+    cellClassName: "wrap-break-word",
     skeleton: "text",
   },
   {
@@ -131,7 +136,7 @@ export const DISCOUNT_TABLE_COLUMNS: FinanceTableColumn[] = [
   {
     key: "note",
     label: "Note",
-    width: "24%",
+    width: "18%",
     headerClassName: `${financeThClass} pl-10`,
     cellClassName: "pl-10",
     skeleton: "text",
@@ -139,8 +144,9 @@ export const DISCOUNT_TABLE_COLUMNS: FinanceTableColumn[] = [
   {
     key: "date",
     label: "Date",
-    width: "12%",
-    cellClassName: "whitespace-nowrap",
+    width: "18%",
+    // Not nowrap: near the table's min width the date wraps before the year
+    // instead of being clipped.
     skeleton: "date",
   },
 ];
