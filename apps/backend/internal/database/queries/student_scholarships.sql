@@ -90,3 +90,13 @@ WHERE
         OR s.reference_no ILIKE '%' || sqlc.narg('search')::TEXT || '%')
     AND (sqlc.narg('from')::TEXT IS NULL OR ss.created_at >= sqlc.narg('from')::TIMESTAMPTZ)
     AND (sqlc.narg('to')::TEXT IS NULL OR ss.created_at <= (sqlc.narg('to')::TIMESTAMPTZ + INTERVAL '1 day'));
+
+-- name: GetStudentScholarshipForCourseChange :many
+SELECT id, amount, created_at
+FROM student_scholarships
+WHERE student_id = $1;
+
+-- name: UpdateScholarshipAmount :exec
+UPDATE student_scholarships
+SET amount = $2
+WHERE id = $1;

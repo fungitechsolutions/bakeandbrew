@@ -1,4 +1,5 @@
 import {
+  StudentCourseChanges,
   UpdateStudentImageInput,
   UpdateStudentImageResponse,
 } from "@repo/types";
@@ -11,6 +12,15 @@ export const updateStudentImage = async (
   const res = await api.put<UpdateStudentImageResponse>(
     `/admin/students/${studentId}/image`,
     data,
+  );
+  return res.data;
+};
+
+export const getStudentCourseChanges = async (
+  studentId: string,
+): Promise<StudentCourseChanges> => {
+  const res = await api.get<StudentCourseChanges>(
+    `/admin/students/${studentId}/course-changes`,
   );
   return res.data;
 };

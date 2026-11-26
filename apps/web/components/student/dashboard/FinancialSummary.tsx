@@ -192,10 +192,17 @@ export function FinancialSummary() {
         />
         <StatCard
           label="Remaining balance"
-          value={formatNPR(remaining)}
-          sub={remaining === 0 ? "Fully cleared" : "Outstanding"}
+          // negative after a course change to a cheaper course
+          value={formatNPR(Math.abs(remaining))}
+          sub={
+            remaining > 0
+              ? "Outstanding"
+              : remaining === 0
+                ? "Fully cleared"
+                : "Overpaid (refund or credit due)"
+          }
           icon={<AlertCircle size={18} strokeWidth={1.75} />}
-          accent={remaining === 0 ? "green" : "brown"}
+          accent={remaining > 0 ? "brown" : "green"}
         />
       </div>
 

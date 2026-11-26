@@ -5,6 +5,8 @@
 package db
 
 import (
+	"encoding/json"
+
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -166,6 +168,22 @@ type StudentCourse struct {
 	StudentID       pgtype.UUID `json:"studentId"`
 	CourseID        pgtype.UUID `json:"courseId"`
 	FeeAtEnrollment int64       `json:"feeAtEnrollment"`
+}
+
+type StudentCourseChange struct {
+	ID             pgtype.UUID        `json:"id"`
+	StudentID      pgtype.UUID        `json:"studentId"`
+	ChangedBy      pgtype.UUID        `json:"changedBy"`
+	OldCourses     json.RawMessage    `json:"oldCourses"`
+	NewCourses     json.RawMessage    `json:"newCourses"`
+	OldTotalFee    int64              `json:"oldTotalFee"`
+	NewTotalFee    int64              `json:"newTotalFee"`
+	TotalPaid      int64              `json:"totalPaid"`
+	OldAdjustments int64              `json:"oldAdjustments"`
+	NewAdjustments int64              `json:"newAdjustments"`
+	ExcessAmount   int64              `json:"excessAmount"`
+	Reason         pgtype.Text        `json:"reason"`
+	CreatedAt      pgtype.Timestamptz `json:"createdAt"`
 }
 
 type StudentDiscount struct {

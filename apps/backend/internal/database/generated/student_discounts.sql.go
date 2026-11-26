@@ -285,6 +285,49 @@ func (q *Queries) GetStudentDiscounts(ctx context.Context, studentID pgtype.UUID
 	return items, nil
 }
 
+const getStudentDiscountsForCourseChange = `-- name: GetStudentDiscountsForCourseChange :many
+SELECT id, type, mode, amount, created_at
+FROM student_discounts
+WHERE student_id = $1
+ORDER BY created_at, id
+`
+
+type GetStudentDiscountsForCourseChangeRow struct {
+	ID        pgtype.UUID        `json:"id"`
+	Type      string             `json:"type"`
+	Mode      string             `json:"mode"`
+	Amount    int64              `json:"amount"`
+	CreatedAt pgtype.Timestamptz `json:"createdAt"`
+}
+
+// Oldest first; the course change shrinks the newest ones first when the
+// new fee can't absorb them all.
+func (q *Queries) GetStudentDiscountsForCourseChange(ctx context.Context, studentID pgtype.UUID) ([]GetStudentDiscountsForCourseChangeRow, error) {
+	rows, err := q.db.Query(ctx, getStudentDiscountsForCourseChange, studentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetStudentDiscountsForCourseChangeRow
+	for rows.Next() {
+		var i GetStudentDiscountsForCourseChangeRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Type,
+			&i.Mode,
+			&i.Amount,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getTotalDiscountPercentByStudent = `-- name: GetTotalDiscountPercentByStudent :one
 SELECT COALESCE(SUM(percent), 0)::NUMERIC AS total_discount_percent
 FROM student_discounts
@@ -390,4 +433,20 @@ func (q *Queries) UpdateDiscount(ctx context.Context, arg UpdateDiscountParams) 
 		&i.Mode,
 	)
 	return i, err
+}
+
+const updateDiscountAmount = `-- name: UpdateDiscountAmount :exec
+UPDATE student_discounts
+SET amount = $2
+WHERE id = $1
+`
+
+type UpdateDiscountAmountParams struct {
+	ID     pgtype.UUID `json:"id"`
+	Amount int64       `json:"amount"`
+}
+
+func (q *Queries) UpdateDiscountAmount(ctx context.Context, arg UpdateDiscountAmountParams) error {
+	_, err := q.db.Exec(ctx, updateDiscountAmount, arg.ID, arg.Amount)
+	return err
 }

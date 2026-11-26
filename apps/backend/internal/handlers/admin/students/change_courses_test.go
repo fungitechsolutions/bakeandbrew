@@ -44,19 +44,58 @@ func TestDiffCourseIDs(t *testing.T) {
 }
 
 func TestCourseChangeBlockedMessage(t *testing.T) {
-	if got := courseChangeBlockedMessage(db.GetStudentCourseChangeBlockersRow{}); got != "" {
-		t.Errorf("no records: got %q, want no message", got)
-	}
-
-	blocked := []db.GetStudentCourseChangeBlockersRow{
+	// Payments, discounts and a scholarship are carried over, not blockers.
+	carried := []db.GetStudentCourseChangeBlockersRow{
+		{},
 		{PaymentCount: 1},
 		{DiscountCount: 1},
 		{ScholarshipCount: 1},
-		{CertificateCount: 1},
 	}
-	for _, row := range blocked {
-		if got := courseChangeBlockedMessage(row); got == "" {
-			t.Errorf("%+v: expected a message", row)
+	for _, row := range carried {
+		if got := courseChangeBlockedMessage(row); got != "" {
+			t.Errorf("%+v: got %q, want no message", row, got)
+		}
+	}
+
+	if got := courseChangeBlockedMessage(db.GetStudentCourseChangeBlockersRow{PaymentCount: 1, CertificateCount: 1}); got == "" {
+		t.Error("certificate: expected a message")
+	}
+}
+
+func TestCourseChangeNeedsConfirmation(t *testing.T) {
+	tests := []struct {
+		row  db.GetStudentCourseChangeBlockersRow
+		want bool
+	}{
+		{row: db.GetStudentCourseChangeBlockersRow{}, want: false},
+		{row: db.GetStudentCourseChangeBlockersRow{PaymentCount: 2}, want: true},
+		{row: db.GetStudentCourseChangeBlockersRow{DiscountCount: 1}, want: true},
+		{row: db.GetStudentCourseChangeBlockersRow{ScholarshipCount: 1}, want: true},
+	}
+	for _, tt := range tests {
+		if got := courseChangeNeedsConfirmation(tt.row); got != tt.want {
+			t.Errorf("%+v: got %v, want %v", tt.row, got, tt.want)
+		}
+	}
+}
+
+func TestCourseChangeExpectedMatches(t *testing.T) {
+	summary := courseChangeSummary{TotalPaid: 100, NewTotalFee: 500, NewAdjustments: 50, ExcessAmount: 0, RequiresConfirmation: true}
+	same := courseChangeExpected{TotalPaid: 100, NewTotalFee: 500, NewAdjustments: 50, ExcessAmount: 0, RequiresConfirmation: true}
+	if !same.matches(summary) {
+		t.Error("identical preview should match")
+	}
+
+	changed := []courseChangeExpected{
+		{TotalPaid: 90, NewTotalFee: 500, NewAdjustments: 50, RequiresConfirmation: true},
+		{TotalPaid: 100, NewTotalFee: 400, NewAdjustments: 50, RequiresConfirmation: true},
+		{TotalPaid: 100, NewTotalFee: 500, NewAdjustments: 40, RequiresConfirmation: true},
+		{TotalPaid: 100, NewTotalFee: 500, NewAdjustments: 50, ExcessAmount: 1, RequiresConfirmation: true},
+		{TotalPaid: 100, NewTotalFee: 500, NewAdjustments: 50},
+	}
+	for _, e := range changed {
+		if e.matches(summary) {
+			t.Errorf("%+v should not match %+v", e, summary)
 		}
 	}
 }

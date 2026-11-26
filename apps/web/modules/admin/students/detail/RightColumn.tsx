@@ -8,6 +8,7 @@ import { AlertCircle, BookOpen, Hash } from "lucide-react";
 import { detailInsetClass, detailLabelClass, detailValueClass } from "./detail-styles";
 import { formatNpr } from "../shared/student-utils";
 import { ChangeCoursesModal } from "./ChangeCoursesModal";
+import { CourseChangeHistory } from "./CourseChangeHistory";
 import type { Status } from "./StudentDetail";
 import {
   canChangeCoursesForStatus,
@@ -47,9 +48,6 @@ export function RightColumn({
 
   const courseChangeBlockedReason = getCourseChangeBlockedReason({
     status: currentStatus,
-    paymentCount,
-    discountCount,
-    hasScholarship,
     certificateCount: certificatesResponse?.data?.length ?? 0,
   });
 
@@ -59,6 +57,7 @@ export function RightColumn({
         <ChangeCoursesModal
           studentId={student.id}
           currentCourses={courses}
+          hasMoneyRecords={paymentCount > 0 || discountCount > 0 || hasScholarship}
           onClose={() => setShowChangeCourses(false)}
         />
       ) : null}
@@ -98,6 +97,8 @@ export function RightColumn({
         </div>
       </SectionCard>
 
+      <CourseChangeHistory studentId={student.id} />
+
       <SectionCard title="Enrollment Details" icon={Hash}>
         <div className="flex flex-col gap-3">
           {[
@@ -122,7 +123,7 @@ export function RightColumn({
 
       {student.notes ? (
         <SectionCard title="Admin Notes" icon={AlertCircle}>
-          <p className="border border-amber-200 bg-amber-50 px-4 py-3 font-(family-name:--font-dm-sans) text-sm leading-relaxed text-amber-900">
+          <p className="whitespace-pre-line border border-amber-200 bg-amber-50 px-4 py-3 font-(family-name:--font-dm-sans) text-sm leading-relaxed text-amber-900">
             {student.notes}
           </p>
         </SectionCard>

@@ -424,3 +424,12 @@ SELECT
     (SELECT COUNT(*) FROM student_discounts sd WHERE sd.student_id = @student_id::UUID)::BIGINT AS discount_count,
     (SELECT COUNT(*) FROM student_scholarships ss WHERE ss.student_id = @student_id::UUID)::BIGINT AS scholarship_count,
     (SELECT COUNT(*) FROM certificates ce WHERE ce.student_id = @student_id::UUID)::BIGINT AS certificate_count;
+
+-- name: AppendStudentNote :exec
+UPDATE students
+SET notes = CASE
+        WHEN notes IS NULL OR btrim(notes) = '' THEN @note::TEXT
+        ELSE notes || E'\n' || @note::TEXT
+    END,
+    updated_at = NOW()
+WHERE id = @id;

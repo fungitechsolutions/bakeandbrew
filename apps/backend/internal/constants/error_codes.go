@@ -44,6 +44,11 @@ const (
 	CourseInactive      = "COURSE_INACTIVE"
 	// the student has payments/discounts/etc. or the wrong status for a course change
 	CourseChangeNotAllowed = "COURSE_CHANGE_NOT_ALLOWED"
+	// a course change on a student with payments, discounts or a scholarship
+	// needs the admin to type the confirmation word
+	CourseChangeConfirmationRequired = "COURSE_CHANGE_CONFIRMATION_REQUIRED"
+	// the numbers the admin confirmed no longer match; the response carries a fresh preview
+	CourseChangePreviewOutdated = "COURSE_CHANGE_PREVIEW_OUTDATED"
 
 	// inquiries
 	InquiryNotFound  = "INQUIRY_NOT_FOUND"

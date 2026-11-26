@@ -285,6 +285,38 @@ func (q *Queries) GetStudentScholarship(ctx context.Context, studentID pgtype.UU
 	return i, err
 }
 
+const getStudentScholarshipForCourseChange = `-- name: GetStudentScholarshipForCourseChange :many
+SELECT id, amount, created_at
+FROM student_scholarships
+WHERE student_id = $1
+`
+
+type GetStudentScholarshipForCourseChangeRow struct {
+	ID        pgtype.UUID        `json:"id"`
+	Amount    int64              `json:"amount"`
+	CreatedAt pgtype.Timestamptz `json:"createdAt"`
+}
+
+func (q *Queries) GetStudentScholarshipForCourseChange(ctx context.Context, studentID pgtype.UUID) ([]GetStudentScholarshipForCourseChangeRow, error) {
+	rows, err := q.db.Query(ctx, getStudentScholarshipForCourseChange, studentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetStudentScholarshipForCourseChangeRow
+	for rows.Next() {
+		var i GetStudentScholarshipForCourseChangeRow
+		if err := rows.Scan(&i.ID, &i.Amount, &i.CreatedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateScholarship = `-- name: UpdateScholarship :one
 UPDATE student_scholarships
 SET percent = $2, note = $3, amount = $4
@@ -317,4 +349,20 @@ func (q *Queries) UpdateScholarship(ctx context.Context, arg UpdateScholarshipPa
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const updateScholarshipAmount = `-- name: UpdateScholarshipAmount :exec
+UPDATE student_scholarships
+SET amount = $2
+WHERE id = $1
+`
+
+type UpdateScholarshipAmountParams struct {
+	ID     pgtype.UUID `json:"id"`
+	Amount int64       `json:"amount"`
+}
+
+func (q *Queries) UpdateScholarshipAmount(ctx context.Context, arg UpdateScholarshipAmountParams) error {
+	_, err := q.db.Exec(ctx, updateScholarshipAmount, arg.ID, arg.Amount)
+	return err
 }

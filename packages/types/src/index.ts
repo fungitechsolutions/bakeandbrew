@@ -106,6 +106,8 @@ export {
   type StudentEnrolledCourses,
   type ChangeStudentCourses,
   type ChangeStudentCoursesResponse,
+  type CourseChangeSummary,
+  type StudentCourseChanges,
   type StudentPaymentDetails,
   type UpdateStudentStatus,
   type UpdateStudentStatusResponse,
