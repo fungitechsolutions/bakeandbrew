@@ -6,7 +6,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
 	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
 	"github.com/suprimkhatri77/sms/backend/internal/repository"
@@ -15,15 +17,15 @@ import (
 	"github.com/suprimkhatri77/sms/backend/internal/validator"
 )
 
+// The student comes from the URL, not the body: the discount must belong to it.
 type UpdateDiscountRequest struct {
-	StudentID string  `json:"studentID" binding:"required,uuid"`
-	Type      string  `json:"type" binding:"required,min=1,max=50"`
-	Note      string  `json:"note" binding:"omitempty,min=1,max=100"`
-	Percent   float64 `json:"percent" binding:"omitempty,gte=0.01,lte=100"`
-	Amount    float64 `json:"amount" binding:"omitempty,min=0.01,lte=10000000"`
+	Type    string  `json:"type" binding:"required,min=1,max=50"`
+	Note    string  `json:"note" binding:"omitempty,min=1,max=100"`
+	Percent float64 `json:"percent" binding:"omitempty,gte=0.01,lte=100"`
+	Amount  float64 `json:"amount" binding:"omitempty,min=0.01,lte=10000000"`
 }
 
-func UpdateDiscount(queries repository.StudentDiscounts) gin.HandlerFunc {
+func UpdateDiscount(queries repository.StudentDiscountEditTxRepository, pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 
@@ -58,7 +60,7 @@ func UpdateDiscount(queries repository.StudentDiscounts) gin.HandlerFunc {
 			return
 		}
 
-		studentID, err := utils.ConvertToUUID(req.StudentID)
+		studentID, err := utils.ConvertToUUID(c.Param("studentID"))
 		if err != nil {
 			c.JSON(http.StatusBadRequest, types.APIResponse{
 				Success: false,
@@ -86,7 +88,7 @@ func UpdateDiscount(queries repository.StudentDiscounts) gin.HandlerFunc {
 			mode = "amount"
 		}
 
-		existingDiscount, err := queries.GetDiscountByID(ctx, discountID)
+		tx, err := pool.Begin(ctx)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
@@ -95,8 +97,51 @@ func UpdateDiscount(queries repository.StudentDiscounts) gin.HandlerFunc {
 			})
 			return
 		}
+		defer tx.Rollback(ctx)
 
-		summary, err := queries.GetStudentFeeSummary(ctx, studentID)
+		qtx := queries.WithTx(tx)
+
+		// Held until commit so a course change can't rescale the fees between
+		// reading the balance and saving this discount.
+		if _, err := qtx.LockStudentForShare(ctx, studentID); err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				c.JSON(http.StatusNotFound, types.APIResponse{
+					Success: false,
+					Message: "Student not found",
+					Code:    constants.StudentNotFound,
+				})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, types.APIResponse{
+				Success: false,
+				Message: "Failed to process request",
+				Code:    constants.InternalServerError,
+			})
+			return
+		}
+
+		existingDiscount, err := qtx.GetStudentDiscountForUpdate(ctx, db.GetStudentDiscountForUpdateParams{
+			ID:        discountID,
+			StudentID: studentID,
+		})
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				c.JSON(http.StatusNotFound, types.APIResponse{
+					Success: false,
+					Message: "Discount not found",
+					Code:    constants.DiscountNotFound,
+				})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, types.APIResponse{
+				Success: false,
+				Message: "Failed to process request",
+				Code:    constants.InternalServerError,
+			})
+			return
+		}
+
+		summary, err := qtx.GetStudentFeeSummary(ctx, studentID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
@@ -169,7 +214,7 @@ func UpdateDiscount(queries repository.StudentDiscounts) gin.HandlerFunc {
 			return
 		}
 
-		_, err = queries.UpdateDiscount(ctx, db.UpdateDiscountParams{
+		_, err = qtx.UpdateDiscount(ctx, db.UpdateDiscountParams{
 			ID:      discountID,
 			Note:    utils.ToNullableText(req.Note),
 			Type:    req.Type,
@@ -188,6 +233,15 @@ func UpdateDiscount(queries repository.StudentDiscounts) gin.HandlerFunc {
 				})
 				return
 			}
+			c.JSON(http.StatusInternalServerError, types.APIResponse{
+				Success: false,
+				Message: "Failed to process request",
+				Code:    constants.InternalServerError,
+			})
+			return
+		}
+
+		if err := tx.Commit(ctx); err != nil {
 			c.JSON(http.StatusInternalServerError, types.APIResponse{
 				Success: false,
 				Message: "Failed to process request",

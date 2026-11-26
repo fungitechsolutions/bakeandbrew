@@ -115,3 +115,10 @@ ORDER BY created_at, id;
 UPDATE student_discounts
 SET amount = $2
 WHERE id = $1;
+
+-- name: GetStudentDiscountForUpdate :one
+-- For an edit or delete: only finds the discount through its own student, and
+-- holds it until commit so two edits of the same discount can't interleave.
+SELECT * FROM student_discounts
+WHERE id = $1 AND student_id = $2
+FOR UPDATE;

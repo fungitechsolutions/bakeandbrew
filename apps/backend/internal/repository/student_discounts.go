@@ -49,3 +49,46 @@ func (r *studentDiscountCreateTxRepository) GetStudentFeeSummary(ctx context.Con
 func (r *studentDiscountCreateTxRepository) CreateDiscount(ctx context.Context, params db.CreateDiscountParams) (db.StudentDiscount, error) {
 	return r.queries.CreateDiscount(ctx, params)
 }
+
+// StudentDiscountEditTxRepository is what editing or deleting a discount needs
+// inside one transaction, under the same student lock a course change waits on.
+type StudentDiscountEditTxRepository interface {
+	WithTx(tx pgx.Tx) StudentDiscountEditTxRepository
+	LockStudentForShare(ctx context.Context, id pgtype.UUID) (pgtype.UUID, error)
+	GetStudentDiscountForUpdate(ctx context.Context, params db.GetStudentDiscountForUpdateParams) (db.StudentDiscount, error)
+	GetStudentFeeSummary(ctx context.Context, id pgtype.UUID) (db.GetStudentFeeSummaryRow, error)
+	UpdateDiscount(ctx context.Context, params db.UpdateDiscountParams) (db.StudentDiscount, error)
+	DeleteDiscount(ctx context.Context, id pgtype.UUID) error
+}
+
+type studentDiscountEditTxRepository struct {
+	queries *db.Queries
+}
+
+func NewStudentDiscountEditTxRepository(queries *db.Queries) StudentDiscountEditTxRepository {
+	return &studentDiscountEditTxRepository{queries: queries}
+}
+
+func (r *studentDiscountEditTxRepository) WithTx(tx pgx.Tx) StudentDiscountEditTxRepository {
+	return &studentDiscountEditTxRepository{queries: r.queries.WithTx(tx)}
+}
+
+func (r *studentDiscountEditTxRepository) LockStudentForShare(ctx context.Context, id pgtype.UUID) (pgtype.UUID, error) {
+	return r.queries.LockStudentForShare(ctx, id)
+}
+
+func (r *studentDiscountEditTxRepository) GetStudentDiscountForUpdate(ctx context.Context, params db.GetStudentDiscountForUpdateParams) (db.StudentDiscount, error) {
+	return r.queries.GetStudentDiscountForUpdate(ctx, params)
+}
+
+func (r *studentDiscountEditTxRepository) GetStudentFeeSummary(ctx context.Context, id pgtype.UUID) (db.GetStudentFeeSummaryRow, error) {
+	return r.queries.GetStudentFeeSummary(ctx, id)
+}
+
+func (r *studentDiscountEditTxRepository) UpdateDiscount(ctx context.Context, params db.UpdateDiscountParams) (db.StudentDiscount, error) {
+	return r.queries.UpdateDiscount(ctx, params)
+}
+
+func (r *studentDiscountEditTxRepository) DeleteDiscount(ctx context.Context, id pgtype.UUID) error {
+	return r.queries.DeleteDiscount(ctx, id)
+}
