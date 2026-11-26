@@ -48,3 +48,47 @@ func (r *studentScholarshipCreateTxRepository) GetStudentFeeSummary(ctx context.
 func (r *studentScholarshipCreateTxRepository) CreateScholarship(ctx context.Context, params db.CreateScholarshipParams) (db.StudentScholarship, error) {
 	return r.queries.CreateScholarship(ctx, params)
 }
+
+// StudentScholarshipEditTxRepository is what editing or deleting a scholarship
+// needs inside one transaction, under the same student lock a course change
+// waits on.
+type StudentScholarshipEditTxRepository interface {
+	WithTx(tx pgx.Tx) StudentScholarshipEditTxRepository
+	LockStudentForShare(ctx context.Context, id pgtype.UUID) (pgtype.UUID, error)
+	GetStudentScholarshipForUpdate(ctx context.Context, params db.GetStudentScholarshipForUpdateParams) (db.StudentScholarship, error)
+	GetStudentFeeSummary(ctx context.Context, id pgtype.UUID) (db.GetStudentFeeSummaryRow, error)
+	UpdateScholarship(ctx context.Context, params db.UpdateScholarshipParams) (db.StudentScholarship, error)
+	DeleteScholarship(ctx context.Context, id pgtype.UUID) error
+}
+
+type studentScholarshipEditTxRepository struct {
+	queries *db.Queries
+}
+
+func NewStudentScholarshipEditTxRepository(queries *db.Queries) StudentScholarshipEditTxRepository {
+	return &studentScholarshipEditTxRepository{queries: queries}
+}
+
+func (r *studentScholarshipEditTxRepository) WithTx(tx pgx.Tx) StudentScholarshipEditTxRepository {
+	return &studentScholarshipEditTxRepository{queries: r.queries.WithTx(tx)}
+}
+
+func (r *studentScholarshipEditTxRepository) LockStudentForShare(ctx context.Context, id pgtype.UUID) (pgtype.UUID, error) {
+	return r.queries.LockStudentForShare(ctx, id)
+}
+
+func (r *studentScholarshipEditTxRepository) GetStudentScholarshipForUpdate(ctx context.Context, params db.GetStudentScholarshipForUpdateParams) (db.StudentScholarship, error) {
+	return r.queries.GetStudentScholarshipForUpdate(ctx, params)
+}
+
+func (r *studentScholarshipEditTxRepository) GetStudentFeeSummary(ctx context.Context, id pgtype.UUID) (db.GetStudentFeeSummaryRow, error) {
+	return r.queries.GetStudentFeeSummary(ctx, id)
+}
+
+func (r *studentScholarshipEditTxRepository) UpdateScholarship(ctx context.Context, params db.UpdateScholarshipParams) (db.StudentScholarship, error) {
+	return r.queries.UpdateScholarship(ctx, params)
+}
+
+func (r *studentScholarshipEditTxRepository) DeleteScholarship(ctx context.Context, id pgtype.UUID) error {
+	return r.queries.DeleteScholarship(ctx, id)
+}

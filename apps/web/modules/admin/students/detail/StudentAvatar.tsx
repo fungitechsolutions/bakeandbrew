@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Status, STATUS_META } from "./StudentDetail";
 import { cn } from "@/lib/utils";
+import { isAllowedImageUrl } from "@/lib/remote-images";
 
 export function StudentAvatar({
   imageUrl,
@@ -27,7 +28,7 @@ export function StudentAvatar({
           meta.ringClass,
         )}
       >
-        {imageUrl ? (
+        {isAllowedImageUrl(imageUrl) ? (
           <Image
             src={imageUrl}
             alt={fullName}

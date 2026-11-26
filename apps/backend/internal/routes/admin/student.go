@@ -36,14 +36,14 @@ func setupAdminStudentRoutes(admin *gin.RouterGroup, cfg config.Config) {
 	s.PUT("/:studentID/info/personal", adminStudents.UpdateStudentPersonalInfo(cfg.Queries))
 
 	s.POST("/:studentID/discounts", adminStudentsDiscounts.CreateDiscount(repository.NewStudentDiscountCreateTxRepository(cfg.Queries), cfg.PgxPool))
-	s.PUT("/:studentID/discounts/:discountID", adminStudentsDiscounts.UpdateDiscount(cfg.Queries))
-	s.DELETE("/:studentID/discounts/:discountID", adminStudentsDiscounts.DeleteDiscount(cfg.Queries))
+	s.PUT("/:studentID/discounts/:discountID", adminStudentsDiscounts.UpdateDiscount(repository.NewStudentDiscountEditTxRepository(cfg.Queries), cfg.PgxPool))
+	s.DELETE("/:studentID/discounts/:discountID", adminStudentsDiscounts.DeleteDiscount(repository.NewStudentDiscountEditTxRepository(cfg.Queries), cfg.PgxPool))
 	s.GET("/:studentID/discounts", adminStudentsDiscounts.ListDiscount(cfg.Queries))
 
 	s.POST("/:studentID/scholarships", adminStudentsScholarships.CreateScholarship(repository.NewStudentScholarshipCreateTxRepository(cfg.Queries), cfg.PgxPool))
-	s.PUT("/:studentID/scholarships/:scholarshipID", adminStudentsScholarships.UpdateScholarship(cfg.Queries))
-	s.DELETE("/:studentID/scholarships/:scholarshipID", adminStudentsScholarships.DeleteScholarship(cfg.Queries))
+	s.PUT("/:studentID/scholarships/:scholarshipID", adminStudentsScholarships.UpdateScholarship(repository.NewStudentScholarshipEditTxRepository(cfg.Queries), cfg.PgxPool))
+	s.DELETE("/:studentID/scholarships/:scholarshipID", adminStudentsScholarships.DeleteScholarship(repository.NewStudentScholarshipEditTxRepository(cfg.Queries), cfg.PgxPool))
 	s.GET("/:studentID/scholarships", adminStudentsScholarships.ListStudentScholarshipDetail(cfg.Queries))
 
-	s.PUT("/:studentID/image", adminStudents.UpdateStudentImage(cfg.Queries))
+	s.PUT("/:studentID/image", adminStudents.UpdateStudentImage(cfg.Queries, cfg.Config.CloudinaryCloudName))
 }

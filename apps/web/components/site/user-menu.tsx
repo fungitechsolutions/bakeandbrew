@@ -10,6 +10,7 @@ import {
 import type { JWTUser } from "@repo/types";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
+import { isAllowedImageUrl } from "@/lib/remote-images";
 
 export function getInitials(name: string) {
   return name
@@ -27,14 +28,19 @@ export function UserAvatar({
   user: Pick<JWTUser, "name" | "imageUrl">;
   className?: string;
 }) {
-  if (user.imageUrl) {
+  const [brokenImageUrl, setBrokenImageUrl] = useState<string | null>(null);
+
+  // an unknown host would crash next/image, a broken one shows an empty circle
+  if (isAllowedImageUrl(user.imageUrl) && user.imageUrl !== brokenImageUrl) {
+    const imageUrl = user.imageUrl;
     return (
       <Image
-        src={user.imageUrl}
+        src={imageUrl}
         alt=""
         width={36}
         height={36}
         className={cn("size-9 rounded-full object-cover", className)}
+        onError={() => setBrokenImageUrl(imageUrl)}
       />
     );
   }

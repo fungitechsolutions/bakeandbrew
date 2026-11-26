@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Phone,
   MapPin,
@@ -19,6 +20,7 @@ import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/axios";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { isAllowedImageUrl } from "@/lib/remote-images";
 import {
   dashboardCardClass,
   dashboardEyebrowClass,
@@ -164,6 +166,7 @@ function HeroErrorState({
 }
 
 export function StudentHero() {
+  const [brokenPhotoUrl, setBrokenPhotoUrl] = useState<string | null>(null);
   const { data, isPending, isError, error, refetch } = useQuery({
     queryKey: ["student-overview"],
     queryFn: async () => {
@@ -194,6 +197,11 @@ export function StudentHero() {
     .join("")
     .slice(0, 2)
     .toUpperCase();
+  // an unknown host would crash next/image, a broken one shows an empty box
+  const photoUrl =
+    isAllowedImageUrl(student.photoUrl) && student.photoUrl !== brokenPhotoUrl
+      ? student.photoUrl
+      : null;
 
   return (
     <section className={cn(dashboardCardClass, "overflow-hidden")}>
@@ -202,13 +210,14 @@ export function StudentHero() {
           <div className="flex items-start gap-5">
             <div className="relative shrink-0">
               <div className="h-20 w-20 overflow-hidden border border-[rgba(47,78,64,0.12)] bg-white sm:h-[88px] sm:w-[88px]">
-                {student.photoUrl ? (
+                {photoUrl ? (
                   <Image
-                    src={student.photoUrl}
+                    src={photoUrl}
                     alt={student.fullName}
                     width={88}
                     height={88}
                     className="h-full w-full object-cover"
+                    onError={() => setBrokenPhotoUrl(photoUrl)}
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-[#f4f1ec]">

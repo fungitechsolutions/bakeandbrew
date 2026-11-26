@@ -6,7 +6,11 @@
 
 export function percentToRupeeAmount(baseRupees: number, percent: number): number {
   if (!Number.isFinite(percent) || percent <= 0) return 0;
-  return Math.round(baseRupees * percent) / 100;
+  // Same integer math as the backend's PercentToAmount (paisa × basis points,
+  // half up): float math here could land a paisa below what gets saved.
+  const basePaisa = Math.round(baseRupees * 100);
+  const basisPoints = Math.round(percent * 100);
+  return Math.floor((basePaisa * basisPoints + 5000) / 10000) / 100;
 }
 
 export function amountToPercent(baseRupees: number, amountRupees: number): number {

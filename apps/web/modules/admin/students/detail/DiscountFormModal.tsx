@@ -55,13 +55,20 @@ export function DiscountFormModal({
   onCancel: () => void;
   isPending: boolean;
 }) {
+  // On edit, both fields start as the same discount so switching modes keeps
+  // its value: an amount discount's percent is re-derived from its amount on
+  // today's balance (the stored percent may be on an older balance), and a
+  // percent discount's amount is what it's worth now.
+  const initialAmount = initial ? initial.amount / 100 : 0;
+  const initialPercent =
+    initial?.mode === "amount"
+      ? amountToPercent(balanceDue, initialAmount) || initial.percent
+      : initial?.percent;
   const [form, setForm] = useState<StudentDiscountFormInput>({
     type: initial?.type ?? "",
     mode: initial?.mode ?? "percent",
-    percent: initial ? initial.percent.toString() : "",
-    amount: initial && initial.mode === "amount"
-      ? (initial.amount / 100).toString()
-      : "",
+    percent: initialPercent !== undefined ? initialPercent.toString() : "",
+    amount: initial ? initialAmount.toString() : "",
     note: initial?.note ?? "",
   });
   const [errors, setErrors] = useState<DiscountFormErrors>({});
@@ -86,6 +93,13 @@ export function DiscountFormModal({
     form.mode === "amount" && parsedAmount > 0
       ? amountToPercent(balanceDue, parsedAmount).toString()
       : "";
+  // A percent is taken on the remaining balance and rounded to 0.01%, so
+  // saving one can move the amount; show the current amount when it would.
+  const percentChangesAmount =
+    isEdit &&
+    form.mode === "percent" &&
+    parsedPercent > 0 &&
+    percentToRupeeAmount(balanceDue, parsedPercent) !== initialAmount;
 
   const handleSubmit = async () => {
     const payload =
@@ -206,6 +220,9 @@ export function DiscountFormModal({
         {form.mode === "percent" && parsedPercent > 0 ? (
           <p className="mt-1 font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.5)]">
             = {formatNpr(percentToRupeeAmount(balanceDue, parsedPercent))}
+            {percentChangesAmount
+              ? ` · currently ${formatNpr(initialAmount)}`
+              : null}
           </p>
         ) : null}
         {errors.percent ? <FieldError>{errors.percent}</FieldError> : null}

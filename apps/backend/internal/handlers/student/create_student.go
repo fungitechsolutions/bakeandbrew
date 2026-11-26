@@ -13,6 +13,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/suprimkhatri77/sms/backend/internal/constants"
 	db "github.com/suprimkhatri77/sms/backend/internal/database/generated"
+	"github.com/suprimkhatri77/sms/backend/internal/pkg/cloudinary"
 	"github.com/suprimkhatri77/sms/backend/internal/repository"
 	"github.com/suprimkhatri77/sms/backend/internal/types"
 	"github.com/suprimkhatri77/sms/backend/internal/utils"
@@ -30,7 +31,7 @@ type DataResponse struct {
 	CreatedAt   string `json:"createdAt"`
 }
 
-func CreateStudent(queries repository.StudentRepository, pool *pgxpool.Pool) gin.HandlerFunc {
+func CreateStudent(queries repository.StudentRepository, pool *pgxpool.Pool, cloudinaryCloudName string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 
@@ -71,6 +72,24 @@ func CreateStudent(queries repository.StudentRepository, pool *pgxpool.Pool) gin
 		}
 
 		utils.TrimStruct(&req)
+
+		if req.PhotoUrl != "" && !cloudinary.IsOwnImageURL(req.PhotoUrl, cloudinaryCloudName) {
+			slog.Warn("photo url is not a cloudinary upload",
+				"path", c.FullPath(),
+				"ip", c.ClientIP(),
+			)
+			c.JSON(http.StatusBadRequest, types.APIResponse{
+				Success: false,
+				Message: "Photo must be uploaded through the admission form",
+				Code:    constants.ValidationFailed,
+				Errors: []types.AppError{{
+					Code:    constants.InvalidImageURL,
+					Field:   "photoUrl",
+					Message: "Photo must be uploaded through the admission form",
+				}},
+			})
+			return
+		}
 
 		dobAD, err := time.Parse("2006-01-02", req.DobAD)
 		if err != nil {

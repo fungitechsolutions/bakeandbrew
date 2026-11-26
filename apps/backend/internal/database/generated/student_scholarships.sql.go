@@ -317,6 +317,34 @@ func (q *Queries) GetStudentScholarshipForCourseChange(ctx context.Context, stud
 	return items, nil
 }
 
+const getStudentScholarshipForUpdate = `-- name: GetStudentScholarshipForUpdate :one
+SELECT id, student_id, added_by, percent, note, amount, created_at FROM student_scholarships
+WHERE id = $1 AND student_id = $2
+FOR UPDATE
+`
+
+type GetStudentScholarshipForUpdateParams struct {
+	ID        pgtype.UUID `json:"id"`
+	StudentID pgtype.UUID `json:"studentId"`
+}
+
+// For an edit or delete: only finds the scholarship through its own student,
+// and holds it until commit so two edits can't interleave.
+func (q *Queries) GetStudentScholarshipForUpdate(ctx context.Context, arg GetStudentScholarshipForUpdateParams) (StudentScholarship, error) {
+	row := q.db.QueryRow(ctx, getStudentScholarshipForUpdate, arg.ID, arg.StudentID)
+	var i StudentScholarship
+	err := row.Scan(
+		&i.ID,
+		&i.StudentID,
+		&i.AddedBy,
+		&i.Percent,
+		&i.Note,
+		&i.Amount,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const updateScholarship = `-- name: UpdateScholarship :one
 UPDATE student_scholarships
 SET percent = $2, note = $3, amount = $4

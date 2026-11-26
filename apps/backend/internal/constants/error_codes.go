@@ -58,6 +58,8 @@ const (
 	ImageIsRequired    = "IMAGE_IS_REQUIRED"
 	InvalidImageFormat = "INVALID_IMAGE_FORMAT"
 	InvalidImageSize   = "INVALID_IMAGE_SIZE"
+	// a stored photo URL has to be one of our own Cloudinary uploads
+	InvalidImageURL = "INVALID_IMAGE_URL"
 
 	// inventory
 	ProductAlreadyExists = "PRODUCT_ALREADY_EXISTS"

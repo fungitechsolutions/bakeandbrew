@@ -234,6 +234,36 @@ func (q *Queries) GetDiscountByID(ctx context.Context, id pgtype.UUID) (StudentD
 	return i, err
 }
 
+const getStudentDiscountForUpdate = `-- name: GetStudentDiscountForUpdate :one
+SELECT id, student_id, added_by, type, percent, note, amount, created_at, mode FROM student_discounts
+WHERE id = $1 AND student_id = $2
+FOR UPDATE
+`
+
+type GetStudentDiscountForUpdateParams struct {
+	ID        pgtype.UUID `json:"id"`
+	StudentID pgtype.UUID `json:"studentId"`
+}
+
+// For an edit or delete: only finds the discount through its own student, and
+// holds it until commit so two edits of the same discount can't interleave.
+func (q *Queries) GetStudentDiscountForUpdate(ctx context.Context, arg GetStudentDiscountForUpdateParams) (StudentDiscount, error) {
+	row := q.db.QueryRow(ctx, getStudentDiscountForUpdate, arg.ID, arg.StudentID)
+	var i StudentDiscount
+	err := row.Scan(
+		&i.ID,
+		&i.StudentID,
+		&i.AddedBy,
+		&i.Type,
+		&i.Percent,
+		&i.Note,
+		&i.Amount,
+		&i.CreatedAt,
+		&i.Mode,
+	)
+	return i, err
+}
+
 const getStudentDiscounts = `-- name: GetStudentDiscounts :many
 SELECT 
 id,
@@ -326,19 +356,6 @@ func (q *Queries) GetStudentDiscountsForCourseChange(ctx context.Context, studen
 		return nil, err
 	}
 	return items, nil
-}
-
-const getTotalDiscountPercentByStudent = `-- name: GetTotalDiscountPercentByStudent :one
-SELECT COALESCE(SUM(percent), 0)::NUMERIC AS total_discount_percent
-FROM student_discounts
-WHERE student_id = $1
-`
-
-func (q *Queries) GetTotalDiscountPercentByStudent(ctx context.Context, studentID pgtype.UUID) (pgtype.Numeric, error) {
-	row := q.db.QueryRow(ctx, getTotalDiscountPercentByStudent, studentID)
-	var total_discount_percent pgtype.Numeric
-	err := row.Scan(&total_discount_percent)
-	return total_discount_percent, err
 }
 
 const listDiscountsByStudent = `-- name: ListDiscountsByStudent :many

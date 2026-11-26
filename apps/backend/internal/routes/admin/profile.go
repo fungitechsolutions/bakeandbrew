@@ -8,5 +8,5 @@ import (
 
 func setupAdminProfileRoutes(admin *gin.RouterGroup, cfg config.Config) {
 	admin.PUT("/profile/update-password", profile.UpdatePassword(cfg.Queries))
-	admin.PUT("/profile/update-profile", profile.UpdateProfile(cfg.Queries))
+	admin.PUT("/profile/update-profile", profile.UpdateProfile(cfg.Queries, cfg.Config.CloudinaryCloudName))
 }

@@ -13,6 +13,7 @@ import { useUpdateStudentImage } from "@/hooks/mutations/admin/students/useUpdat
 import { APIError } from "@repo/types";
 import { cn } from "@/lib/utils";
 import { formatPersonName } from "@/lib/format-person-name";
+import { isAllowedImageUrl } from "@/lib/remote-images";
 import { Status, STATUS_META } from "./StudentDetail";
 
 const ALLOWED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
@@ -42,6 +43,7 @@ export function StudentEditableAvatar({
     .toUpperCase();
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(photoUrl ?? null);
+  const [brokenPhotoUrl, setBrokenPhotoUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const objectUrlRef = useRef<string | null>(null);
   const savedPhotoUrlRef = useRef(photoUrl ?? "");
@@ -159,6 +161,12 @@ export function StudentEditableAvatar({
   );
 
   const isBlobPreview = previewUrl?.startsWith("blob:") ?? false;
+  // an unknown host would crash next/image, a broken one shows an empty circle;
+  // the remove button still shows so a bad URL can be cleared
+  const showPreview =
+    previewUrl !== null &&
+    previewUrl !== brokenPhotoUrl &&
+    (isBlobPreview || isAllowedImageUrl(previewUrl));
 
   return (
     <div className="flex flex-col items-start gap-2">
@@ -180,7 +188,7 @@ export function StudentEditableAvatar({
         className="group relative w-fit shrink-0 cursor-pointer self-start aria-disabled:cursor-not-allowed"
       >
         <div className={avatarShellClass}>
-          {previewUrl ? (
+          {showPreview ? (
             isBlobPreview ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -196,6 +204,7 @@ export function StudentEditableAvatar({
                 sizes="96px"
                 className="object-cover"
                 priority
+                onError={() => setBrokenPhotoUrl(previewUrl)}
               />
             )
           ) : (

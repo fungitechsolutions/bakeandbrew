@@ -100,3 +100,10 @@ WHERE student_id = $1;
 UPDATE student_scholarships
 SET amount = $2
 WHERE id = $1;
+
+-- name: GetStudentScholarshipForUpdate :one
+-- For an edit or delete: only finds the scholarship through its own student,
+-- and holds it until commit so two edits can't interleave.
+SELECT * FROM student_scholarships
+WHERE id = $1 AND student_id = $2
+FOR UPDATE;

@@ -35,7 +35,7 @@ import {
   DISCOUNT_TABLE_COLUMNS,
   FinanceTableColGroup,
   FinanceTableHead,
-  financeTableClass,
+  discountTableClass,
 } from "../shared/student-finance-table-layout";
 
 function formatDiscountType(type: string): string {
@@ -100,7 +100,7 @@ export function StudentDiscountsView() {
 
       <div className="overflow-hidden border border-[rgba(47,78,64,0.18)] bg-white">
         <div className="overflow-x-auto max-md:hidden">
-          <table className={financeTableClass}>
+          <table className={discountTableClass}>
             <FinanceTableColGroup columns={DISCOUNT_TABLE_COLUMNS} />
             <FinanceTableHead columns={DISCOUNT_TABLE_COLUMNS} />
             <tbody>
