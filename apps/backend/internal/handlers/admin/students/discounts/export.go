@@ -149,14 +149,19 @@ func ExportAllStudentDiscounts(queries repository.AdminRepository) gin.HandlerFu
 }
 
 // discountPercentLabel mirrors the frontend's formatDiscountPercent: a
-// flat-amount discount's percent is only a snapshot, so it reads "Flat".
+// flat-amount discount shows the percent its amount came to, marked
+// "(flat)", and "<0.01%" when a small amount rounded to 0.00.
 func discountPercentLabel(mode string, percent pgtype.Numeric) (string, error) {
-	if mode == "amount" {
-		return "Flat", nil
-	}
 	f, err := utils.NumericToFloat64(percent)
 	if err != nil {
 		return "", err
 	}
-	return strconv.FormatFloat(f, 'f', -1, 64) + "%", nil
+	label := strconv.FormatFloat(f, 'f', -1, 64) + "%"
+	if mode != "amount" {
+		return label, nil
+	}
+	if f <= 0 {
+		label = "<0.01%"
+	}
+	return label + " (flat)", nil
 }
