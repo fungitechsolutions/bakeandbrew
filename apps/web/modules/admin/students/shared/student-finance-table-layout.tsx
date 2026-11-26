@@ -117,7 +117,7 @@ export const DISCOUNT_TABLE_COLUMNS: FinanceTableColumn[] = [
     label: "Percent",
     align: "right",
     width: "10%",
-    cellClassName: "whitespace-nowrap",
+    // Not nowrap: a narrow column wraps "2.59% (flat)" before "(flat)".
     skeleton: "text-right",
   },
   {

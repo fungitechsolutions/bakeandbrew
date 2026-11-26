@@ -244,7 +244,9 @@ export function DiscountFormModal({
         </div>
         {form.mode === "amount" && parsedAmount > 0 ? (
           <p className="mt-1 font-(family-name:--font-dm-sans) text-xs text-[rgba(47,78,64,0.5)]">
-            = {amountToPercent(balanceDue, parsedAmount)}%
+            = {Number(computedPercentPreview) > 0
+              ? `${computedPercentPreview}%`
+              : "<0.01%"}
           </p>
         ) : null}
         {errors.amount ? <FieldError>{errors.amount}</FieldError> : null}

@@ -4,13 +4,17 @@ export function formatFinancePercent(value: number | string): string {
   return `${num}%`;
 }
 
-// A flat-amount discount's percent is only a snapshot of the balance at the
-// time (and can round to 0), so it's labelled "Flat" instead.
+// A flat-amount discount stores the percent its amount came to of the balance
+// when it was added, so show that percent and mark it "(flat)". A small amount
+// on a large balance rounds to 0.00, which reads "<0.01%" instead of "0%".
 export function formatDiscountPercent(
   mode: "percent" | "amount",
   percent: number | string,
 ): string {
-  return mode === "amount" ? "Flat" : formatFinancePercent(percent);
+  if (mode !== "amount") return formatFinancePercent(percent);
+  const num = typeof percent === "string" ? parseFloat(percent) : percent;
+  if (Number.isNaN(num)) return "—";
+  return `${num > 0 ? `${num}%` : "<0.01%"} (flat)`;
 }
 
 export function formatFinanceDate(iso: string): string {

@@ -4,6 +4,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { StudentDiscountResponse } from "@repo/types";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
+import { formatDiscountPercent } from "../shared/student-finance-list-utils";
 
 type Discount = Extract<
   StudentDiscountResponse,
@@ -54,7 +55,7 @@ export function DeleteDiscountDialog({
             </span>{" "}
             discount of{" "}
             <span className="font-semibold text-[#e8552a]">
-              {discount.percent}%
+              {formatDiscountPercent(discount.mode, discount.percent)}
             </span>{" "}
             (− NPR {(discount.amount / 100).toLocaleString()}). This action
             cannot be undone.
